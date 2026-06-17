@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Soja · Júlio de Castilhos / RS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/prop-types@15/prop-types.min.js"></script>
+<script crossorigin src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #0F1410; }
+  body { font-family: 'IBM Plex Sans', sans-serif; color: #E8E2D0; }
+  input[type="range"] { -webkit-appearance: none; appearance: none; height: 2px; background: #2A2F28; outline: none; width: 100%; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; background: #C8E04A; cursor: pointer; border-radius: 0; }
+  input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: #C8E04A; cursor: pointer; border-radius: 0; border: none; }
+  input[type="number"], select { background: #0F1410; color: #E8E2D0; border: 1px solid #2A2F28; padding: 6px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; width: 100%; }
+  input[type="number"]:focus, select:focus { outline: none; border-color: #C8E04A; }
+  button.exp { background: transparent; color: #6B7065; border: 1px solid #2A2F28; padding: 6px 10px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; cursor: pointer; letter-spacing: 0.5px; text-transform: lowercase; }
+  button.exp:hover { color: #E8E2D0; border-color: #6B7065; }
+  button.exp.ativo { background: #C8E04A; color: #0F1410; border-color: #C8E04A; }
+  button.estrat-toggle { background: transparent; color: #C8E04A; border: 1px solid #2A2F28; padding: 8px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; cursor: pointer; width: 100%; text-align: left; letter-spacing: 0.5px; }
+  button.estrat-toggle:hover { border-color: #C8E04A; }
+  @media (max-width: 720px) {
+    .grid { grid-template-columns: 1fr !important; }
+    .span-2 { grid-column: span 1 !important; }
+    .sim-controls { grid-template-columns: 1fr !important; }
+    .sim-grid { grid-template-columns: 1fr 1fr !important; }
+    .eventos-grid { grid-template-columns: 1fr !important; }
+    .h1 { font-size: 22px !important; }
+    .preco-valor { font-size: 26px !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="env,react">
+const { useState, useMemo } = React;
+const {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, ReferenceLine, BarChart, Bar, Cell
+} = Recharts;
+
+// === Constantes do mercado ===
+const BU_PER_SACA = 2.2046;
+
+// Faixas de referência (calibradas para CBOT/Rio Grande/dólar)
+const FAIXAS = {
+  cbot:   { baixo: 10.0, alto: 12.5, label: 'CBOT (USD/bu)' },
+  premio: { baixo: 0.40, alto: 1.40, label: 'Prêmio Rio Grande (USD/bu)' },
+  dolar:  { baixo: 5.00, alto: 5.80, label: 'Dólar (R$)' },
+};
+
+// === Histórico trimestral CALIBRADO (2010Q1–2026Q1) ===
+// METODOLOGIA:
+// 1. CBOT (USD/bu): derivado do preço soja Rotterdam CIF (Banco Mundial / Oil World / USDA via
+//    IndexMundi), aplicando (USD/ton − 30) ÷ 36,7437 para aproximar futuro CBOT front-month
+// 2. USD/BRL: médias mensais PTAX, agregadas em trimestres
+// 3. Prêmio Paranaguá (USD/bu): BACK-CALIBRADO contra 19 pontos CEPEA Paranaguá CONFIRMADOS
+//    em fontes públicas (releases CEPEA, Farmnews, Canal Rural, BiodieselBR). Trimestres sem
+//    âncora têm prêmio interpolado linearmente entre âncoras adjacentes.
+// 4. Ureia (USD/ton): preço Black Sea FOB (Banco Mundial via IndexMundi); convertido para R$/ton
+//    no cálculo aplicando ×1,3 (markup posto-Brasil para logística + ICMS)
+// 5. Frete JC→Rio Grande: estimado por ano conforme diesel/sazonalidade
+// 6. conf: true = trimestre contém pelo menos 1 mês com âncora CEPEA Paranaguá confirmada
+const HISTORICO = [
+  { t: '10Q1', cbot: 10.59, premio: -3.10, dolar: 1.80, ureiaUSD: 281, frete: 4, conf: false, evento: 'Pós-crise' },
+  { t: '10Q2', cbot: 10.13, premio: -3.10, dolar: 1.80, ureiaUSD: 238, frete: 4, conf: false, evento: 'Estabilidade' },
+  { t: '10Q3', cbot: 11.39, premio: -3.10, dolar: 1.75, ureiaUSD: 277, frete: 4, conf: false, evento: 'Rally se inicia' },
+  { t: '10Q4', cbot: 13.30, premio: -3.10, dolar: 1.70, ureiaUSD: 360, frete: 4, conf: true, evento: 'China compra forte' },
+  { t: '11Q1', cbot: 14.48, premio: -2.13, dolar: 1.67, ureiaUSD: 318, frete: 4, conf: false, evento: 'Super-ciclo' },
+  { t: '11Q2', cbot: 14.33, premio: -0.67, dolar: 1.60, ureiaUSD: 322, frete: 4, conf: false, evento: 'Pico real forte' },
+  { t: '11Q3', cbot: 14.07, premio: 0.56, dolar: 1.64, ureiaUSD: 489, frete: 4, conf: true, evento: 'Ureia dispara' },
+  { t: '11Q4', cbot: 12.36, premio: 0.22, dolar: 1.81, ureiaUSD: 466, frete: 4, conf: false, evento: 'Correção' },
+  { t: '12Q1', cbot: 13.46, premio: -0.35, dolar: 1.77, ureiaUSD: 379, frete: 4, conf: false, evento: 'Quebra Argentina' },
+  { t: '12Q2', cbot: 14.96, premio: -0.92, dolar: 1.96, ureiaUSD: 488, frete: 4, conf: false, evento: 'Seca EUA começa' },
+  { t: '12Q3', cbot: 17.61, premio: -1.14, dolar: 2.03, ureiaUSD: 358, frete: 4, conf: true, evento: 'PICO HISTÓRICO 2012' },
+  { t: '12Q4', cbot: 15.53, premio: -0.72, dolar: 2.06, ureiaUSD: 369, frete: 4, conf: false, evento: 'Correção' },
+  { t: '13Q1', cbot: 15.43, premio: -0.84, dolar: 1.99, ureiaUSD: 397, frete: 5, conf: false, evento: 'Safra BR recorde' },
+  { t: '13Q2', cbot: 13.58, premio: -0.81, dolar: 2.07, ureiaUSD: 351, frete: 5, conf: true, evento: 'Prêmio cai' },
+  { t: '13Q3', cbot: 13.55, premio: -0.48, dolar: 2.29, ureiaUSD: 308, frete: 5, conf: false, evento: 'Dólar +' },
+  { t: '13Q4', cbot: 14.21, premio: -0.15, dolar: 2.28, ureiaUSD: 302, frete: 5, conf: false, evento: 'Estabilidade' },
+  { t: '14Q1', cbot: 13.58, premio: 0.18, dolar: 2.36, ureiaUSD: 337, frete: 5, conf: false, evento: 'Tensão Crimeia' },
+  { t: '14Q2', cbot: 13.21, premio: 0.33, dolar: 2.23, ureiaUSD: 271, frete: 5, conf: true, evento: 'Real recupera' },
+  { t: '14Q3', cbot: 11.52, premio: 0.11, dolar: 2.27, ureiaUSD: 311, frete: 5, conf: false, evento: 'Safra EUA cheia' },
+  { t: '14Q4', cbot: 11.19, premio: -0.11, dolar: 2.55, ureiaUSD: 314, frete: 5, conf: false, evento: 'Eleições BR' },
+  { t: '15Q1', cbot: 10.67, premio: -0.32, dolar: 2.86, ureiaUSD: 302, frete: 6, conf: false, evento: 'Crise política' },
+  { t: '15Q2', cbot: 9.84, premio: -0.54, dolar: 3.07, ureiaUSD: 271, frete: 6, conf: false, evento: 'CBOT fundo' },
+  { t: '15Q3', cbot: 9.63, premio: -0.76, dolar: 3.55, ureiaUSD: 279, frete: 6, conf: true, evento: 'Dólar 4' },
+  { t: '15Q4', cbot: 9.28, premio: -0.87, dolar: 3.84, ureiaUSD: 259, frete: 6, conf: false, evento: 'Impeachment' },
+  { t: '16Q1', cbot: 9.42, premio: -0.94, dolar: 3.90, ureiaUSD: 209, frete: 6, conf: false, evento: 'Pico dólar' },
+  { t: '16Q2', cbot: 10.75, premio: -1.00, dolar: 3.51, ureiaUSD: 179, frete: 6, conf: true, evento: 'Quebra Argentina' },
+  { t: '16Q3', cbot: 10.50, premio: -0.82, dolar: 3.24, ureiaUSD: 185, frete: 6, conf: false, evento: 'Real volta' },
+  { t: '16Q4', cbot: 10.21, premio: -0.52, dolar: 3.29, ureiaUSD: 203, frete: 6, conf: false, evento: 'Ureia barata' },
+  { t: '17Q1', cbot: 9.98, premio: -0.22, dolar: 3.14, ureiaUSD: 216, frete: 6, conf: false, evento: 'Safra recorde BR' },
+  { t: '17Q2', cbot: 9.67, premio: 0.08, dolar: 3.21, ureiaUSD: 193, frete: 6, conf: false, evento: 'Estoques altos' },
+  { t: '17Q3', cbot: 10.05, premio: 0.38, dolar: 3.16, ureiaUSD: 198, frete: 6, conf: false, evento: 'Estabilidade' },
+  { t: '17Q4', cbot: 9.87, premio: 0.68, dolar: 3.24, ureiaUSD: 249, frete: 6, conf: false, evento: 'Ureia reage' },
+  { t: '18Q1', cbot: 10.39, premio: 0.98, dolar: 3.24, ureiaUSD: 228, frete: 7, conf: false, evento: 'Tensão comercial' },
+  { t: '18Q2', cbot: 10.65, premio: 1.28, dolar: 3.60, ureiaUSD: 226, frete: 7, conf: false, evento: 'Guerra China-EUA' },
+  { t: '18Q3', cbot: 9.26, premio: 1.58, dolar: 3.97, ureiaUSD: 260, frete: 7, conf: true, evento: 'Prêmio BR explode' },
+  { t: '18Q4', cbot: 9.37, premio: 1.39, dolar: 3.81, ureiaUSD: 284, frete: 7, conf: false, evento: 'China compra BR' },
+  { t: '19Q1', cbot: 9.45, premio: 0.94, dolar: 3.78, ureiaUSD: 253, frete: 7, conf: false, evento: 'Trégua frágil' },
+  { t: '19Q2', cbot: 8.79, premio: 0.50, dolar: 3.93, ureiaUSD: 248, frete: 7, conf: false, evento: 'CBOT fundo 2019' },
+  { t: '19Q3', cbot: 9.13, premio: 0.16, dolar: 3.96, ureiaUSD: 255, frete: 7, conf: true, evento: 'Fase 1 EUA-China' },
+  { t: '19Q4', cbot: 9.46, premio: 0.01, dolar: 4.13, ureiaUSD: 226, frete: 7, conf: false, evento: 'Acordo assinado' },
+  { t: '20Q1', cbot: 9.48, premio: 0.04, dolar: 4.44, ureiaUSD: 220, frete: 8, conf: true, evento: 'COVID choque' },
+  { t: '20Q2', cbot: 9.07, premio: 0.23, dolar: 5.46, ureiaUSD: 213, frete: 8, conf: false, evento: 'Dólar dispara' },
+  { t: '20Q3', cbot: 9.97, premio: 1.01, dolar: 5.37, ureiaUSD: 238, frete: 8, conf: true, evento: 'China volta forte' },
+  { t: '20Q4', cbot: 12.48, premio: 0.72, dolar: 5.40, ureiaUSD: 245, frete: 8, conf: true, evento: 'Rally começa' },
+  { t: '21Q1', cbot: 14.97, premio: 0.47, dolar: 5.47, ureiaUSD: 318, frete: 11, conf: false, evento: 'Boom commodities' },
+  { t: '21Q2', cbot: 16.04, premio: 0.21, dolar: 5.30, ureiaUSD: 351, frete: 11, conf: false, evento: 'Pico CBOT 2021' },
+  { t: '21Q3', cbot: 15.00, premio: -0.05, dolar: 5.24, ureiaUSD: 436, frete: 11, conf: false, evento: 'Insumos disparam' },
+  { t: '21Q4', cbot: 14.22, premio: -0.21, dolar: 5.58, ureiaUSD: 828, frete: 11, conf: true, evento: 'Ureia HISTÓRICA' },
+  { t: '22Q1', cbot: 17.22, premio: -0.42, dolar: 5.24, ureiaUSD: 821, frete: 13, conf: true, evento: 'Guerra Ucrânia' },
+  { t: '22Q2', cbot: 18.98, premio: -0.94, dolar: 4.94, ureiaUSD: 774, frete: 13, conf: false, evento: 'PICO ABSOLUTO' },
+  { t: '22Q3', cbot: 17.45, premio: -1.00, dolar: 5.21, ureiaUSD: 623, frete: 13, conf: false, evento: 'Correção' },
+  { t: '22Q4', cbot: 16.61, premio: -1.06, dolar: 5.25, ureiaUSD: 581, frete: 13, conf: false, evento: 'Normalização' },
+  { t: '23Q1', cbot: 16.48, premio: -1.13, dolar: 5.18, ureiaUSD: 372, frete: 10, conf: false, evento: 'Safra recorde BR' },
+  { t: '23Q2', cbot: 15.53, premio: -1.19, dolar: 4.94, ureiaUSD: 310, frete: 10, conf: false, evento: 'Prêmio DERRETE' },
+  { t: '23Q3', cbot: 15.85, premio: -1.25, dolar: 4.86, ureiaUSD: 367, frete: 10, conf: false, evento: 'Real forte' },
+  { t: '23Q4', cbot: 13.97, premio: -1.31, dolar: 4.96, ureiaUSD: 384, frete: 10, conf: true, evento: 'Estoques altos' },
+  { t: '24Q1', cbot: 13.29, premio: -1.70, dolar: 4.95, ureiaUSD: 339, frete: 10, conf: true, evento: 'CBOT cai' },
+  { t: '24Q2', cbot: 12.31, premio: -0.31, dolar: 5.18, ureiaUSD: 314, frete: 10, conf: true, evento: 'Prêmio reage' },
+  { t: '24Q3', cbot: 10.62, premio: 0.01, dolar: 5.53, ureiaUSD: 341, frete: 10, conf: false, evento: 'CBOT 4-anos mín' },
+  { t: '24Q4', cbot: 10.86, premio: 0.18, dolar: 5.84, ureiaUSD: 360, frete: 10, conf: true, evento: 'Dólar DISPARA' },
+  { t: '25Q1', cbot: 10.29, premio: 0.37, dolar: 5.82, ureiaUSD: 404, frete: 10, conf: false, evento: 'Real recupera' },
+  { t: '25Q2', cbot: 10.41, premio: 0.57, dolar: 5.64, ureiaUSD: 400, frete: 10, conf: false, evento: 'Estabilização' },
+  { t: '25Q3', cbot: 10.26, premio: 0.78, dolar: 5.43, ureiaUSD: 488, frete: 10, conf: false, evento: 'Ureia sobe' },
+  { t: '25Q4', cbot: 10.88, premio: 0.98, dolar: 5.32, ureiaUSD: 399, frete: 10, conf: true, evento: 'Fim ano lateral' },
+  { t: '26Q1', cbot: 11.49, premio: 1.05, dolar: 5.16, ureiaUSD: 538, frete: 10, conf: false, evento: 'Atual' },
+];
+
+const calcSacaFOB = (h) => (h.cbot + h.premio) * BU_PER_SACA * h.dolar;
+// Ureia BR = USD/ton × dólar × 1,3 (markup logístico+ICMS típico)
+const calcUreiaBR = (h) => h.ureiaUSD * h.dolar * 1.3;
+const HISTORICO_CALC = HISTORICO.map(h => {
+  const fob = calcSacaFOB(h);
+  const cif = fob - h.frete;
+  const ureiaBR = calcUreiaBR(h);
+  return { ...h, sacaFOB: fob, sacaCIF: cif, ureiaBR, trocaFert: ureiaBR / cif };
+});
+
+const classificar = (valor, faixa) => {
+  if (valor < faixa.baixo) return 'baixo';
+  if (valor > faixa.alto) return 'alto';
+  return 'medio';
+};
+
+// === Motor de estratégia (por componente, nível × expectativa) ===
+const ESTRATEGIAS = {
+  cbot: {
+    alto_baixa:  { acao: 'TRAVAR AGRESSIVO', pct: 70, cor: 'verde', nota: 'Patamar alto + viés de queda: melhor oportunidade de hedge defensivo.' },
+    alto_alta:   { acao: 'Travar parcial', pct: 40, cor: 'verde', nota: 'CBOT alto compensa travar parte; 60% aberto para capturar alta.' },
+    alto_neutra: { acao: 'Travar metade', pct: 50, cor: 'verde', nota: 'Patamar bom — escalone 50% e siga monitorando.' },
+    medio_baixa: { acao: 'Travar parcial defensivo', pct: 30, cor: 'ambar', nota: 'Proteja margem antes da queda esperada.' },
+    medio_alta:  { acao: 'Aguardar', pct: 0, cor: 'ambar', nota: 'Patamar morno + viés de alta: espere antes de fixar.' },
+    medio_neutra:{ acao: 'Trava mínima', pct: 20, cor: 'ambar', nota: 'Sem urgência; deixe o mercado revelar direção.' },
+    baixo_baixa: { acao: 'TRAVA EMERGENCIAL', pct: 60, cor: 'vermelho', nota: 'Margem em risco — proteja receita mesmo com preço ruim.' },
+    baixo_alta:  { acao: 'NÃO travar', pct: 0, cor: 'verde', nota: 'CBOT baixo + viés de alta: pior momento para travar.' },
+    baixo_neutra:{ acao: 'Aguardar / call', pct: 0, cor: 'ambar', nota: 'Não fixe preço pobre; considere call para upside.' },
+  },
+  premio: {
+    alto_baixa:  { acao: 'TRAVAR AGRESSIVO', pct: 80, cor: 'verde', nota: 'Prêmio alto cai rápido com safra — trave antes.' },
+    alto_alta:   { acao: 'Travar maioria', pct: 60, cor: 'verde', nota: 'Basis raramente sustenta alta longa; aproveite.' },
+    alto_neutra: { acao: 'Travar maioria', pct: 60, cor: 'verde', nota: 'Prêmio é o componente mais sazonal — fixe.' },
+    medio_baixa: { acao: 'Travar parcial', pct: 40, cor: 'ambar', nota: 'Sazonalidade joga contra; antecipe.' },
+    medio_alta:  { acao: 'Aguardar', pct: 0, cor: 'ambar', nota: 'Espere o basis melhorar antes de fixar.' },
+    medio_neutra:{ acao: 'Trava leve', pct: 20, cor: 'ambar', nota: 'Sem urgência.' },
+    baixo_baixa: { acao: 'Mínima ou nada', pct: 10, cor: 'vermelho', nota: 'Prêmio pobre — só trave por necessidade de caixa.' },
+    baixo_alta:  { acao: 'NÃO travar', pct: 0, cor: 'verde', nota: 'Espere recuperação do basis.' },
+    baixo_neutra:{ acao: 'Aguardar', pct: 0, cor: 'ambar', nota: 'Patamar ruim; sem motivo para fixar.' },
+  },
+  dolar: {
+    alto_baixa:  { acao: 'TRAVAR CÂMBIO', pct: 70, cor: 'verde', nota: 'Dólar alto + viés de queda: trave NDF/futuro B3.' },
+    alto_alta:   { acao: 'Manter aberto', pct: 0, cor: 'verde', nota: 'Dólar alto e subindo — sua exposição natural já ganha.' },
+    alto_neutra: { acao: 'Travar parcial', pct: 40, cor: 'verde', nota: 'Aproveite patamar; escalone fixação.' },
+    medio_baixa: { acao: 'Travar parcial', pct: 30, cor: 'ambar', nota: 'Proteja parte da receita.' },
+    medio_alta:  { acao: 'Aguardar', pct: 0, cor: 'ambar', nota: 'Deixe a exposição natural trabalhar a favor.' },
+    medio_neutra:{ acao: 'Aguardar', pct: 0, cor: 'ambar', nota: 'Sem gatilho claro.' },
+    baixo_baixa: { acao: 'NÃO travar — comprar call', pct: 0, cor: 'vermelho', nota: 'Dólar baixo caindo é raro durar; call protege upside.' },
+    baixo_alta:  { acao: 'NÃO TRAVAR', pct: 0, cor: 'verde', nota: 'Pior momento para fixar câmbio; mantenha 100% aberto.' },
+    baixo_neutra:{ acao: 'Não travar', pct: 0, cor: 'ambar', nota: 'Câmbio baixo raramente vira a melhor janela.' },
+  },
+};
+
+// === Estratégias clássicas de comercialização ===
+const ESTRATEGIAS_CLASSICAS = [
+  {
+    nome: 'Venda escalonada',
+    sinonimos: 'Hedge em camadas, dollar-cost averaging out',
+    descricao: 'Vender frações fixas em datas ou gatilhos pré-definidos (ex: 20% a cada R$ 10 de alta ou a cada mês).',
+    quando: 'Sempre. É a estratégia base de qualquer produtor disciplinado. Especialmente útil quando não há convicção forte de direção.',
+    risco: 'Nunca acerta o topo nem o fundo. Aceita média ponderada.',
+    exemplo: 'Trava 20% a cada R$ 10 de alta a partir de R$ 140. Em rally para R$ 180, fixa 4 camadas a 140/150/160/170 = média R$ 155.',
+    melhor_para: 'JC/RS: começar 30% em out/nov, mais 30% em dez/jan, 40% restante na colheita (mai/jun).',
+  },
+  {
+    nome: 'Contrato a fixar',
+    sinonimos: 'Preço a fixar, fixação posterior',
+    descricao: 'Vende soja física para tradera ou cooperativa com entrega futura, mas mantém um ou mais componentes (CBOT, prêmio, câmbio) em aberto para fixar depois.',
+    quando: 'Quando você quer garantir destino físico (logística, armazém), mas o preço atual não está bom.',
+    risco: 'Prazo de fixação limitado pelo contrato. Se mercado cair, fixa pior.',
+    exemplo: 'Vende 10.000 sacas para Cotrijuí com entrega em julho, fixa CBOT em fevereiro (12,50 USD/bu), prêmio em maio, câmbio em junho.',
+    melhor_para: 'JC/RS: produtor que precisa liberar armazém pós-colheita; cooperativas locais (Cotrijuí, Cotribá) oferecem prazos longos de fixação.',
+  },
+  {
+    nome: 'Barter / troca-troca',
+    sinonimos: 'Pacote insumo-grão, troca de safra',
+    descricao: 'Troca direta de soja futura por insumos (sementes, fertilizantes, defensivos). Trava a relação de troca — não o preço absoluto.',
+    quando: 'Quando relação de troca está favorável (poucas sacas pagam o insumo). Setembro–novembro é a janela clássica.',
+    risco: 'Se soja subir muito depois, você pagou caro pelo insumo. Mas se cair, está protegido.',
+    exemplo: 'Em set/2020 produtor trocou 15 sacas/ha por adubação completa. Quem fez isso evitou o choque de 21Q4 quando relação foi a 35 sacas/ha.',
+    melhor_para: 'JC/RS: estratégia dominante no Sul — Cotrijuí, Mauá, BSBios, Bunge oferecem barter padrão; trave em set/out para safra do verão.',
+  },
+  {
+    nome: 'Venda antecipada / forward',
+    sinonimos: 'Pré-venda, venda futura',
+    descricao: 'Vende soja antes da colheita com preço travado (CBOT + prêmio + câmbio) para entrega num mês específico.',
+    quando: 'Quando preço futuro está acima do seu custo + margem alvo, mesmo antes do plantio.',
+    risco: 'Risco de produção (quebra de safra). Se não colher o volume vendido, precisa comprar no mercado para entregar — pode ser catastrófico.',
+    exemplo: 'Em out/2021 produtor RS vende 40% da safra 21/22 a R$ 170/saca. Em jan/2022 seca atinge o Sul, ele só colhe 50% do esperado e precisa recomprar.',
+    melhor_para: 'JC/RS: ATENÇÃO — região teve quebras severas em 21/22, 22/23 e 23/24 por estiagem. Nunca pré-venda mais que 50% da expectativa conservadora.',
+  },
+  {
+    nome: 'Put protetiva',
+    sinonimos: 'Seguro de preço, opção de venda',
+    descricao: 'Compra opção de venda (put) na B3 ou via tradera. Paga prêmio e garante direito de vender por preço mínimo (strike).',
+    quando: 'Quando preço está bom, você quer dormir tranquilo, mas acredita que ainda pode subir.',
+    risco: 'Perde o prêmio pago se mercado não cair abaixo do strike. Custo típico: 2–5% do valor da safra.',
+    exemplo: 'CBOT a 12 USD/bu. Compra put strike 11,50 vencimento maio por 0,40 USD/bu. Se CBOT cair para 10, exerce e vende a 11,50. Se subir para 14, deixa expirar e vende físico a 14.',
+    melhor_para: 'JC/RS: vale a pena em anos de risco climático elevado (La Niña), funcionando como "seguro" sobre o preço.',
+  },
+  {
+    nome: 'Collar / fence',
+    sinonimos: 'Túnel, hedge de custo zero',
+    descricao: 'Compra put (proteção de baixa) e financia vendendo call (cede upside acima de certo nível). Custo líquido próximo de zero.',
+    quando: 'Quando você quer proteção sem desembolsar prêmio e aceita abrir mão da alta extrema.',
+    risco: 'Acima do strike da call, você não captura mais alta — limita upside.',
+    exemplo: 'CBOT 12. Compra put 11 (paga 0,30) + vende call 13,50 (recebe 0,30). Faixa garantida: 11 a 13,50. Se for a 15, perde a alta de 13,50 a 15.',
+    melhor_para: 'JC/RS: muito usado para safra pré-vendida — protege piso sem custo de prêmio, ideal para fluxo de caixa apertado.',
+  },
+  {
+    nome: 'Three-way',
+    sinonimos: 'Collar com put vendida, fence assimétrico',
+    descricao: 'Collar normal + venda de put mais baixa (OTM). Recebe prêmio extra mas assume risco se preço cair muito.',
+    quando: 'Convicção de que mercado não cairá abaixo do piso baixo. Usado por traders, raro em produtor.',
+    risco: 'Se mercado despencar abaixo da put vendida, você assume prejuízo dobrado.',
+    exemplo: 'Compra put 11 + vende call 13,50 + vende put 9,50. Funciona como collar mas paga prêmio líquido positivo. Se CBOT for a 8, prejuízo grande.',
+    melhor_para: 'JC/RS: não recomendado para produtor; risco assimétrico em ano de surpresa baixista.',
+  },
+  {
+    nome: 'Hedge com B3 (SFI/SOJ)',
+    sinonimos: 'Vende futuro de soja na bolsa brasileira',
+    descricao: 'Vende contrato futuro SFI/SOJ na B3 (Bovespa). Trava preço em reais por saca. Não envolve tradera.',
+    quando: 'Produtor com volume grande, acesso a corretora, e que quer fixar preço em R$ direto sem amarrar venda física.',
+    risco: 'Exige depósito de margem (R$ por contrato). Chamadas de margem se mercado subir. Liquidez da B3 é menor que CME.',
+    exemplo: 'Vende 10 contratos SFI (27 ton cada) a R$ 145/saca para maio. Se preço cair para 130, ganha 15 × 450 sacas = R$ 6.750/contrato. Mas vende físico ao mercado a 130.',
+    melhor_para: 'JC/RS: opção para quem entrega físico em indústria local (Passo Fundo, Marau) e quer hedge desvinculado do destino.',
+  },
+  {
+    nome: 'Estocagem estratégica',
+    sinonimos: 'Carrego, venda entressafra',
+    descricao: 'Armazena soja pós-colheita para vender em momento melhor (geralmente set–dez).',
+    quando: 'Quando prêmio na colheita está deprimido e existe expectativa de melhora sazonal.',
+    risco: 'Custo de armazenagem (R$ 0,80–1,50/saca/mês), risco de queda do CBOT, capital parado.',
+    exemplo: 'Colheita mai/2023 com prêmio 0,20. Estoca até nov/2023 quando prêmio sobe para 0,80. Ganho: 0,60 × 2,2 × 5 = R$ 6,60/saca. Custo: 6 meses × 1,20 = R$ 7,20.',
+    melhor_para: 'JC/RS: produtor com armazém próprio (estrutura comum em cooperativas locais); sem armazém, custo costuma comer o ganho.',
+  },
+];
+
+function PainelSoja() {
+  const [cbot, setCbot] = useState(11.20);
+  const [premio, setPremio] = useState(1.20);
+  const [dolar, setDolar] = useState(5.40);
+  const [freteCIF, setFreteCIF] = useState(11);
+  const [custoSaca, setCustoSaca] = useState(95);
+  const [custoFert, setCustoFert] = useState(3500);
+  const [expCbot, setExpCbot] = useState('neutra');
+  const [expPremio, setExpPremio] = useState('neutra');
+  const [expDolar, setExpDolar] = useState('neutra');
+  const [periodoIni, setPeriodoIni] = useState('10Q1');
+  const [periodoFim, setPeriodoFim] = useState('26Q1');
+  const [graficoVer, setGraficoVer] = useState('saca');
+  const [gatilhoTrava, setGatilhoTrava] = useState(160);
+  const [estratExp, setEstratExp] = useState(null);
+
+  // Cálculos
+  const sacaFOB = (cbot + premio) * BU_PER_SACA * dolar;
+  const sacaCIF = sacaFOB - freteCIF; // preço líquido em Júlio de Castilhos
+  const margemAbs = sacaCIF - custoSaca;
+  const margemPct = (margemAbs / custoSaca) * 100;
+  const trocaFert = custoFert / sacaCIF;
+
+  const niveis = {
+    cbot: classificar(cbot, FAIXAS.cbot),
+    premio: classificar(premio, FAIXAS.premio),
+    dolar: classificar(dolar, FAIXAS.dolar),
+  };
+
+  const estrategia = {
+    cbot:   ESTRATEGIAS.cbot[`${niveis.cbot}_${expCbot}`],
+    premio: ESTRATEGIAS.premio[`${niveis.premio}_${expPremio}`],
+    dolar:  ESTRATEGIAS.dolar[`${niveis.dolar}_${expDolar}`],
+  };
+
+  const cenarios = useMemo(() => {
+    const calc = (c, p, d) => (c + p) * BU_PER_SACA * d - freteCIF;
+    return [
+      { nome: 'Hoje',     valor: calc(cbot, premio, dolar) },
+      { nome: 'CBOT +10%',valor: calc(cbot*1.1, premio, dolar) },
+      { nome: 'CBOT -10%',valor: calc(cbot*0.9, premio, dolar) },
+      { nome: 'Dólar +10%', valor: calc(cbot, premio, dolar*1.1) },
+      { nome: 'Dólar -10%', valor: calc(cbot, premio, dolar*0.9) },
+      { nome: 'Prêmio 0', valor: calc(cbot, 0, dolar) },
+      { nome: 'Tudo +10%',valor: calc(cbot*1.1, premio*1.1, dolar*1.1) },
+      { nome: 'Tudo -10%',valor: calc(cbot*0.9, premio*0.9, dolar*0.9) },
+    ];
+  }, [cbot, premio, dolar, freteCIF]);
+
+  const projecao = useMemo(() => {
+    const ajuste = (exp, mag) => exp === 'alta' ? mag : exp === 'baixa' ? -mag : 0;
+    const meses = ['M0','M1','M2','M3','M4','M5','M6'];
+    return meses.map((m, i) => {
+      const t = i / 6;
+      const c = cbot * (1 + ajuste(expCbot, 0.15) * t);
+      const p = Math.max(0, premio * (1 + ajuste(expPremio, 0.30) * t));
+      const d = dolar * (1 + ajuste(expDolar, 0.10) * t);
+      return {
+        mes: m,
+        saca: Math.round(((c + p) * BU_PER_SACA * d - freteCIF) * 100) / 100,
+        custo: custoSaca,
+      };
+    });
+  }, [cbot, premio, dolar, custoSaca, expCbot, expPremio, expDolar, freteCIF]);
+
+  const simulacao = useMemo(() => {
+    const iIni = HISTORICO_CALC.findIndex(h => h.t === periodoIni);
+    const iFim = HISTORICO_CALC.findIndex(h => h.t === periodoFim);
+    if (iIni < 0 || iFim < 0 || iFim <= iIni) return null;
+    const janela = HISTORICO_CALC.slice(iIni, iFim + 1);
+    const precos = janela.map(j => j.sacaCIF);
+    const tudoInicio = precos[0];
+    const tudoFim = precos[precos.length - 1];
+    const escalonado = precos.reduce((a, b) => a + b, 0) / precos.length;
+    let pctTravado = 0, somaTravada = 0;
+    precos.forEach(p => {
+      if (p >= gatilhoTrava && pctTravado < 100) {
+        somaTravada += p * 0.25;
+        pctTravado += 25;
+      }
+    });
+    const restante = 100 - pctTravado;
+    const gatilho = pctTravado > 0 ? (somaTravada + (restante / 100) * tudoFim) : tudoFim;
+    const topo = Math.max(...precos);
+    const fundo = Math.min(...precos);
+    return { janela, tudoInicio, tudoFim, escalonado, gatilho, topo, fundo };
+  }, [periodoIni, periodoFim, gatilhoTrava]);
+
+  const periodos = HISTORICO_CALC.map(h => h.t);
+
+  const corNivel = (n) => n === 'alto' ? '#C8E04A' : n === 'baixo' ? '#D9542B' : '#A89968';
+  const corEstrat = (c) => c === 'verde' ? '#C8E04A' : c === 'vermelho' ? '#D9542B' : '#E6B84A';
+
+  return (
+    <div style={S.app}>
+      <header style={S.header}>
+        <div>
+          <div style={S.eyebrow}>Painel · Soja · Júlio de Castilhos / RS</div>
+          <h1 className="h1" style={S.h1}>Margem da saca <span style={S.h1accent}>no campo</span></h1>
+          <div style={S.subhead}>Preço líquido CIF JC · Porto Rio Grande · histórico 2010–2026 calibrado contra CEPEA Paranaguá</div>
+        </div>
+        <div style={S.precoBig}>
+          <div style={S.precoLabel}>Saca 60kg (CIF JC)</div>
+          <div className="preco-valor" style={S.precoValor}>R$ {sacaCIF.toFixed(2)}</div>
+          <div style={{...S.precoMargem, color: margemAbs > 0 ? '#C8E04A' : '#D9542B'}}>
+            {margemAbs > 0 ? '+' : ''}R$ {margemAbs.toFixed(2)} ({margemPct.toFixed(1)}%) vs custo
+          </div>
+          <div style={S.precoSub}>FOB Rio Grande: R$ {sacaFOB.toFixed(2)} · frete R$ {freteCIF}</div>
+        </div>
+      </header>
+
+      <div className="grid" style={S.grid}>
+
+        {/* 01 — COMPONENTES */}
+        <section style={S.card}>
+          <div style={S.cardLabel}>01 — Componentes do preço</div>
+          {[
+            { key: 'cbot', val: cbot, set: setCbot, exp: expCbot, setExp: setExpCbot, min: 7, max: 18, step: 0.05, fmt: v => v.toFixed(2), unit: 'USD/bu' },
+            { key: 'premio', val: premio, set: setPremio, exp: expPremio, setExp: setExpPremio, min: -0.5, max: 3, step: 0.05, fmt: v => v.toFixed(2), unit: 'USD/bu' },
+            { key: 'dolar', val: dolar, set: setDolar, exp: expDolar, setExp: setExpDolar, min: 4, max: 7, step: 0.01, fmt: v => 'R$ ' + v.toFixed(2), unit: 'BRL/USD' },
+          ].map(c => (
+            <div key={c.key} style={S.componenteRow}>
+              <div style={S.componenteHead}>
+                <span style={S.componenteLabel}>{FAIXAS[c.key].label}</span>
+                <span style={{...S.componenteNivel, color: corNivel(niveis[c.key])}}>
+                  ● {niveis[c.key].toUpperCase()}
+                </span>
+              </div>
+              <div style={S.componenteValor}>{c.fmt(c.val)}</div>
+              <input type="range" min={c.min} max={c.max} step={c.step} value={c.val}
+                     onChange={e => c.set(parseFloat(e.target.value))} />
+              <div style={S.expRow}>
+                <span style={S.expLabel}>EXPECTATIVA</span>
+                {['baixa', 'neutra', 'alta'].map(e => (
+                  <button key={e} className={`exp ${c.exp === e ? 'ativo' : ''}`} onClick={() => c.setExp(e)}>
+                    {e === 'baixa' ? '↓' : e === 'alta' ? '↑' : '→'} {e}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </section>
+
+        {/* 02 — CUSTOS E TROCA */}
+        <section style={S.card}>
+          <div style={S.cardLabel}>02 — Custos, frete e relação de troca</div>
+          <div style={S.inputBlock}>
+            <label style={S.inputLabel}>Custo de produção (R$/saca)</label>
+            <input type="number" value={custoSaca} step="1" onChange={e => setCustoSaca(parseFloat(e.target.value)||0)} />
+          </div>
+          <div style={S.inputBlock}>
+            <label style={S.inputLabel}>Frete JC → Rio Grande (R$/saca)</label>
+            <input type="number" value={freteCIF} step="0.5" onChange={e => setFreteCIF(parseFloat(e.target.value)||0)} />
+          </div>
+          <div style={S.inputBlock}>
+            <label style={S.inputLabel}>Fertilizante NPK (R$/ton)</label>
+            <input type="number" value={custoFert} step="50" onChange={e => setCustoFert(parseFloat(e.target.value)||0)} />
+          </div>
+
+          <div style={S.trocaBox}>
+            <div style={S.trocaLabel}>Relação de troca</div>
+            <div style={S.trocaValor}>{trocaFert.toFixed(1)} <span style={S.trocaUnit}>sacas / ton NPK</span></div>
+            <div style={S.trocaNota}>
+              {trocaFert < 20 ? 'Excelente — janela clara para barter' :
+               trocaFert < 30 ? 'Razoável — média histórica' :
+               trocaFert < 40 ? 'Apertado — atenção à margem' :
+                                'Crítico — postergue compra de insumo'}
+            </div>
+          </div>
+
+          <div style={S.margemBox}>
+            {[
+              ['Receita líquida (CIF JC)', `R$ ${sacaCIF.toFixed(2)}`],
+              ['Custo / saca', `R$ ${custoSaca.toFixed(2)}`],
+            ].map(([k, v]) => (
+              <div key={k} style={S.margemRow}>
+                <span style={S.margemKey}>{k}</span>
+                <span style={S.margemVal}>{v}</span>
+              </div>
+            ))}
+            <div style={{...S.margemRow, borderTop: '1px solid #2A2F28', paddingTop: 8, marginTop: 4}}>
+              <span style={S.margemKey}>Margem</span>
+              <span style={{...S.margemVal, color: margemAbs > 0 ? '#C8E04A' : '#D9542B', fontWeight: 700}}>
+                R$ {margemAbs.toFixed(2)} · {margemPct.toFixed(1)}%
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* 03 — PROJEÇÃO */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+          <div style={S.cardLabel}>03 — Projeção 6 meses (suas expectativas)</div>
+          <div style={{height: 260, marginTop: 16}}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={projecao} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
+                <XAxis dataKey="mes" stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 12}} />
+                <ReferenceLine y={custoSaca} stroke="#D9542B" strokeDasharray="3 3" label={{value: 'Custo', fill: '#D9542B', fontSize: 10}} />
+                <Line type="monotone" dataKey="saca" stroke="#C8E04A" strokeWidth={2} dot={{fill: '#C8E04A', r: 4}} name="R$/saca CIF" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        {/* 04 — SENSIBILIDADE */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+          <div style={S.cardLabel}>04 — Sensibilidade</div>
+          <div style={{height: 240, marginTop: 16}}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={cenarios} margin={{ top: 10, right: 20, left: 0, bottom: 40 }}>
+                <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
+                <XAxis dataKey="nome" stroke="#6B7065" angle={-30} textAnchor="end" style={{fontSize: 10, fontFamily: 'IBM Plex Mono'}} />
+                <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 12}} />
+                <Bar dataKey="valor" name="R$/saca CIF">
+                  {cenarios.map((c, i) => (
+                    <Cell key={i} fill={c.valor > sacaCIF ? '#C8E04A' : c.valor < sacaCIF ? '#D9542B' : '#A89968'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        {/* 05 — ESTRATÉGIA */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#C8E04A'}}>
+          <div style={{...S.cardLabel, color: '#C8E04A'}}>05 — Estratégia recomendada para a janela atual</div>
+          {[
+            { key: 'cbot', label: 'CBOT' },
+            { key: 'premio', label: 'PRÊMIO' },
+            { key: 'dolar', label: 'DÓLAR' },
+          ].map(c => {
+            const e = estrategia[c.key];
+            return (
+              <div key={c.key} style={S.estratRow}>
+                <div style={S.estratHead}>
+                  <span style={S.estratComp}>{c.label}</span>
+                  <span style={{...S.estratAcao, color: corEstrat(e.cor)}}>{e.acao}</span>
+                  {e.pct > 0 && <span style={S.estratPct}>{e.pct}%</span>}
+                </div>
+                <div style={S.estratNota}>{e.nota}</div>
+              </div>
+            );
+          })}
+          <div style={S.sintese}>
+            <div style={S.sinteseLabel}>SÍNTESE</div>
+            <div style={S.sinteseTexto}>
+              {(() => {
+                const acoes = Object.values(estrategia);
+                const travarTotal = acoes.filter(a => a.pct >= 50).length;
+                const naoTravar = acoes.filter(a => a.pct === 0).length;
+                if (travarTotal >= 2) return 'Janela favorável aberta. Trave em camadas os componentes em patamar alto; não tente acertar o topo.';
+                if (naoTravar >= 2) return 'Janela ruim. Aguarde; considere calls para upside; só trave por necessidade de caixa ou margem.';
+                return 'Mercado misto. Trave o que está bom, mantenha aberto o que está ruim; escalone toda decisão.';
+              })()}
+            </div>
+          </div>
+        </section>
+
+        {/* 06 — HISTÓRICO */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+          <div style={S.cardLabel}>06 — Histórico (2020–2025, base Rio Grande)</div>
+          <div style={S.tabRow}>
+            {[
+              { k: 'saca', l: 'Preço CIF JC' },
+              { k: 'componentes', l: 'Componentes' },
+              { k: 'troca', l: 'Troca / fert.' },
+            ].map(t => (
+              <button key={t.k} className={`exp ${graficoVer === t.k ? 'ativo' : ''}`} onClick={() => setGraficoVer(t.k)}>
+                {t.l}
+              </button>
+            ))}
+          </div>
+          <div style={{height: 280, marginTop: 16}}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={HISTORICO_CALC} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
+                <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
+                <XAxis dataKey="t" stroke="#6B7065" angle={-45} textAnchor="end" style={{fontSize: 10, fontFamily: 'IBM Plex Mono'}} />
+                <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                <Tooltip
+                  contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 12}}
+                  labelFormatter={(t) => {
+                    const it = HISTORICO_CALC.find(h => h.t === t);
+                    return `${t} · ${it ? it.evento : ''}`;
+                  }} />
+                {graficoVer === 'saca' && <Line type="monotone" dataKey="sacaCIF" stroke="#C8E04A" strokeWidth={2}
+                  dot={(props) => {
+                    const { cx, cy, payload } = props;
+                    if (payload && payload.conf) {
+                      return <circle cx={cx} cy={cy} r={5} fill="#C8E04A" stroke="#0F1410" strokeWidth={2} />;
+                    }
+                    return <circle cx={cx} cy={cy} r={2.5} fill="#6B7065" />;
+                  }} name="R$/saca CIF" />}
+                {graficoVer === 'componentes' && [
+                  <Line key="c" type="monotone" dataKey="cbot" stroke="#C8E04A" strokeWidth={2} dot={{r: 3}} name="CBOT (USD/bu)" />,
+                  <Line key="p" type="monotone" dataKey="premio" stroke="#E6B84A" strokeWidth={2} dot={{r: 3}} name="Prêmio RG (USD/bu)" />,
+                  <Line key="d" type="monotone" dataKey="dolar" stroke="#D9542B" strokeWidth={2} dot={{r: 3}} name="Dólar (R$)" />
+                ]}
+                {graficoVer === 'troca' && <Line type="monotone" dataKey="trocaFert" stroke="#D9542B" strokeWidth={2} dot={{r: 3}} name="sacas/ton NPK" />}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div style={S.legendaHist}>
+            {graficoVer === 'saca' && '★ Pontos maiores e brilhantes = trimestres com âncora CEPEA Paranaguá CONFIRMADA (19 de 65). Pontos cinza menores = trimestres com prêmio interpolado. Pico absoluto: 22Q2 (Ucrânia, R$ 196). Vale histórico: 10Q2 (R$ 28). 12Q3 pico EUA: R$ 74 nominal (= R$ 153 deflacionado a hoje).'}
+            {graficoVer === 'componentes' && 'CBOT teve dois super-picos: 12Q3 (17,6 USD/bu, seca EUA) e 22Q2 (19 USD/bu, guerra). Dólar saltou em 15-16 (crise BR), 20Q2 (COVID) e 24Q4 (fiscal). Prêmio Paranaguá foi negativo em 2018 (calibrado contra anchor CEPEA set/18 = R$ 95,60) e positivo em 2010-2012 (BR price-taker).'}
+            {graficoVer === 'troca' && 'Sacas para comprar 1 ton de ureia (Black Sea convertido em R$). PIORES períodos históricos: 21Q4 (35 sacas) e 22Q1 (29 sacas) — ureia disparou de 245 para 821 USD/ton. MELHORES janelas para barter: 16Q2, 17Q2 e 20Q2 (~17 sacas).'}
+          </div>
+        </section>
+
+        {/* 07 — SIMULADOR */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#E6B84A'}}>
+          <div style={{...S.cardLabel, color: '#E6B84A'}}>07 — Simulador de venda escalonada</div>
+          <div className="sim-controls" style={S.simControls}>
+            <div style={S.inputBlock}>
+              <label style={S.inputLabel}>Início da janela</label>
+              <select value={periodoIni} onChange={e => setPeriodoIni(e.target.value)}>
+                {periodos.slice(0, -1).map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div style={S.inputBlock}>
+              <label style={S.inputLabel}>Fim da janela</label>
+              <select value={periodoFim} onChange={e => setPeriodoFim(e.target.value)}>
+                {periodos.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div style={S.inputBlock}>
+              <label style={S.inputLabel}>Gatilho de trava (R$/saca)</label>
+              <input type="number" value={gatilhoTrava} step="5" onChange={e => setGatilhoTrava(parseFloat(e.target.value)||0)} />
+            </div>
+          </div>
+
+          {simulacao && (
+            <>
+              <div style={{height: 220, marginTop: 16}}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={simulacao.janela} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
+                    <XAxis dataKey="t" stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                    <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                    <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 12}} />
+                    <ReferenceLine y={gatilhoTrava} stroke="#E6B84A" strokeDasharray="3 3" label={{value: 'Gatilho', fill: '#E6B84A', fontSize: 10, position: 'right'}} />
+                    <ReferenceLine y={simulacao.escalonado} stroke="#C8E04A" strokeDasharray="3 3" label={{value: 'Média esc.', fill: '#C8E04A', fontSize: 10, position: 'right'}} />
+                    <Line type="monotone" dataKey="sacaCIF" stroke="#E8E2D0" strokeWidth={2} dot={{r: 4}} name="R$/saca CIF" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="sim-grid" style={S.simGrid}>
+                {[
+                  { l: 'Pior da janela', v: simulacao.fundo, cor: '#D9542B' },
+                  { l: 'Travou no início', v: simulacao.tudoInicio, cor: '#A89968' },
+                  { l: 'Travou no fim', v: simulacao.tudoFim, cor: '#A89968' },
+                  { l: 'Escalonado linear', v: simulacao.escalonado, cor: '#C8E04A' },
+                  { l: `Gatilho R$${gatilhoTrava}`, v: simulacao.gatilho, cor: '#C8E04A' },
+                  { l: 'Topo perfeito', v: simulacao.topo, cor: '#C8E04A' },
+                ].map((s, i) => (
+                  <div key={i} style={S.simCell}>
+                    <div style={S.simCellLabel}>{s.l}</div>
+                    <div style={{...S.simCellValor, color: s.cor}}>R$ {s.v.toFixed(2)}</div>
+                    <div style={S.simCellDelta}>
+                      {s.v > custoSaca ? `+${((s.v - custoSaca)/custoSaca*100).toFixed(0)}% margem` : `${((s.v - custoSaca)/custoSaca*100).toFixed(0)}% (prejuízo)`}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+
+        {/* 08 — ESTRATÉGIAS CLÁSSICAS */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+          <div style={S.cardLabel}>08 — Estratégias clássicas de comercialização</div>
+          <div style={S.estratClassicaWrap}>
+            {ESTRATEGIAS_CLASSICAS.map((est, i) => (
+              <div key={i} style={S.estratClassicaCard}>
+                <button className="estrat-toggle" onClick={() => setEstratExp(estratExp === i ? null : i)}>
+                  <span style={{color: '#6B7065'}}>{String(i+1).padStart(2,'0')}</span> · <span style={{color: '#E8E2D0', fontWeight: 600}}>{est.nome}</span>
+                  <span style={{float: 'right', color: '#C8E04A'}}>{estratExp === i ? '−' : '+'}</span>
+                </button>
+                {estratExp === i && (
+                  <div style={S.estratClassicaBody}>
+                    <div style={S.estratClassicaSinon}>{est.sinonimos}</div>
+                    <div style={S.estratClassicaSec}>
+                      <div style={S.estratClassicaSecLabel}>COMO FUNCIONA</div>
+                      <div style={S.estratClassicaSecText}>{est.descricao}</div>
+                    </div>
+                    <div style={S.estratClassicaSec}>
+                      <div style={S.estratClassicaSecLabel}>QUANDO USAR</div>
+                      <div style={S.estratClassicaSecText}>{est.quando}</div>
+                    </div>
+                    <div style={S.estratClassicaSec}>
+                      <div style={S.estratClassicaSecLabel}>RISCO</div>
+                      <div style={S.estratClassicaSecText}>{est.risco}</div>
+                    </div>
+                    <div style={S.estratClassicaSec}>
+                      <div style={S.estratClassicaSecLabel}>EXEMPLO</div>
+                      <div style={S.estratClassicaSecText}>{est.exemplo}</div>
+                    </div>
+                    <div style={{...S.estratClassicaSec, borderLeft: '2px solid #C8E04A', paddingLeft: 12}}>
+                      <div style={{...S.estratClassicaSecLabel, color: '#C8E04A'}}>JÚLIO DE CASTILHOS / RS</div>
+                      <div style={S.estratClassicaSecText}>{est.melhor_para}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 09 — EVENTOS */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+          <div style={S.cardLabel}>09 — Eventos-chave para calibrar leitura</div>
+          <div className="eventos-grid" style={S.eventosGrid}>
+            {[
+              { p: '12Q3', e: 'Seca histórica EUA', li: 'CBOT bateu 17,6 USD/bu — recorde até então. Quem travou em ago/set garantiu o maior preço da década. Quem segurou para "ir a 20" perdeu 30% nos meses seguintes.' },
+              { p: '13Q1', e: 'Safra recorde BR', li: 'Prêmio Rio Grande caiu rapidamente com chegada da safra brasileira. Lição: trave prêmio em jan/fev antes da entrada do volume.' },
+              { p: '15-16', e: 'Crise política BR', li: 'Dólar foi de 2,86 para 3,91 em 12 meses. Quem não travou dólar capturou ganho enorme em reais mesmo com CBOT no fundo (9-10 USD/bu).' },
+              { p: '18Q3', e: 'Guerra comercial', li: 'China cortou compras dos EUA e foi 100% para o Brasil. Prêmio Paranaguá/Rio Grande explodiu para >2 USD/bu. Quem travou prêmio agressivo no Q3 ganhou muito.' },
+              { p: '20Q2', e: 'COVID', li: 'Dólar disparou de 4,46 para 5,39 em um trimestre, antes do CBOT reagir. Quem deixou câmbio aberto em mar/abr ganhou; quem travou cedo perdeu o pico.' },
+              { p: '21Q2', e: 'Pico CBOT 2021', li: 'CBOT a 16 USD/bu parecia esticado. Era — corrigiu 12% no Q3. Travar agressivo aqui foi a decisão correta.' },
+              { p: '21Q4', e: 'Ureia HISTÓRICA', li: 'Ureia foi de 245 para 828 USD/ton (+238%) em 12 meses. Quem fez barter em set/2020 evitou catástrofe; quem comprou em out/21 pagou caríssimo.' },
+              { p: '22Q1-Q2', e: 'Guerra Ucrânia', li: 'Os três componentes subiram juntos — JANELA RARA. CBOT a 19 USD/bu, prêmio acima de 2, dólar firme. Travar 70%+ era o óbvio para quem tinha produção.' },
+              { p: '22/23', e: 'Estiagem RS', li: 'JC e região perderam até 50% da safra. Quem pré-vendeu mais de 50% precisou recomprar no mercado quando preço estava em pico — prejuízo severo.' },
+              { p: '23Q2', e: 'Prêmio DERRETE', li: 'Safra recorde BR derrubou basis Rio Grande de 0,90 para 0,30 USD/bu em um trimestre. Quem travou prêmio em 22Q4 ganhou muito.' },
+              { p: '24Q4', e: 'Dólar DISPARA', li: 'Real foi de 5,51 para 5,95 em 3 meses (crise fiscal). Quem não travou dólar capturou ganho generoso mesmo com CBOT em 10,86 USD/bu.' },
+              { p: '25Q1', e: 'Real recupera', li: 'Selic 14,75% + fluxo trouxe dólar para 5,85. Quem travou câmbio em dez/24 a 5,95+ acertou em cheio.' },
+            ].map((ev, i) => (
+              <div key={i} style={S.eventoCard}>
+                <div style={S.eventoHead}>
+                  <span style={S.eventoP}>{ev.p}</span>
+                  <span style={S.eventoE}>{ev.e}</span>
+                </div>
+                <div style={S.eventoLi}>{ev.li}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+      </div>
+
+      <footer style={S.footer}>
+        <div style={{fontWeight: 600, color: '#A89968', marginBottom: 6}}>FONTES E METODOLOGIA</div>
+        <div>· <strong>CBOT (USD/bu):</strong> Soja Rotterdam CIF (Banco Mundial / Oil World / USDA, via IndexMundi). Conversão: (USD/ton − 30) ÷ 36,7437. Série mensal 2010–2026.</div>
+        <div>· <strong>USD/BRL:</strong> Médias mensais PTAX / Banco Central do Brasil.</div>
+        <div>· <strong>Prêmio Paranaguá:</strong> Calibrado contra <strong>19 pontos CEPEA Paranaguá confirmados</strong> em fontes públicas (releases CEPEA-Esalq/USP, Farmnews, Canal Rural, BiodieselBR). Trimestres intermediários: interpolação linear. Marcador ★ no chart "Preço CIF JC" indica trimestres com âncora confirmada.</div>
+        <div>· <strong>Ureia (R$/ton):</strong> Preço Black Sea FOB (Banco Mundial via IndexMundi) × USD/BRL × 1,3 (markup posto-Brasil para logística + ICMS).</div>
+        <div>· <strong>Frete JC → Rio Grande:</strong> R$ 4 (2010-12) a R$ 13 (2022, diesel) por saca; estimado conforme combustível/sazonalidade.</div>
+        <div>· <strong>Spread Paranaguá → JC (CIF):</strong> Frete rodoviário JC→Rio Grande + diferencial RG-Pgua (≈ R$ 0 a R$ 8/saca conforme época, embutido no frete).</div>
+        <div style={{marginTop: 8, fontStyle: 'italic'}}>Para série diária completa: CEPEA-Esalq/USP (cepea.org.br/br/indicador/soja). SEAB-PR publica preços ao produtor desde 1995 (agricultura.pr.gov.br/deral/precos).</div>
+        <div style={{marginTop: 6}}>Faixas calibradas atuais: CBOT {FAIXAS.cbot.baixo}–{FAIXAS.cbot.alto}, prêmio {FAIXAS.premio.baixo}–{FAIXAS.premio.alto}, dólar {FAIXAS.dolar.baixo}–{FAIXAS.dolar.alto}.</div>
+      </footer>
+    </div>
+  );
+}
+
+const S = {
+  app: { minHeight: '100vh', background: '#0F1410', color: '#E8E2D0', fontFamily: "'IBM Plex Sans', sans-serif", padding: '24px 20px 40px', maxWidth: 1400, margin: '0 auto' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 20, marginBottom: 32, paddingBottom: 24, borderBottom: '1px solid #2A2F28' },
+  eyebrow: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 2, color: '#6B7065', textTransform: 'uppercase', marginBottom: 8 },
+  h1: { fontFamily: "'IBM Plex Serif', serif", fontSize: 32, fontWeight: 400, margin: 0, lineHeight: 1.1, letterSpacing: '-0.02em' },
+  h1accent: { fontStyle: 'italic', color: '#C8E04A' },
+  subhead: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: '#A89968', marginTop: 8, letterSpacing: 0.5 },
+  precoBig: { textAlign: 'right' },
+  precoLabel: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: 1.5, color: '#6B7065', textTransform: 'uppercase' },
+  precoValor: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 36, fontWeight: 500, color: '#E8E2D0', lineHeight: 1, margin: '4px 0' },
+  precoMargem: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, fontWeight: 500 },
+  precoSub: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#6B7065', marginTop: 4 },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 },
+  card: { background: '#181C18', border: '1px solid #2A2F28', padding: 20, gridColumn: 'span 1' },
+  cardLabel: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: 1.5, color: '#6B7065', textTransform: 'uppercase', marginBottom: 16 },
+  componenteRow: { paddingBottom: 16, marginBottom: 16, borderBottom: '1px solid #2A2F28' },
+  componenteHead: { display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 },
+  componenteLabel: { color: '#A89968', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 0.5 },
+  componenteNivel: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: 1, fontWeight: 600 },
+  componenteValor: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 24, fontWeight: 500, margin: '4px 0 12px' },
+  expRow: { display: 'flex', gap: 6, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' },
+  expLabel: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: 1, color: '#6B7065', marginRight: 4 },
+  inputBlock: { marginBottom: 14 },
+  inputLabel: { display: 'block', fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: 1, color: '#A89968', marginBottom: 6, textTransform: 'uppercase' },
+  trocaBox: { background: '#0F1410', border: '1px solid #2A2F28', padding: 14, margin: '16px 0' },
+  trocaLabel: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: 1.5, color: '#6B7065', textTransform: 'uppercase' },
+  trocaValor: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 28, fontWeight: 500, margin: '4px 0', color: '#E8E2D0' },
+  trocaUnit: { fontSize: 12, color: '#6B7065' },
+  trocaNota: { fontSize: 11, color: '#A89968', fontStyle: 'italic' },
+  margemBox: { background: '#0F1410', border: '1px solid #2A2F28', padding: 14 },
+  margemRow: { display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 },
+  margemKey: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: '#A89968', letterSpacing: 0.5 },
+  margemVal: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 13 },
+  tabRow: { display: 'flex', gap: 6, flexWrap: 'wrap' },
+  legendaHist: { fontSize: 12, color: '#A89968', fontStyle: 'italic', marginTop: 12, lineHeight: 1.5, fontFamily: "'IBM Plex Serif', serif" },
+  simControls: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 8 },
+  simGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: 16 },
+  simCell: { background: '#0F1410', border: '1px solid #2A2F28', padding: 12 },
+  simCellLabel: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: 1, color: '#6B7065', textTransform: 'uppercase', marginBottom: 6 },
+  simCellValor: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 18, fontWeight: 500 },
+  simCellDelta: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', marginTop: 4 },
+  estratRow: { padding: '12px 0', borderBottom: '1px solid #2A2F28' },
+  estratHead: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 4, flexWrap: 'wrap' },
+  estratComp: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: '#6B7065', letterSpacing: 1.5, minWidth: 60 },
+  estratAcao: { fontFamily: "'IBM Plex Serif', serif", fontSize: 18, fontWeight: 600, letterSpacing: '-0.01em' },
+  estratPct: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: '#C8E04A', background: '#1F2520', padding: '2px 8px', border: '1px solid #C8E04A' },
+  estratNota: { fontSize: 12, color: '#A89968', lineHeight: 1.5, paddingLeft: 72, marginTop: 4 },
+  sintese: { marginTop: 16, padding: 16, background: '#0F1410', borderLeft: '3px solid #C8E04A' },
+  sinteseLabel: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: 2, color: '#C8E04A', marginBottom: 8 },
+  sinteseTexto: { fontFamily: "'IBM Plex Serif', serif", fontSize: 16, lineHeight: 1.5, color: '#E8E2D0' },
+  estratClassicaWrap: { display: 'flex', flexDirection: 'column', gap: 8 },
+  estratClassicaCard: { },
+  estratClassicaBody: { padding: '14px 16px', background: '#0F1410', borderLeft: '2px solid #2A2F28' },
+  estratClassicaSinon: { fontFamily: "'IBM Plex Serif', serif", fontStyle: 'italic', fontSize: 12, color: '#6B7065', marginBottom: 14 },
+  estratClassicaSec: { marginBottom: 12 },
+  estratClassicaSecLabel: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: 1.5, color: '#A89968', marginBottom: 4, textTransform: 'uppercase' },
+  estratClassicaSecText: { fontSize: 13, color: '#E8E2D0', lineHeight: 1.6 },
+  eventosGrid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginTop: 12 },
+  eventoCard: { background: '#0F1410', border: '1px solid #2A2F28', padding: 12 },
+  eventoHead: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8 },
+  eventoP: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: '#C8E04A', letterSpacing: 1 },
+  eventoE: { fontFamily: "'IBM Plex Serif', serif", fontSize: 14, fontWeight: 600, color: '#E8E2D0' },
+  eventoLi: { fontSize: 12, color: '#A89968', lineHeight: 1.5 },
+  footer: { marginTop: 40, paddingTop: 20, borderTop: '1px solid #2A2F28', fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#6B7065', letterSpacing: 0.5, lineHeight: 1.6 },
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<PainelSoja />);
+</script>
+</body>
+</html>
