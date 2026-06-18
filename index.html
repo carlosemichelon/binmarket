@@ -183,28 +183,78 @@ const HISTORICO_CALC = HISTORICO.map(h => {
 });
 
 // === MILHO — Indicador CEPEA/Esalq-BM&FBOVESPA Campinas (R$/saca 60kg) ===
-// Fonte: CEPEA-Esalq/USP (cepea.org.br/br/indicador/milho.aspx)
-// Valores trimestrais NOMINAIS — estimados a partir de releases CEPEA, marcos
-// confirmados (mar/20 R$ 57,58; out/20 R$ 81,89; mai/21 R$ 100+; fev/24 R$ 62; out/24 R$ 70; mar/26 R$ 70+).
-// Frete JC→Campinas embutido como -8 R$/saca para preço posto JC.
+// Fonte: CEPEA-Esalq/USP (cepea.org.br/br/indicador/series/milho.aspx?id=77)
+// Série diária 02/08/2004 → 16/06/2026 (5.446 cotações), planilha baixada em
+// 17/06/2026 às 17:17 BRT. Trimestres = média diária. Última: R$ 63,05 em 16/06/2026.
+// Pico histórico nominal: R$ 103,90 em 14/03/2022 (guerra Ucrânia).
+// Frete JC→Campinas: -8 R$/saca embutido como spread no cálculo de paridade.
 const HISTORICO_MILHO = [
-  { t:'10Q1', milhoSP:23 }, { t:'10Q2', milhoSP:24 }, { t:'10Q3', milhoSP:26 }, { t:'10Q4', milhoSP:25 },
-  { t:'11Q1', milhoSP:26 }, { t:'11Q2', milhoSP:26 }, { t:'11Q3', milhoSP:25 }, { t:'11Q4', milhoSP:24 },
-  { t:'12Q1', milhoSP:28 }, { t:'12Q2', milhoSP:30 }, { t:'12Q3', milhoSP:36 }, { t:'12Q4', milhoSP:30 },
-  { t:'13Q1', milhoSP:28 }, { t:'13Q2', milhoSP:26 }, { t:'13Q3', milhoSP:24 }, { t:'13Q4', milhoSP:23 },
-  { t:'14Q1', milhoSP:25 }, { t:'14Q2', milhoSP:26 }, { t:'14Q3', milhoSP:25 }, { t:'14Q4', milhoSP:26 },
-  { t:'15Q1', milhoSP:26 }, { t:'15Q2', milhoSP:28 }, { t:'15Q3', milhoSP:30 }, { t:'15Q4', milhoSP:32 },
-  { t:'16Q1', milhoSP:38 }, { t:'16Q2', milhoSP:45 }, { t:'16Q3', milhoSP:36 }, { t:'16Q4', milhoSP:30 },
-  { t:'17Q1', milhoSP:28 }, { t:'17Q2', milhoSP:26 }, { t:'17Q3', milhoSP:24 }, { t:'17Q4', milhoSP:26 },
-  { t:'18Q1', milhoSP:28 }, { t:'18Q2', milhoSP:32 }, { t:'18Q3', milhoSP:34 }, { t:'18Q4', milhoSP:36 },
-  { t:'19Q1', milhoSP:36 }, { t:'19Q2', milhoSP:34 }, { t:'19Q3', milhoSP:33 }, { t:'19Q4', milhoSP:36 },
-  { t:'20Q1', milhoSP:48 }, { t:'20Q2', milhoSP:50 }, { t:'20Q3', milhoSP:62 }, { t:'20Q4', milhoSP:78 },
-  { t:'21Q1', milhoSP:85 }, { t:'21Q2', milhoSP:97 }, { t:'21Q3', milhoSP:82 }, { t:'21Q4', milhoSP:80 },
-  { t:'22Q1', milhoSP:85 }, { t:'22Q2', milhoSP:90 }, { t:'22Q3', milhoSP:80 }, { t:'22Q4', milhoSP:76 },
-  { t:'23Q1', milhoSP:72 }, { t:'23Q2', milhoSP:60 }, { t:'23Q3', milhoSP:55 }, { t:'23Q4', milhoSP:56 },
-  { t:'24Q1', milhoSP:62 }, { t:'24Q2', milhoSP:60 }, { t:'24Q3', milhoSP:64 }, { t:'24Q4', milhoSP:70 },
-  { t:'25Q1', milhoSP:68 }, { t:'25Q2', milhoSP:65 }, { t:'25Q3', milhoSP:62 }, { t:'25Q4', milhoSP:70 },
-  { t:'26Q1', milhoSP:72 }, { t:'26Q2', milhoSP:70 },
+  { t:'10Q1', milhoSP:18.82 },
+  { t:'10Q2', milhoSP:18.76 },
+  { t:'10Q3', milhoSP:21.24 },
+  { t:'10Q4', milhoSP:27.29 },
+  { t:'11Q1', milhoSP:31.15 },
+  { t:'11Q2', milhoSP:29.77 },
+  { t:'11Q3', milhoSP:30.79 },
+  { t:'11Q4', milhoSP:29.56 },
+  { t:'12Q1', milhoSP:29.50 },
+  { t:'12Q2', milhoSP:24.96 },
+  { t:'12Q3', milhoSP:31.53 },
+  { t:'12Q4', milhoSP:33.35 },
+  { t:'13Q1', milhoSP:31.95 },
+  { t:'13Q2', milhoSP:26.29 },
+  { t:'13Q3', milhoSP:24.70 },
+  { t:'13Q4', milhoSP:25.31 },
+  { t:'14Q1', milhoSP:29.95 },
+  { t:'14Q2', milhoSP:28.77 },
+  { t:'14Q3', milhoSP:22.86 },
+  { t:'14Q4', milhoSP:26.19 },
+  { t:'15Q1', milhoSP:28.31 },
+  { t:'15Q2', milhoSP:25.98 },
+  { t:'15Q3', milhoSP:28.08 },
+  { t:'15Q4', milhoSP:33.89 },
+  { t:'16Q1', milhoSP:44.28 },
+  { t:'16Q2', milhoSP:49.84 },
+  { t:'16Q3', milhoSP:43.97 },
+  { t:'16Q4', milhoSP:39.70 },
+  { t:'17Q1', milhoSP:35.22 },
+  { t:'17Q2', milhoSP:27.58 },
+  { t:'17Q3', milhoSP:27.32 },
+  { t:'17Q4', milhoSP:31.78 },
+  { t:'18Q1', milhoSP:36.29 },
+  { t:'18Q2', milhoSP:41.05 },
+  { t:'18Q3', milhoSP:39.55 },
+  { t:'18Q4', milhoSP:36.89 },
+  { t:'19Q1', milhoSP:39.84 },
+  { t:'19Q2', milhoSP:36.35 },
+  { t:'19Q3', milhoSP:37.04 },
+  { t:'19Q4', milhoSP:44.53 },
+  { t:'20Q1', milhoSP:53.50 },
+  { t:'20Q2', milhoSP:50.22 },
+  { t:'20Q3', milhoSP:55.28 },
+  { t:'20Q4', milhoSP:76.06 },
+  { t:'21Q1', milhoSP:86.69 },
+  { t:'21Q2', milhoSP:96.65 },
+  { t:'21Q3', milhoSP:96.24 },
+  { t:'21Q4', milhoSP:87.39 },
+  { t:'22Q1', milhoSP:97.59 },
+  { t:'22Q2', milhoSP:87.21 },
+  { t:'22Q3', milhoSP:82.84 },
+  { t:'22Q4', milhoSP:85.19 },
+  { t:'23Q1', milhoSP:85.56 },
+  { t:'23Q2', milhoSP:62.01 },
+  { t:'23Q3', milhoSP:54.28 },
+  { t:'23Q4', milhoSP:62.06 },
+  { t:'24Q1', milhoSP:63.80 },
+  { t:'24Q2', milhoSP:58.83 },
+  { t:'24Q3', milhoSP:59.72 },
+  { t:'24Q4', milhoSP:71.60 },
+  { t:'25Q1', milhoSP:80.99 },
+  { t:'25Q2', milhoSP:75.01 },
+  { t:'25Q3', milhoSP:64.09 },
+  { t:'25Q4', milhoSP:67.39 },
+  { t:'26Q1', milhoSP:68.95 },
+  { t:'26Q2', milhoSP:66.20 },
 ];
 
 // === GADO — Boi Gordo RS NESPRO/UFRGS (R$/kg peso vivo) ===
@@ -244,21 +294,120 @@ const HISTORICO_GADO = [
   { t:'26Q1', boiVivo:12.2, arroba:372 }, { t:'26Q2', boiVivo:12.1, arroba:368 },
 ];
 
-// Joined dataset for multi-commodity comparison
-const HISTORICO_MULTI = HISTORICO_CALC.map(s => {
-  const m = HISTORICO_MILHO.find(x => x.t === s.t);
-  const g = HISTORICO_GADO.find(x => x.t === s.t);
-  return {
-    t: s.t,
-    soja: Math.round(s.sacaCIF * 100) / 100,
-    milho: m ? Math.round((m.milhoSP - 8) * 100) / 100 : null, // posto JC = SP - 8
-    boi: g ? g.boiVivo : null,
-    arroba: g ? g.arroba : null,
-    // Relações de troca:
-    trocaSojaMilho: m ? Math.round((s.sacaCIF / (m.milhoSP - 8)) * 100) / 100 : null,  // sacas milho compradas com 1 saca soja
-    trocaArrobaSoja: g ? Math.round((g.arroba / s.sacaCIF) * 100) / 100 : null,  // sacas soja para 1 arroba boi
-  };
-});
+// === FUNDAMENTOS · USDA WASDE Mundial (milhões de toneladas, por safra) ===
+// Fonte: USDA-FAS World Agricultural Supply and Demand Estimates (WASDE).
+// Valores arredondados de releases públicos.
+// stocksUse = ending_stocks / total_use (%)
+const USDA_WORLD = [
+  { safra:'10/11', producao:264, demanda:252, estoqueFinal:71,  stocksUse:28.2 },
+  { safra:'11/12', producao:240, demanda:256, estoqueFinal:53,  stocksUse:20.7 },
+  { safra:'12/13', producao:268, demanda:257, estoqueFinal:60,  stocksUse:23.3 },
+  { safra:'13/14', producao:283, demanda:274, estoqueFinal:67,  stocksUse:24.5 },
+  { safra:'14/15', producao:320, demanda:297, estoqueFinal:78,  stocksUse:26.3 },
+  { safra:'15/16', producao:313, demanda:318, estoqueFinal:78,  stocksUse:24.5 },
+  { safra:'16/17', producao:348, demanda:332, estoqueFinal:96,  stocksUse:28.9 },
+  { safra:'17/18', producao:339, demanda:344, estoqueFinal:99,  stocksUse:28.8 },
+  { safra:'18/19', producao:360, demanda:343, estoqueFinal:113, stocksUse:32.9 },
+  { safra:'19/20', producao:337, demanda:363, estoqueFinal:95,  stocksUse:26.2 },
+  { safra:'20/21', producao:366, demanda:369, estoqueFinal:100, stocksUse:27.1 },
+  { safra:'21/22', producao:359, demanda:364, estoqueFinal:90,  stocksUse:24.7 },
+  { safra:'22/23', producao:374, demanda:372, estoqueFinal:102, stocksUse:27.4 },
+  { safra:'23/24', producao:397, demanda:386, estoqueFinal:112, stocksUse:29.0 },
+  { safra:'24/25', producao:421, demanda:405, estoqueFinal:122, stocksUse:30.1 },
+  { safra:'25/26', producao:425, demanda:415, estoqueFinal:128, stocksUse:30.8 },
+];
+
+// === FUNDAMENTOS · Conab Brasil (milhões de toneladas, por safra brasileira) ===
+// Fonte: Companhia Nacional de Abastecimento (Conab), série de levantamentos
+// e suprimentos brasileiros de soja.
+const CONAB_BR = [
+  { safra:'10/11', producao:75.3,  exportacao:33, esmagamento:36, estoqueFinal:12 },
+  { safra:'11/12', producao:66.4,  exportacao:36, esmagamento:35, estoqueFinal:5  },
+  { safra:'12/13', producao:81.5,  exportacao:42, esmagamento:36, estoqueFinal:8  },
+  { safra:'13/14', producao:86.1,  exportacao:46, esmagamento:38, estoqueFinal:7  },
+  { safra:'14/15', producao:96.2,  exportacao:51, esmagamento:39, estoqueFinal:11 },
+  { safra:'15/16', producao:95.4,  exportacao:52, esmagamento:38, estoqueFinal:14 },
+  { safra:'16/17', producao:114.1, exportacao:68, esmagamento:41, estoqueFinal:18 },
+  { safra:'17/18', producao:119.3, exportacao:84, esmagamento:43, estoqueFinal:8  },
+  { safra:'18/19', producao:115.0, exportacao:75, esmagamento:44, estoqueFinal:4  },
+  { safra:'19/20', producao:124.8, exportacao:92, esmagamento:46, estoqueFinal:0  },
+  { safra:'20/21', producao:137.3, exportacao:81, esmagamento:47, estoqueFinal:8  },
+  { safra:'21/22', producao:124.0, exportacao:79, esmagamento:48, estoqueFinal:5  },
+  { safra:'22/23', producao:154.6, exportacao:102,esmagamento:53, estoqueFinal:5  },
+  { safra:'23/24', producao:147.4, exportacao:99, esmagamento:55, estoqueFinal:0  },
+  { safra:'24/25', producao:169.0, exportacao:108,esmagamento:58, estoqueFinal:3  },
+  { safra:'25/26', producao:175.0, exportacao:110,esmagamento:60, estoqueFinal:8  },
+];
+
+
+// Para módulo de comparação multi-ativo.
+// Fontes: BCB (CDI, IPCA), LME (cobre), LBMA (ouro), Conab (custo soja RS).
+const MACRO_ANUAL = {
+  // ouro USD/oz · cobre USD/ton · CDI ann · IPCA ann · custo soja R$/saca (Conab RS médio)
+  2010: { ouro: 1224, cobre: 7534, cdi: 0.0975, ipca: 0.0591, custo: 27 },
+  2011: { ouro: 1571, cobre: 8811, cdi: 0.1158, ipca: 0.0650, custo: 31 },
+  2012: { ouro: 1669, cobre: 7950, cdi: 0.0840, ipca: 0.0584, custo: 38 },
+  2013: { ouro: 1411, cobre: 7332, cdi: 0.0810, ipca: 0.0591, custo: 42 },
+  2014: { ouro: 1266, cobre: 6863, cdi: 0.1081, ipca: 0.0641, custo: 45 },
+  2015: { ouro: 1160, cobre: 5495, cdi: 0.1324, ipca: 0.1067, custo: 53 },
+  2016: { ouro: 1251, cobre: 4868, cdi: 0.1400, ipca: 0.0629, custo: 60 },
+  2017: { ouro: 1257, cobre: 6170, cdi: 0.0995, ipca: 0.0295, custo: 55 },
+  2018: { ouro: 1268, cobre: 6523, cdi: 0.0640, ipca: 0.0375, custo: 60 },
+  2019: { ouro: 1393, cobre: 6005, cdi: 0.0596, ipca: 0.0431, custo: 65 },
+  2020: { ouro: 1770, cobre: 6181, cdi: 0.0276, ipca: 0.0452, custo: 75 },
+  2021: { ouro: 1799, cobre: 9317, cdi: 0.0440, ipca: 0.1006, custo: 90 },
+  2022: { ouro: 1801, cobre: 8800, cdi: 0.1239, ipca: 0.0580, custo: 110 },
+  2023: { ouro: 1943, cobre: 8480, cdi: 0.1304, ipca: 0.0462, custo: 95 },
+  2024: { ouro: 2350, cobre: 9600, cdi: 0.1088, ipca: 0.0483, custo: 90 },
+  2025: { ouro: 2700, cobre: 9800, cdi: 0.1350, ipca: 0.0450, custo: 92 },
+  2026: { ouro: 2800, cobre: 9700, cdi: 0.1450, ipca: 0.0450, custo: 95 },
+};
+
+
+
+// Joined dataset for multi-asset comparison
+// Base 100 = primeiro trimestre (10Q1) para todos os ativos.
+// CDI/IPCA são compostos trimestre a trimestre a partir da taxa anual.
+const HISTORICO_MULTI = (() => {
+  let cdiAcc = 100;
+  let ipcaAcc = 100;
+  const baseOuroBRL = MACRO_ANUAL[2010].ouro * 1.80;
+  const baseCobreBRL = MACRO_ANUAL[2010].cobre * 1.80;
+  const baseSoja = HISTORICO_CALC[0].sacaCIF;
+  const baseMilho = HISTORICO_MILHO[0].milhoSP - 8;
+  const baseBoi = HISTORICO_GADO[0].boiVivo;
+  return HISTORICO_CALC.map((s, idx) => {
+    const ano = parseInt('20' + s.t.substring(0, 2));
+    const macro = MACRO_ANUAL[ano] || MACRO_ANUAL[2026];
+    const m = HISTORICO_MILHO.find(x => x.t === s.t);
+    const g = HISTORICO_GADO.find(x => x.t === s.t);
+    const qFactor_cdi = Math.pow(1 + macro.cdi, 0.25);
+    const qFactor_ipca = Math.pow(1 + macro.ipca, 0.25);
+    if (idx > 0) { cdiAcc *= qFactor_cdi; ipcaAcc *= qFactor_ipca; }
+    const ouroBRL = macro.ouro * s.dolar;
+    const cobreBRL = macro.cobre * s.dolar;
+    const custoSojaQ = macro.custo;
+    return {
+      t: s.t,
+      soja: Math.round(s.sacaCIF * 100) / 100,
+      milho: m ? Math.round((m.milhoSP - 8) * 100) / 100 : null,
+      boi: g ? g.boiVivo : null,
+      ouroBRL: Math.round(ouroBRL),
+      cobreBRL: Math.round(cobreBRL),
+      sojaNorm: Math.round((s.sacaCIF / baseSoja) * 100),
+      milhoNorm: m ? Math.round(((m.milhoSP - 8) / baseMilho) * 100) : null,
+      boiNorm: g ? Math.round((g.boiVivo / baseBoi) * 100) : null,
+      ouroNorm: Math.round((ouroBRL / baseOuroBRL) * 100),
+      cobreNorm: Math.round((cobreBRL / baseCobreBRL) * 100),
+      cdiAcc: Math.round(cdiAcc),
+      ipcaAcc: Math.round(ipcaAcc),
+      custoSoja: custoSojaQ,
+      margem: Math.round((s.sacaCIF - custoSojaQ) * 100) / 100,
+    };
+  });
+})();
+
+const MARGEM_MEDIA_HIST = HISTORICO_MULTI.reduce((s, d) => s + d.margem, 0) / HISTORICO_MULTI.length;
 
 const classificar = (valor, faixa) => {
   if (valor < faixa.baixo) return 'baixo';
@@ -388,6 +537,238 @@ const ESTRATEGIAS_CLASSICAS = [
   },
 ];
 
+// === Calculadora por estratégia clássica ===
+// Cada estratégia recebe { sacaCIF, custoSaca, prodSoja, areaTotal } como contexto
+// e mostra inputs próprios + output calculado.
+function EstratCalc({ idx, ctx }) {
+  const [a, setA] = useState(0);
+  const [b, setB] = useState(0);
+  const [c, setC] = useState(0);
+  const [d, setD] = useState(0);
+
+  const labelRow = (label, value, cor) => (
+    <div style={{display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace"}}>
+      <span style={{color: '#A89968'}}>{label}</span>
+      <span style={{color: cor || '#E8E2D0', fontWeight: 600}}>{value}</span>
+    </div>
+  );
+
+  const ctxBlock = (
+    <div style={{padding: 10, background: '#181C18', marginBottom: 10, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: '#A89968'}}>
+      contexto: saca CIF R$ {ctx.sacaCIF.toFixed(2)} · custo R$ {ctx.custoSaca}/sc · produtividade {ctx.prodSoja} sc/ha · área {ctx.areaTotal} ha
+    </div>
+  );
+
+  // Estratégia 1: Venda escalonada
+  if (idx === 0) {
+    const camadas = parseInt(a) || 4;
+    const inicial = parseFloat(b) || ctx.sacaCIF;
+    const passo = parseFloat(c) || 5;
+    const precos = Array.from({length: camadas}, (_, i) => inicial + i * passo);
+    const media = precos.reduce((s, v) => s + v, 0) / camadas;
+    const margem = media - ctx.custoSaca;
+    return (
+      <div>
+        {ctxBlock}
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8}}>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Nº camadas</label><input type="number" value={a} placeholder="4" onChange={e => setA(e.target.value)} /></div>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Preço inicial R$</label><input type="number" step="1" value={b} placeholder={ctx.sacaCIF.toFixed(0)} onChange={e => setB(e.target.value)} /></div>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Incremento R$/camada</label><input type="number" step="1" value={c} placeholder="5" onChange={e => setC(e.target.value)} /></div>
+        </div>
+        <div style={{background: '#0F1410', padding: 10, marginTop: 8}}>
+          {labelRow('Preços travados', precos.map(p => 'R$' + p.toFixed(0)).join(' → '))}
+          {labelRow('Preço médio', `R$ ${media.toFixed(2)}/saca`, '#C8E04A')}
+          {labelRow('Margem média', `R$ ${margem.toFixed(2)}/saca`, margem > 0 ? '#C8E04A' : '#D9542B')}
+          {labelRow(`Fazenda (${ctx.areaTotal} ha)`, `R$ ${(margem * ctx.prodSoja * ctx.areaTotal / 1000).toFixed(0)}k`)}
+        </div>
+      </div>
+    );
+  }
+
+  // Estratégia 2: Contrato a fixar (sem cálculo profundo)
+  if (idx === 1) {
+    const preco = parseFloat(a) || ctx.sacaCIF;
+    const prazo = parseInt(b) || 6;
+    return (
+      <div>
+        {ctxBlock}
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8}}>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Preço atual a fixar</label><input type="number" step="1" value={a} placeholder={ctx.sacaCIF.toFixed(0)} onChange={e => setA(e.target.value)} /></div>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Prazo de fixação (meses)</label><input type="number" value={b} placeholder="6" onChange={e => setB(e.target.value)} /></div>
+        </div>
+        <div style={{background: '#0F1410', padding: 10, marginTop: 8}}>
+          {labelRow('Margem se fixar hoje', `R$ ${(preco - ctx.custoSaca).toFixed(2)}/saca`, (preco - ctx.custoSaca) > 0 ? '#C8E04A' : '#D9542B')}
+          {labelRow('Janela para decidir', `${prazo} meses`)}
+          {labelRow('Risco principal', 'Se mercado cair, fixa pior; sem volta', '#E6B84A')}
+        </div>
+      </div>
+    );
+  }
+
+  // Estratégia 3: Barter (troca-troca)
+  if (idx === 2) {
+    const custoInsumoHa = parseFloat(a) || 2400;
+    const sacasInsumo = ctx.sacaCIF > 0 ? custoInsumoHa / ctx.sacaCIF : 0;
+    const pctReceita = (sacasInsumo / ctx.prodSoja) * 100;
+    return (
+      <div>
+        {ctxBlock}
+        <div style={{display: 'grid', gridTemplateColumns: '1fr', gap: 8}}>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Custo insumo R$/ha (adubo, semente, defensivo)</label><input type="number" step="50" value={a} placeholder="2400" onChange={e => setA(e.target.value)} /></div>
+        </div>
+        <div style={{background: '#0F1410', padding: 10, marginTop: 8}}>
+          {labelRow('Sacas pagas em insumo', `${sacasInsumo.toFixed(1)} sc/ha`)}
+          {labelRow('% da safra para insumo', `${pctReceita.toFixed(1)}%`, pctReceita > 30 ? '#D9542B' : pctReceita > 20 ? '#E6B84A' : '#C8E04A')}
+          {labelRow('Sacas líquidas/ha', `${(ctx.prodSoja - sacasInsumo).toFixed(1)} sc/ha`, '#C8E04A')}
+          {labelRow('Fazenda total a vender', `${((ctx.prodSoja - sacasInsumo) * ctx.areaTotal).toFixed(0)} sc`)}
+        </div>
+      </div>
+    );
+  }
+
+  // Estratégia 4: Forward (venda antecipada)
+  if (idx === 3) {
+    const precoForward = parseFloat(a) || ctx.sacaCIF;
+    const pctVenda = parseFloat(b) || 40;
+    const margemSc = precoForward - ctx.custoSaca;
+    const sacasPreVendidas = ctx.prodSoja * ctx.areaTotal * (pctVenda / 100);
+    const margemTotal = margemSc * sacasPreVendidas;
+    const quebraRisco = pctVenda > 50 ? 'ALTO' : pctVenda > 30 ? 'MÉDIO' : 'BAIXO';
+    return (
+      <div>
+        {ctxBlock}
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8}}>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Preço forward R$/saca</label><input type="number" step="1" value={a} placeholder={ctx.sacaCIF.toFixed(0)} onChange={e => setA(e.target.value)} /></div>
+          <div style={S.inputBlock}><label style={S.inputLabel}>% da safra a pré-vender</label><input type="number" min="0" max="100" value={b} placeholder="40" onChange={e => setB(e.target.value)} /></div>
+        </div>
+        <div style={{background: '#0F1410', padding: 10, marginTop: 8}}>
+          {labelRow('Margem por saca travada', `R$ ${margemSc.toFixed(2)}`, margemSc > 0 ? '#C8E04A' : '#D9542B')}
+          {labelRow('Sacas pré-vendidas', `${sacasPreVendidas.toFixed(0)} sc`)}
+          {labelRow('Margem total travada', `R$ ${(margemTotal/1000).toFixed(0)}k`, margemTotal > 0 ? '#C8E04A' : '#D9542B')}
+          {labelRow('Risco de quebra (JC/RS)', quebraRisco, quebraRisco === 'ALTO' ? '#D9542B' : quebraRisco === 'MÉDIO' ? '#E6B84A' : '#C8E04A')}
+        </div>
+      </div>
+    );
+  }
+
+  // Estratégia 5: Put protetiva
+  if (idx === 4) {
+    const strikeUSDBu = parseFloat(a) || 11.5;
+    const premioUSDBu = parseFloat(b) || 0.40;
+    const dolarUsd = parseFloat(c) || 5.10;
+    const BU = 2.2046;
+    const strikeBRL = strikeUSDBu * BU * dolarUsd;
+    const premioBRL = premioUSDBu * BU * dolarUsd;
+    const precoLiqExercicio = strikeBRL - premioBRL;
+    const breakeven = strikeUSDBu - premioUSDBu;
+    return (
+      <div>
+        {ctxBlock}
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8}}>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Strike USD/bu</label><input type="number" step="0.05" value={a} placeholder="11,50" onChange={e => setA(e.target.value)} /></div>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Prêmio pago USD/bu</label><input type="number" step="0.05" value={b} placeholder="0,40" onChange={e => setB(e.target.value)} /></div>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Dólar R$</label><input type="number" step="0.01" value={c} placeholder="5,10" onChange={e => setC(e.target.value)} /></div>
+        </div>
+        <div style={{background: '#0F1410', padding: 10, marginTop: 8}}>
+          {labelRow('Preço piso (strike em R$)', `R$ ${strikeBRL.toFixed(2)}/saca`)}
+          {labelRow('Custo do prêmio', `R$ ${premioBRL.toFixed(2)}/saca`, '#E6B84A')}
+          {labelRow('Preço líquido se exercer', `R$ ${precoLiqExercicio.toFixed(2)}/saca`, '#C8E04A')}
+          {labelRow('Break-even CBOT', `${breakeven.toFixed(2)} USD/bu`)}
+          {labelRow('Margem mínima garantida', `R$ ${(precoLiqExercicio - ctx.custoSaca).toFixed(2)}/saca`, (precoLiqExercicio - ctx.custoSaca) > 0 ? '#C8E04A' : '#D9542B')}
+        </div>
+      </div>
+    );
+  }
+
+  // Estratégia 6: Collar / fence
+  if (idx === 5) {
+    const strikePut = parseFloat(a) || 11.0;
+    const strikeCall = parseFloat(b) || 13.5;
+    const dolarUsd = parseFloat(c) || 5.10;
+    const BU = 2.2046;
+    const pisoBRL = strikePut * BU * dolarUsd;
+    const tetoBRL = strikeCall * BU * dolarUsd;
+    return (
+      <div>
+        {ctxBlock}
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8}}>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Strike put (piso) USD/bu</label><input type="number" step="0.05" value={a} placeholder="11,00" onChange={e => setA(e.target.value)} /></div>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Strike call (teto) USD/bu</label><input type="number" step="0.05" value={b} placeholder="13,50" onChange={e => setB(e.target.value)} /></div>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Dólar R$</label><input type="number" step="0.01" value={c} placeholder="5,10" onChange={e => setC(e.target.value)} /></div>
+        </div>
+        <div style={{background: '#0F1410', padding: 10, marginTop: 8}}>
+          {labelRow('Piso garantido', `R$ ${pisoBRL.toFixed(2)}/saca`, '#C8E04A')}
+          {labelRow('Teto (acima é perdido)', `R$ ${tetoBRL.toFixed(2)}/saca`, '#E6B84A')}
+          {labelRow('Margem mínima', `R$ ${(pisoBRL - ctx.custoSaca).toFixed(2)}/saca`)}
+          {labelRow('Custo líquido', '~zero (collar de custo zero típico)')}
+        </div>
+      </div>
+    );
+  }
+
+  // Estratégia 8: Hedge B3
+  if (idx === 7) {
+    const numContratos = parseInt(a) || 10;
+    const precoTravado = parseFloat(b) || ctx.sacaCIF;
+    const sacasPorContrato = 450; // SFI ~27 ton = 450 sc
+    const sacasTotais = numContratos * sacasPorContrato;
+    const receita = sacasTotais * precoTravado;
+    return (
+      <div>
+        {ctxBlock}
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8}}>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Nº contratos SFI</label><input type="number" value={a} placeholder="10" onChange={e => setA(e.target.value)} /></div>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Preço travado R$/saca</label><input type="number" step="1" value={b} placeholder={ctx.sacaCIF.toFixed(0)} onChange={e => setB(e.target.value)} /></div>
+        </div>
+        <div style={{background: '#0F1410', padding: 10, marginTop: 8}}>
+          {labelRow('Sacas travadas (450 sc/contrato)', `${sacasTotais} sc`)}
+          {labelRow('Receita travada', `R$ ${(receita/1000).toFixed(0)}k`, '#C8E04A')}
+          {labelRow('% da safra hedgeada', `${((sacasTotais / (ctx.prodSoja * ctx.areaTotal)) * 100).toFixed(1)}%`)}
+          {labelRow('Margem inicial estimada', `~R$ ${(numContratos * 8000).toLocaleString('pt-BR')} (B3)`, '#E6B84A')}
+        </div>
+      </div>
+    );
+  }
+
+  // Estratégia 9: Estocagem
+  if (idx === 8) {
+    const custoMes = parseFloat(a) || 1.20;
+    const meses = parseInt(b) || 6;
+    const altaEsperada = parseFloat(c) || 10;
+    const custoTotalSc = custoMes * meses;
+    const ganhoEsperadoSc = ctx.sacaCIF * (altaEsperada / 100);
+    const liquidoSc = ganhoEsperadoSc - custoTotalSc;
+    return (
+      <div>
+        {ctxBlock}
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8}}>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Custo armazém R$/sc/mês</label><input type="number" step="0.10" value={a} placeholder="1,20" onChange={e => setA(e.target.value)} /></div>
+          <div style={S.inputBlock}><label style={S.inputLabel}>Meses de carrego</label><input type="number" value={b} placeholder="6" onChange={e => setB(e.target.value)} /></div>
+          <div style={S.inputBlock}><label style={S.inputLabel}>% alta esperada</label><input type="number" step="1" value={c} placeholder="10" onChange={e => setC(e.target.value)} /></div>
+        </div>
+        <div style={{background: '#0F1410', padding: 10, marginTop: 8}}>
+          {labelRow('Custo total carrego', `R$ ${custoTotalSc.toFixed(2)}/sc`, '#D9542B')}
+          {labelRow('Ganho bruto esperado', `R$ ${ganhoEsperadoSc.toFixed(2)}/sc`, '#C8E04A')}
+          {labelRow('Líquido por saca', `R$ ${liquidoSc.toFixed(2)}`, liquidoSc > 0 ? '#C8E04A' : '#D9542B')}
+          {labelRow('Break-even % alta', `${((custoTotalSc / ctx.sacaCIF) * 100).toFixed(1)}% (mín. para empatar)`, '#E6B84A')}
+        </div>
+      </div>
+    );
+  }
+
+  // Three-way (idx 6) — sem calculadora, complexo demais para ser útil aqui
+  if (idx === 6) {
+    return (
+      <div style={{padding: 12, background: '#181C18', fontSize: 12, color: '#A89968', fontStyle: 'italic'}}>
+        Calculadora não disponível: three-way envolve três strikes simultâneos com payoff assimétrico não-linear.
+        Use uma planilha de payoff de opções ou consulte sua corretora.
+      </div>
+    );
+  }
+
+  return null;
+}
+
 function PainelSoja() {
   const [cbot, setCbot] = useState(11.97);
   const [premio, setPremio] = useState(-0.34);
@@ -398,23 +779,28 @@ function PainelSoja() {
   const [expCbot, setExpCbot] = useState('neutra');
   const [expPremio, setExpPremio] = useState('neutra');
   const [expDolar, setExpDolar] = useState('neutra');
+  // Valores-alvo + prazo para projeção customizada
+  const [targetCbot, setTargetCbot] = useState('');     // string vazia = não usar
+  const [targetPremio, setTargetPremio] = useState('');
+  const [targetDolar, setTargetDolar] = useState('');
+  const [targetMeses, setTargetMeses] = useState(6);    // horizonte em meses
   const [periodoIni, setPeriodoIni] = useState('10Q1');
   const [periodoFim, setPeriodoFim] = useState('26Q1');
   const [graficoVer, setGraficoVer] = useState('saca');
   const [gatilhoTrava, setGatilhoTrava] = useState(160);
   const [estratExp, setEstratExp] = useState(null);
   const [multiVer, setMultiVer] = useState('precos');
-  // Balcão Cotrijuc — editável pelo produtor com base no cartaz da cooperativa
-  const [balcaoSoja, setBalcaoSoja] = useState(126);    // R$/saca soja na Cotrijuc hoje
-  const [balcaoMilho, setBalcaoMilho] = useState(60);   // R$/saca milho
-  // Análise por hectare (estilo SLC Agrícola)
-  const [prodSoja, setProdSoja] = useState(55);         // sacas/ha
-  const [prodMilho, setProdMilho] = useState(120);      // sacas/ha
-  const [prodCarne, setProdCarne] = useState(450);      // kg vivo/ha/ano (sistema pasto+ILP)
-  const [custoSojaHa, setCustoSojaHa] = useState(5200); // R$/ha total
-  const [custoMilhoHa, setCustoMilhoHa] = useState(6800);
-  const [custoPecHa, setCustoPecHa] = useState(2100);   // R$/ha/ano (manejo+suplemento)
-  const [areaTotal, setAreaTotal] = useState(500);      // ha
+  const [fundVer, setFundVer] = useState('mundial');
+  // Balcão Cotrijuc soja — cotação real do dia (cotrijuc.com.br/graos)
+  // 17/06/2026: Soja R$ 114,50
+  const [balcaoSoja, setBalcaoSoja] = useState(114.50);
+  // Análise por hectare (soja) — estilo SLC Agrícola
+  const [prodSoja, setProdSoja] = useState(55);
+  const [custoSojaHa, setCustoSojaHa] = useState(5200);
+  const [areaTotal, setAreaTotal] = useState(500);
+  // Hedge tracking
+  const [pctTravadoSoja, setPctTravadoSoja] = useState(35);
+  const [precoMedioTravado, setPrecoMedioTravado] = useState(118);
 
   // Cálculos
   const sacaFOB = (cbot + premio) * BU_PER_SACA * dolar;
@@ -435,35 +821,30 @@ function PainelSoja() {
     dolar:  ESTRATEGIAS.dolar[`${niveis.dolar}_${expDolar}`],
   };
 
-  const cenarios = useMemo(() => {
-    const calc = (c, p, d) => (c + p) * BU_PER_SACA * d - freteCIF;
-    return [
-      { nome: 'Hoje',     valor: calc(cbot, premio, dolar) },
-      { nome: 'CBOT +10%',valor: calc(cbot*1.1, premio, dolar) },
-      { nome: 'CBOT -10%',valor: calc(cbot*0.9, premio, dolar) },
-      { nome: 'Dólar +10%', valor: calc(cbot, premio, dolar*1.1) },
-      { nome: 'Dólar -10%', valor: calc(cbot, premio, dolar*0.9) },
-      { nome: 'Prêmio 0', valor: calc(cbot, 0, dolar) },
-      { nome: 'Tudo +10%',valor: calc(cbot*1.1, premio*1.1, dolar*1.1) },
-      { nome: 'Tudo -10%',valor: calc(cbot*0.9, premio*0.9, dolar*0.9) },
-    ];
-  }, [cbot, premio, dolar, freteCIF]);
-
   const projecao = useMemo(() => {
     const ajuste = (exp, mag) => exp === 'alta' ? mag : exp === 'baixa' ? -mag : 0;
-    const meses = ['M0','M1','M2','M3','M4','M5','M6'];
+    const numPontos = Math.max(2, Math.min(24, parseInt(targetMeses) || 6)) + 1;
+    const meses = [];
+    for (let i = 0; i < numPontos; i++) meses.push('M' + i);
+    // Parse targets — se vazio/inválido, usa lógica direção-baseada
+    const tCbot = parseFloat(targetCbot);
+    const tPremio = parseFloat(targetPremio);
+    const tDolar = parseFloat(targetDolar);
+    const usaTargetCbot = !isNaN(tCbot);
+    const usaTargetPremio = !isNaN(tPremio);
+    const usaTargetDolar = !isNaN(tDolar);
     return meses.map((m, i) => {
-      const t = i / 6;
-      const c = cbot * (1 + ajuste(expCbot, 0.15) * t);
-      const p = Math.max(0, premio * (1 + ajuste(expPremio, 0.30) * t));
-      const d = dolar * (1 + ajuste(expDolar, 0.10) * t);
+      const t = i / (numPontos - 1); // 0 a 1
+      const c = usaTargetCbot ? cbot + (tCbot - cbot) * t : cbot * (1 + ajuste(expCbot, 0.15) * t);
+      const p = usaTargetPremio ? premio + (tPremio - premio) * t : Math.max(-1, premio * (1 + ajuste(expPremio, 0.30) * t));
+      const d = usaTargetDolar ? dolar + (tDolar - dolar) * t : dolar * (1 + ajuste(expDolar, 0.10) * t);
       return {
         mes: m,
         saca: Math.round(((c + p) * BU_PER_SACA * d - freteCIF) * 100) / 100,
         custo: custoSaca,
       };
     });
-  }, [cbot, premio, dolar, custoSaca, expCbot, expPremio, expDolar, freteCIF]);
+  }, [cbot, premio, dolar, custoSaca, expCbot, expPremio, expDolar, freteCIF, targetCbot, targetPremio, targetDolar, targetMeses]);
 
   const simulacao = useMemo(() => {
     const iIni = HISTORICO_CALC.findIndex(h => h.t === periodoIni);
@@ -507,29 +888,14 @@ function PainelSoja() {
   const corNivel = (n) => n === 'alto' ? '#C8E04A' : n === 'baixo' ? '#D9542B' : '#A89968';
   const corEstrat = (c) => c === 'verde' ? '#C8E04A' : c === 'vermelho' ? '#D9542B' : '#E6B84A';
 
-  // Balcão vs CEPEA — spreads
-  const milhoAtualVal = HISTORICO_MULTI[HISTORICO_MULTI.length-1].milho;
-  const boiAtualVal = HISTORICO_GADO[HISTORICO_GADO.length-1];
+  // Balcão Cotrijuc vs CEPEA — spread soja
   const spreadBalcaoSoja = balcaoSoja - sacaCIF;
   const spreadBalcaoSojaPct = sacaCIF > 0 ? (spreadBalcaoSoja / sacaCIF) * 100 : 0;
-  const spreadBalcaoMilho = balcaoMilho - milhoAtualVal;
-  const spreadBalcaoMilhoPct = milhoAtualVal > 0 ? (spreadBalcaoMilho / milhoAtualVal) * 100 : 0;
 
-  // Análise por hectare (estilo SLC)
+  // Margem soja por hectare (estilo SLC)
   const receitaSojaHa = prodSoja * balcaoSoja;
-  const receitaMilhoHa = prodMilho * balcaoMilho;
-  const receitaPecHa = prodCarne * boiAtualVal.boiVivo;
   const margemSojaHa = receitaSojaHa - custoSojaHa;
-  const margemMilhoHa = receitaMilhoHa - custoMilhoHa;
-  const margemPecHa = receitaPecHa - custoPecHa;
   const margemSojaPct = (margemSojaHa / custoSojaHa) * 100;
-  const margemMilhoPct = (margemMilhoHa / custoMilhoHa) * 100;
-  const margemPecPct = (margemPecHa / custoPecHa) * 100;
-  const culturas = [
-    { nome: 'Soja', m: margemSojaHa, pct: margemSojaPct, receita: receitaSojaHa, custo: custoSojaHa, cor: '#C8E04A' },
-    { nome: 'Milho', m: margemMilhoHa, pct: margemMilhoPct, receita: receitaMilhoHa, custo: custoMilhoHa, cor: '#E6B84A' },
-    { nome: 'Pecuária', m: margemPecHa, pct: margemPecPct, receita: receitaPecHa, custo: custoPecHa, cor: '#D9542B' },
-  ].sort((a, b) => b.m - a.m);
 
   // Relatório automático (estilo Agrinvest/Delara)
   const relatorio = useMemo(() => {
@@ -556,48 +922,70 @@ function PainelSoja() {
       base: Math.round(sacaCIF),
       otimista: Math.round(sacaCIF * 1.12),
       pessimista: Math.round(sacaCIF * 0.88),
-      trocaSojaMilho: balcaoMilho > 0 ? (balcaoSoja / balcaoMilho).toFixed(2) : '–',
-      trocaArrobaSoja: balcaoSoja > 0 ? (boiAtualVal.arroba / balcaoSoja).toFixed(2) : '–',
     };
-  }, [niveis, estrategia, sacaCIF, balcaoSoja, balcaoMilho, boiAtualVal]);
+  }, [niveis, estrategia, sacaCIF]);
 
   const copiarRelatorio = () => {
-    const txt = `RELATÓRIO DE MERCADO — JÚLIO DE CASTILHOS / RS
+    const precoMedioPond = (pctTravadoSoja * precoMedioTravado + (100 - pctTravadoSoja) * balcaoSoja) / 100;
+    const txt = `RELATÓRIO SOJA — JÚLIO DE CASTILHOS / RS
 ${relatorio.data}
 
+═══════════════════════════════════════════
+SNAPSHOT DE PREÇOS SOJA
+═══════════════════════════════════════════
+CEPEA Paranaguá FOB ........ R$ ${sacaFOB.toFixed(2)}
+CIF Júlio de Castilhos ..... R$ ${sacaCIF.toFixed(2)} (frete R$ ${freteCIF})
+Balcão Cotrijuc ............ R$ ${balcaoSoja.toFixed(2)} (${spreadBalcaoSoja >= 0 ? '+' : ''}R$ ${spreadBalcaoSoja.toFixed(2)} · ${spreadBalcaoSojaPct.toFixed(1)}% vs CIF)
+
+CBOT ....................... ${cbot.toFixed(2)} USD/bu (${niveis.cbot.toUpperCase()})
+Prêmio Paranaguá ........... ${premio >= 0 ? '+' : ''}${premio.toFixed(2)} USD/bu (${niveis.premio.toUpperCase()})
+USD/BRL .................... R$ ${dolar.toFixed(2)} (${niveis.dolar.toUpperCase()})
+
+═══════════════════════════════════════════
 CENÁRIO MACRO
+═══════════════════════════════════════════
 ${relatorio.cenarioMacro}
 
-INDICADORES ATUAIS
-• CBOT: ${cbot.toFixed(2)} USD/bu (${niveis.cbot})
-• Prêmio Paranaguá: ${premio >= 0 ? '+' : ''}${premio.toFixed(2)} USD/bu (${niveis.premio})
-• USD/BRL: R$ ${dolar.toFixed(2)} (${niveis.dolar})
-• Saca CIF JC calculada: R$ ${sacaCIF.toFixed(2)}
-• Balcão Cotrijuc soja: R$ ${balcaoSoja.toFixed(2)} (spread ${spreadBalcaoSoja >= 0 ? '+' : ''}R$ ${spreadBalcaoSoja.toFixed(2)})
-• Balcão Cotrijuc milho: R$ ${balcaoMilho.toFixed(2)}
-• Boi vivo RS (NESPRO): R$ ${boiAtualVal.boiVivo.toFixed(2)}/kg · arroba R$ ${boiAtualVal.arroba}
+═══════════════════════════════════════════
+RECOMENDAÇÃO DO DIA
+═══════════════════════════════════════════
+→ ${relatorio.recSoja}
 
-RECOMENDAÇÃO SOJA
-${relatorio.recSoja}
+CENÁRIOS 3–6 MESES (R$/saca CIF JC):
+  Pessimista (-12%) ... R$ ${relatorio.pessimista}
+  Base (atual) ........ R$ ${relatorio.base}
+  Otimista (+12%) ..... R$ ${relatorio.otimista}
 
-CENÁRIOS 3-6 MESES (R$/saca CIF JC)
-• Pessimista: R$ ${relatorio.pessimista}
-• Base:       R$ ${relatorio.base}
-• Otimista:   R$ ${relatorio.otimista}
+═══════════════════════════════════════════
+POSIÇÃO DE HEDGE
+═══════════════════════════════════════════
+Travado ........... ${pctTravadoSoja}% @ R$ ${precoMedioTravado}/saca
+Em aberto ......... ${100-pctTravadoSoja}% @ R$ ${balcaoSoja.toFixed(2)} (balcão)
+Médio ponderado ... R$ ${precoMedioPond.toFixed(2)}/saca
+Margem ............ R$ ${(precoMedioPond - custoSaca).toFixed(2)}/saca
 
-RELAÇÕES DE TROCA
-• Saca soja paga ${relatorio.trocaSojaMilho} sacas milho
-• 1 arroba boi = ${relatorio.trocaArrobaSoja} sacas soja
+═══════════════════════════════════════════
+MARGEM POR HECTARE
+═══════════════════════════════════════════
+Produtividade ..... ${prodSoja} sc/ha
+Receita ........... R$ ${receitaSojaHa.toFixed(0)}/ha (a balcão)
+Custo ............. R$ ${custoSojaHa}/ha
+Margem ............ R$ ${margemSojaHa.toFixed(0)}/ha (${margemSojaPct.toFixed(0)}%)
+Fazenda (${areaTotal} ha) . R$ ${(margemSojaHa * areaTotal / 1000).toFixed(0)}k
 
-MARGEM POR HECTARE (a preços de balcão atuais)
-• Soja:     R$ ${margemSojaHa.toFixed(0)}/ha (${margemSojaPct.toFixed(0)}% sobre custo)
-• Milho:    R$ ${margemMilhoHa.toFixed(0)}/ha (${margemMilhoPct.toFixed(0)}%)
-• Pecuária: R$ ${margemPecHa.toFixed(0)}/ha (${margemPecPct.toFixed(0)}%)
-MELHOR RETORNO: ${culturas[0].nome}
+═══════════════════════════════════════════
+GATILHOS
+═══════════════════════════════════════════
+SE CBOT > 12,50 ... trave +20% adicional
+SE CBOT < 10,50 ... avalie put protetiva strike R$ ${(custoSaca * 1.1).toFixed(0)}
+SE DÓLAR > 5,40 ... trave câmbio NDF
+SE DÓLAR < 4,90 ... NÃO travar; comprar call USD
+SE BALCÃO > CIF ... venda física local (sem frete)
+SE PRÊMIO > 1,50 .. trave prêmio agressivo
 
-Fontes: CEPEA/Esalq Paranaguá · CEPEA/Esalq Campinas · NESPRO/UFRGS · Cotrijuc balcão local`;
+Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
     navigator.clipboard?.writeText(txt);
-    alert('Relatório copiado para a área de transferência.');
+    alert('Relatório copiado.');
   };
 
   return (
@@ -606,7 +994,7 @@ Fontes: CEPEA/Esalq Paranaguá · CEPEA/Esalq Campinas · NESPRO/UFRGS · Cotrij
         <div>
           <div style={S.eyebrow}>Painel · Soja · Júlio de Castilhos / RS · <span style={{color: '#C8E04A'}}>dados CEPEA 17/06/2026</span></div>
           <h1 className="h1" style={S.h1}>Margem da saca <span style={S.h1accent}>no campo</span></h1>
-          <div style={S.subhead}>Soja CEPEA Paranaguá · Milho CEPEA Campinas · Boi gordo NESPRO/UFRGS — Porto Rio Grande</div>
+          <div style={S.subhead}>Soja CEPEA Paranaguá · Balcão Cotrijuc · Porto Rio Grande</div>
           <div style={{...S.subhead, color: '#C8E04A', marginTop: 4}}>★ Última cotação CEPEA: <strong>R$ 132,26/saca</strong> em <strong>16/06/2026</strong> · Dólar implícito R$ 5,09</div>
         </div>
         <div style={S.precoBig}>
@@ -625,9 +1013,9 @@ Fontes: CEPEA/Esalq Paranaguá · CEPEA/Esalq Campinas · NESPRO/UFRGS · Cotrij
         <section style={S.card}>
           <div style={S.cardLabel}>01 — Componentes do preço</div>
           {[
-            { key: 'cbot', val: cbot, set: setCbot, exp: expCbot, setExp: setExpCbot, min: 7, max: 18, step: 0.05, fmt: v => v.toFixed(2), unit: 'USD/bu' },
-            { key: 'premio', val: premio, set: setPremio, exp: expPremio, setExp: setExpPremio, min: -0.5, max: 3, step: 0.05, fmt: v => v.toFixed(2), unit: 'USD/bu' },
-            { key: 'dolar', val: dolar, set: setDolar, exp: expDolar, setExp: setExpDolar, min: 4, max: 7, step: 0.01, fmt: v => 'R$ ' + v.toFixed(2), unit: 'BRL/USD' },
+            { key: 'cbot', val: cbot, set: setCbot, exp: expCbot, setExp: setExpCbot, target: targetCbot, setTarget: setTargetCbot, min: 7, max: 18, step: 0.05, fmt: v => v.toFixed(2), unit: 'USD/bu', tPlaceholder: '12,50' },
+            { key: 'premio', val: premio, set: setPremio, exp: expPremio, setExp: setExpPremio, target: targetPremio, setTarget: setTargetPremio, min: -0.5, max: 3, step: 0.05, fmt: v => v.toFixed(2), unit: 'USD/bu', tPlaceholder: '0,80' },
+            { key: 'dolar', val: dolar, set: setDolar, exp: expDolar, setExp: setExpDolar, target: targetDolar, setTarget: setTargetDolar, min: 4, max: 7, step: 0.01, fmt: v => 'R$ ' + v.toFixed(2), unit: 'BRL/USD', tPlaceholder: '5,40' },
           ].map(c => (
             <div key={c.key} style={S.componenteRow}>
               <div style={S.componenteHead}>
@@ -647,8 +1035,28 @@ Fontes: CEPEA/Esalq Paranaguá · CEPEA/Esalq Campinas · NESPRO/UFRGS · Cotrij
                   </button>
                 ))}
               </div>
+              <div style={{display: 'flex', alignItems: 'center', gap: 6, marginTop: 8}}>
+                <span style={{...S.expLabel, marginRight: 0}}>ALVO</span>
+                <input type="number" step={c.step} value={c.target} placeholder={c.tPlaceholder}
+                       onChange={e => c.setTarget(e.target.value)}
+                       style={{flex: 1, padding: '4px 6px', fontSize: 12}} />
+                {c.target && (
+                  <button onClick={() => c.setTarget('')} style={{
+                    background: 'transparent', color: '#6B7065', border: '1px solid #2A2F28',
+                    padding: '4px 8px', cursor: 'pointer', fontSize: 10, fontFamily: "'IBM Plex Mono', monospace"
+                  }}>limpar</button>
+                )}
+              </div>
             </div>
           ))}
+          {/* Horizonte global */}
+          <div style={{display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, paddingTop: 12, borderTop: '1px solid #2A2F28'}}>
+            <span style={{...S.inputLabel, marginBottom: 0}}>Horizonte da projeção</span>
+            <input type="number" min="1" max="24" step="1" value={targetMeses}
+                   onChange={e => setTargetMeses(parseInt(e.target.value) || 6)}
+                   style={{width: 60, padding: '4px 6px', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace"}} />
+            <span style={{fontSize: 11, color: '#A89968'}}>meses (afeta gráfico 03)</span>
+          </div>
         </section>
 
         {/* 02 — CUSTOS E TROCA */}
@@ -676,6 +1084,21 @@ Fontes: CEPEA/Esalq Paranaguá · CEPEA/Esalq Campinas · NESPRO/UFRGS · Cotrij
                trocaFert < 40 ? 'Apertado — atenção à margem' :
                                 'Crítico — postergue compra de insumo'}
             </div>
+            <div style={{height: 120, marginTop: 12}}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={HISTORICO_CALC} margin={{ top: 4, right: 8, left: -10, bottom: 16 }}>
+                  <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
+                  <XAxis dataKey="t" stroke="#6B7065" interval={11} style={{fontSize: 9, fontFamily: 'IBM Plex Mono'}} />
+                  <YAxis stroke="#6B7065" style={{fontSize: 9, fontFamily: 'IBM Plex Mono'}} />
+                  <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 10}} />
+                  <ReferenceLine y={trocaFert} stroke="#C8E04A" strokeDasharray="3 3" label={{value: 'hoje', fill: '#C8E04A', fontSize: 9, position: 'right'}} />
+                  <Line type="monotone" dataKey="trocaFert" stroke="#E6B84A" strokeWidth={1.5} dot={false} name="sc/ton" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={{fontSize: 10, color: '#6B7065', fontFamily: "'IBM Plex Mono', monospace", marginTop: 2}}>
+              série 2010Q1–2026Q2 (66 trimestres). Pior: 21Q4 ~35 sc · melhor: 16Q2 ~17 sc
+            </div>
           </div>
 
           <div style={S.margemBox}>
@@ -699,8 +1122,19 @@ Fontes: CEPEA/Esalq Paranaguá · CEPEA/Esalq Campinas · NESPRO/UFRGS · Cotrij
 
         {/* 03 — PROJEÇÃO */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
-          <div style={S.cardLabel}>03 — Projeção 6 meses (suas expectativas)</div>
-          <div style={{height: 260, marginTop: 16}}>
+          <div style={S.cardLabel}>03 — Projeção {targetMeses} meses</div>
+          <div style={{fontSize: 11, color: '#A89968', marginBottom: 8, fontFamily: "'IBM Plex Mono', monospace"}}>
+            {(() => {
+              const targets = [
+                targetCbot && `CBOT→${parseFloat(targetCbot).toFixed(2)}`,
+                targetPremio && `Prêmio→${parseFloat(targetPremio).toFixed(2)}`,
+                targetDolar && `Dólar→R$${parseFloat(targetDolar).toFixed(2)}`,
+              ].filter(Boolean);
+              if (targets.length > 0) return `→ Usando alvos: ${targets.join(' · ')} em ${targetMeses}m`;
+              return `→ Usando direção: CBOT ${expCbot} · prêmio ${expPremio} · dólar ${expDolar}`;
+            })()}
+          </div>
+          <div style={{height: 260, marginTop: 8}}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={projecao} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
@@ -714,29 +1148,9 @@ Fontes: CEPEA/Esalq Paranaguá · CEPEA/Esalq Campinas · NESPRO/UFRGS · Cotrij
           </div>
         </section>
 
-        {/* 04 — SENSIBILIDADE */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
-          <div style={S.cardLabel}>04 — Sensibilidade</div>
-          <div style={{height: 240, marginTop: 16}}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={cenarios} margin={{ top: 10, right: 20, left: 0, bottom: 40 }}>
-                <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
-                <XAxis dataKey="nome" stroke="#6B7065" angle={-30} textAnchor="end" style={{fontSize: 10, fontFamily: 'IBM Plex Mono'}} />
-                <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
-                <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 12}} />
-                <Bar dataKey="valor" name="R$/saca CIF">
-                  {cenarios.map((c, i) => (
-                    <Cell key={i} fill={c.valor > sacaCIF ? '#C8E04A' : c.valor < sacaCIF ? '#D9542B' : '#A89968'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-
-        {/* 05 — ESTRATÉGIA */}
+        {/* 04 — ESTRATÉGIA */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#C8E04A'}}>
-          <div style={{...S.cardLabel, color: '#C8E04A'}}>05 — Estratégia recomendada para a janela atual</div>
+          <div style={{...S.cardLabel, color: '#C8E04A'}}>04 — Estratégia recomendada para a janela atual</div>
           {[
             { key: 'cbot', label: 'CBOT' },
             { key: 'premio', label: 'PRÊMIO' },
@@ -769,9 +1183,9 @@ Fontes: CEPEA/Esalq Paranaguá · CEPEA/Esalq Campinas · NESPRO/UFRGS · Cotrij
           </div>
         </section>
 
-        {/* 06 — HISTÓRICO */}
+        {/* 05 — HISTÓRICO */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
-          <div style={S.cardLabel}>06 — Histórico (2020–2025, base Rio Grande)</div>
+          <div style={S.cardLabel}>05 — Histórico (CEPEA Paranaguá, 2010–2026)</div>
           <div style={S.tabRow}>
             {[
               { k: 'saca', l: 'Preço CIF JC' },
@@ -817,9 +1231,9 @@ Fontes: CEPEA/Esalq Paranaguá · CEPEA/Esalq Campinas · NESPRO/UFRGS · Cotrij
           </div>
         </section>
 
-        {/* 07 — SIMULADOR */}
+        {/* 06 — SIMULADOR */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#E6B84A'}}>
-          <div style={{...S.cardLabel, color: '#E6B84A'}}>07 — Simulador de venda escalonada</div>
+          <div style={{...S.cardLabel, color: '#E6B84A'}}>06 — Simulador de venda escalonada</div>
           <div className="sim-controls" style={S.simControls}>
             <div style={S.inputBlock}>
               <label style={S.inputLabel}>Início da janela</label>
@@ -877,9 +1291,9 @@ Fontes: CEPEA/Esalq Paranaguá · CEPEA/Esalq Campinas · NESPRO/UFRGS · Cotrij
           )}
         </section>
 
-        {/* 08 — ESTRATÉGIAS CLÁSSICAS */}
+        {/* 07 — ESTRATÉGIAS CLÁSSICAS */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
-          <div style={S.cardLabel}>08 — Estratégias clássicas de comercialização</div>
+          <div style={S.cardLabel}>07 — Estratégias clássicas de comercialização</div>
           <div style={S.estratClassicaWrap}>
             {ESTRATEGIAS_CLASSICAS.map((est, i) => (
               <div key={i} style={S.estratClassicaCard}>
@@ -910,6 +1324,10 @@ Fontes: CEPEA/Esalq Paranaguá · CEPEA/Esalq Campinas · NESPRO/UFRGS · Cotrij
                       <div style={{...S.estratClassicaSecLabel, color: '#C8E04A'}}>JÚLIO DE CASTILHOS / RS</div>
                       <div style={S.estratClassicaSecText}>{est.melhor_para}</div>
                     </div>
+                    <div style={{marginTop: 16, paddingTop: 14, borderTop: '1px solid #2A2F28'}}>
+                      <div style={{...S.estratClassicaSecLabel, color: '#E6B84A', marginBottom: 10}}>🧮 CALCULADORA · use seus números</div>
+                      <EstratCalc idx={i} ctx={{ sacaCIF, custoSaca, prodSoja, areaTotal }} />
+                    </div>
                   </div>
                 )}
               </div>
@@ -917,267 +1335,376 @@ Fontes: CEPEA/Esalq Paranaguá · CEPEA/Esalq Campinas · NESPRO/UFRGS · Cotrij
           </div>
         </section>
 
-        {/* 10 — MULTI-COMMODITY */}
+
+
+
+        {/* 08 — MULTI-ATIVO HISTÓRICO */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#A89968'}}>
-          <div style={{...S.cardLabel, color: '#A89968'}}>10 — Soja · Milho · Boi gordo (comparação histórica)</div>
+          <div style={{...S.cardLabel, color: '#A89968'}}>08 — Soja vs Milho · Boi · Ouro · Cobre · CDI · Inflação</div>
           <div style={S.tabRow}>
             {[
-              { k: 'precos', l: 'Preços (normalizado 100)' },
-              { k: 'troca_milho', l: 'Sacas milho / saca soja' },
-              { k: 'troca_boi', l: 'Sacas soja / arroba boi' },
+              { k: 'precos', l: 'Preços (base 100 em 10Q1)' },
+              { k: 'margem', l: 'Margem soja vs média histórica' },
             ].map(t => (
               <button key={t.k} className={`exp ${multiVer === t.k ? 'ativo' : ''}`} onClick={() => setMultiVer(t.k)}>
                 {t.l}
               </button>
             ))}
           </div>
-          <div style={{height: 280, marginTop: 16}}>
+          <div style={{height: 320, marginTop: 16}}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={multiData} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
+              <LineChart data={HISTORICO_MULTI} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
                 <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
                 <XAxis dataKey="t" stroke="#6B7065" angle={-45} textAnchor="end" style={{fontSize: 10, fontFamily: 'IBM Plex Mono'}} />
                 <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
-                <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 12}} />
-                {multiVer === 'precos' && <Line type="monotone" dataKey="sojaNorm" stroke="#C8E04A" strokeWidth={2} dot={{r: 2}} name="Soja (base 100 em 10Q1)" />}
-                {multiVer === 'precos' && <Line type="monotone" dataKey="milhoNorm" stroke="#E6B84A" strokeWidth={2} dot={{r: 2}} name="Milho (base 100 em 10Q1)" />}
-                {multiVer === 'precos' && <Line type="monotone" dataKey="boiNorm" stroke="#D9542B" strokeWidth={2} dot={{r: 2}} name="Boi (base 100 em 15Q1)" />}
-                {multiVer === 'troca_milho' && <Line type="monotone" dataKey="trocaSojaMilho" stroke="#C8E04A" strokeWidth={2} dot={{r: 3}} name="Sacas milho / saca soja" />}
-                {multiVer === 'troca_boi' && <Line type="monotone" dataKey="trocaArrobaSoja" stroke="#D9542B" strokeWidth={2} dot={{r: 3}} name="Sacas soja / arroba boi" />}
+                <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 11}} />
+                {multiVer === 'precos' && <Line type="monotone" dataKey="sojaNorm" stroke="#C8E04A" strokeWidth={2.5} dot={false} name="Soja CEPEA Pgua" />}
+                {multiVer === 'precos' && <Line type="monotone" dataKey="milhoNorm" stroke="#E6B84A" strokeWidth={1.5} dot={false} name="Milho CEPEA SP" />}
+                {multiVer === 'precos' && <Line type="monotone" dataKey="boiNorm" stroke="#D9542B" strokeWidth={1.5} dot={false} name="Boi vivo RS" />}
+                {multiVer === 'precos' && <Line type="monotone" dataKey="ouroNorm" stroke="#F0C040" strokeWidth={1.5} dot={false} name="Ouro (R$/oz)" />}
+                {multiVer === 'precos' && <Line type="monotone" dataKey="cobreNorm" stroke="#B85C2C" strokeWidth={1.5} dot={false} name="Cobre (R$/ton)" />}
+                {multiVer === 'precos' && <Line type="monotone" dataKey="cdiAcc" stroke="#7AB8E0" strokeWidth={1.5} strokeDasharray="4 2" dot={false} name="CDI acumulado" />}
+                {multiVer === 'precos' && <Line type="monotone" dataKey="ipcaAcc" stroke="#6B7065" strokeWidth={1.5} strokeDasharray="4 2" dot={false} name="IPCA acumulado" />}
+                {multiVer === 'margem' && <Line type="monotone" dataKey="margem" stroke="#C8E04A" strokeWidth={2} dot={{r: 3}} name="Margem R$/saca (CIF JC − custo)" />}
+                {multiVer === 'margem' && <ReferenceLine y={MARGEM_MEDIA_HIST} stroke="#E6B84A" strokeDasharray="4 2" label={{value: `Média histórica R$ ${MARGEM_MEDIA_HIST.toFixed(0)}`, fill: '#E6B84A', fontSize: 11, position: 'right'}} />}
+                {multiVer === 'margem' && <ReferenceLine y={0} stroke="#D9542B" strokeDasharray="2 2" />}
               </LineChart>
             </ResponsiveContainer>
           </div>
           <div style={S.legendaHist}>
-            {multiVer === 'precos' && 'Preços normalizados (base 100 = valor inicial). Permite ver crescimento relativo: soja CIF JC, milho CEPEA Campinas posto JC, boi vivo RS NESPRO. Boi começa em 15Q1 (NESPRO consolidou em 2015).'}
-            {multiVer === 'troca_milho' && 'Quantos sacos de milho 1 saco de soja compra. Histórico: 1,8 a 2,5 é normal. Valores >2,5: soja muito valorizada (vender soja, comprar milho ração). Valores <1,8: milho relativamente caro (vender milho, segurar soja).'}
-            {multiVer === 'troca_boi' && 'Quantos sacos de soja são necessários para comprar 1 arroba (15kg) de boi gordo. Mede competitividade soja vs pecuária. >3 = boi caro em soja (vender boi, plantar). <2 = boi barato em soja (segurar gado, recriar terneiros).'}
-          </div>
-          <div style={S.simGrid}>
-            <div style={S.simCell}>
-              <div style={S.simCellLabel}>Soja atual (CIF JC)</div>
-              <div style={{...S.simCellValor, color: '#C8E04A'}}>R$ {(HISTORICO_MULTI[HISTORICO_MULTI.length-1].soja).toFixed(2)}</div>
-              <div style={S.simCellDelta}>fonte CEPEA Paranaguá</div>
-            </div>
-            <div style={S.simCell}>
-              <div style={S.simCellLabel}>Milho atual (posto JC)</div>
-              <div style={{...S.simCellValor, color: '#E6B84A'}}>R$ {(HISTORICO_MULTI[HISTORICO_MULTI.length-1].milho).toFixed(2)}</div>
-              <div style={S.simCellDelta}>fonte CEPEA Campinas</div>
-            </div>
-            <div style={S.simCell}>
-              <div style={S.simCellLabel}>Boi vivo RS</div>
-              <div style={{...S.simCellValor, color: '#D9542B'}}>R$ {HISTORICO_GADO[HISTORICO_GADO.length-1].boiVivo.toFixed(2)}/kg</div>
-              <div style={S.simCellDelta}>arroba R$ {HISTORICO_GADO[HISTORICO_GADO.length-1].arroba} · fonte NESPRO/UFRGS</div>
-            </div>
+            {multiVer === 'precos' && (<>
+              <strong>Tudo em base 100 = primeiro trimestre 2010Q1.</strong> Cada linha mostra o crescimento relativo desde então. <br/>
+              · <span style={{color: '#C8E04A'}}>Soja</span>, <span style={{color: '#E6B84A'}}>milho</span>, <span style={{color: '#D9542B'}}>boi</span>: R$/saca ou R$/kg em CIF/preço local. <br/>
+              · <span style={{color: '#F0C040'}}>Ouro</span> e <span style={{color: '#B85C2C'}}>cobre</span>: convertidos para R$ via USD/BRL do trimestre. <br/>
+              · <span style={{color: '#7AB8E0'}}>CDI acumulado</span>: rentabilidade composta de R$ 100 aplicados em 10Q1. <span style={{color: '#6B7065'}}>IPCA</span>: inflação acumulada (deflator). <br/>
+              Tudo acima da linha do <strong>IPCA</strong> ganhou poder de compra; tudo abaixo perdeu. CDI tende a vencer ativos de risco em ciclos de juros altos.
+            </>)}
+            {multiVer === 'margem' && (<>
+              Margem soja = <strong>preço CIF JC − custo de produção</strong> (Conab médio anual, ~R$ 27 em 2010 → R$ 95 em 2026).
+              Linha verde = margem efetiva por trimestre. Linha amarela tracejada = <strong>média histórica R$ {MARGEM_MEDIA_HIST.toFixed(2)}/saca</strong> (referência de longo prazo). Linha vermelha = zero (break-even).<br/>
+              Acima da média = janela boa; abaixo = janela ruim. Quando a margem encosta no zero, o produtor está empatando.
+            </>)}
           </div>
         </section>
 
-        {/* 11 — BALCÃO COTRIJUC */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#E6B84A'}}>
-          <div style={{...S.cardLabel, color: '#E6B84A'}}>11 — Cotação balcão Cotrijuc · Júlio de Castilhos</div>
-          <div style={{fontSize: 12, color: '#A89968', marginBottom: 14, lineHeight: 1.5}}>
-            Insira os preços do cartaz da Cotrijuc hoje. O painel calcula o spread vs. CEPEA, mostrando se a cooperativa está pagando acima ou abaixo do referencial de mercado.
+        {/* 09 — FUNDAMENTOS USDA + CONAB */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#7AB8E0'}}>
+          <div style={{...S.cardLabel, color: '#7AB8E0'}}>09 — Fundamentos · Oferta · Demanda · Estoques (USDA + Conab)</div>
+          <div style={{fontSize: 12, color: '#A89968', marginBottom: 12, lineHeight: 1.5}}>
+            <strong>Por que isso importa:</strong> o preço do bushel em Chicago é, no fundo, um balanço entre quanto o mundo produz e quanto consome. Quando os estoques finais estão apertados (S/U &lt; 22%), preços disparam; quando estão folgados (S/U &gt; 28%), preços caem. Os fundamentos drivam o CBOT meses à frente — antes do dólar, antes do prêmio.
           </div>
-          <div style={S.simControls}>
-            <div style={S.inputBlock}>
-              <label style={S.inputLabel}>Balcão soja (R$/saca)</label>
-              <input type="number" step="0.5" value={balcaoSoja} onChange={e => setBalcaoSoja(parseFloat(e.target.value)||0)} />
-            </div>
-            <div style={S.inputBlock}>
-              <label style={S.inputLabel}>Balcão milho (R$/saca)</label>
-              <input type="number" step="0.5" value={balcaoMilho} onChange={e => setBalcaoMilho(parseFloat(e.target.value)||0)} />
-            </div>
-            <div style={S.inputBlock}>
-              <label style={S.inputLabel}>Boi vivo NESPRO (R$/kg)</label>
-              <input type="number" step="0.05" value={boiAtualVal.boiVivo} disabled style={{opacity: 0.6}} />
-            </div>
-          </div>
-          <div style={{...S.simGrid, marginTop: 16}}>
-            <div style={S.simCell}>
-              <div style={S.simCellLabel}>Soja: balcão vs CEPEA CIF JC</div>
-              <div style={{...S.simCellValor, color: spreadBalcaoSoja >= 0 ? '#C8E04A' : '#D9542B'}}>
-                {spreadBalcaoSoja >= 0 ? '+' : ''}R$ {spreadBalcaoSoja.toFixed(2)}
-              </div>
-              <div style={S.simCellDelta}>
-                {spreadBalcaoSojaPct >= 0 ? '+' : ''}{spreadBalcaoSojaPct.toFixed(1)}% · balcão R$ {balcaoSoja.toFixed(2)} vs ref R$ {sacaCIF.toFixed(2)}
-              </div>
-            </div>
-            <div style={S.simCell}>
-              <div style={S.simCellLabel}>Milho: balcão vs CEPEA Campinas-JC</div>
-              <div style={{...S.simCellValor, color: spreadBalcaoMilho >= 0 ? '#C8E04A' : '#D9542B'}}>
-                {spreadBalcaoMilho >= 0 ? '+' : ''}R$ {spreadBalcaoMilho.toFixed(2)}
-              </div>
-              <div style={S.simCellDelta}>
-                {spreadBalcaoMilhoPct >= 0 ? '+' : ''}{spreadBalcaoMilhoPct.toFixed(1)}% · balcão R$ {balcaoMilho.toFixed(2)} vs ref R$ {milhoAtualVal.toFixed(2)}
-              </div>
-            </div>
-            <div style={S.simCell}>
-              <div style={S.simCellLabel}>Relação balcão soja/milho</div>
-              <div style={{...S.simCellValor, color: '#E6B84A'}}>
-                {balcaoMilho > 0 ? (balcaoSoja / balcaoMilho).toFixed(2) : '–'}
-              </div>
-              <div style={S.simCellDelta}>
-                1 saca soja = {balcaoMilho > 0 ? (balcaoSoja / balcaoMilho).toFixed(2) : '–'} sacas milho
-              </div>
-            </div>
-          </div>
-          <div style={{...S.sintese, borderLeftColor: '#E6B84A', marginTop: 16}}>
-            <div style={{...S.sinteseLabel, color: '#E6B84A'}}>LEITURA</div>
-            <div style={S.sinteseTexto}>
-              {(() => {
-                if (spreadBalcaoSojaPct > 2) return 'Balcão Cotrijuc PREMIUM. Cooperativa está pagando acima da paridade — janela boa para vender físico local em vez de trader.';
-                if (spreadBalcaoSojaPct < -3) return 'Balcão Cotrijuc DESCONTO grande. Avalie traders/exportadores (Cargill, Bunge, ADM) que podem pagar mais. Confira frete real para porto.';
-                return 'Balcão Cotrijuc na PARIDADE de mercado. Sem vantagem clara; decisão por logística e prazo de pagamento.';
-              })()}
-            </div>
-          </div>
-        </section>
-
-        {/* 12 — MARGEM POR HECTARE (estilo SLC) */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#C8E04A'}}>
-          <div style={{...S.cardLabel, color: '#C8E04A'}}>12 — Margem por hectare · Decisão de portfólio (estilo SLC Agrícola)</div>
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16}}>
-            <div>
-              <div style={S.cardLabel}>Produtividade esperada</div>
-              <div style={S.inputBlock}>
-                <label style={S.inputLabel}>Soja (sacas/ha)</label>
-                <input type="number" step="1" value={prodSoja} onChange={e => setProdSoja(parseFloat(e.target.value)||0)} />
-              </div>
-              <div style={S.inputBlock}>
-                <label style={S.inputLabel}>Milho (sacas/ha, safrinha)</label>
-                <input type="number" step="1" value={prodMilho} onChange={e => setProdMilho(parseFloat(e.target.value)||0)} />
-              </div>
-              <div style={S.inputBlock}>
-                <label style={S.inputLabel}>Carne (kg vivo/ha/ano)</label>
-                <input type="number" step="10" value={prodCarne} onChange={e => setProdCarne(parseFloat(e.target.value)||0)} />
-              </div>
-              <div style={S.inputBlock}>
-                <label style={S.inputLabel}>Área total (ha)</label>
-                <input type="number" step="10" value={areaTotal} onChange={e => setAreaTotal(parseFloat(e.target.value)||0)} />
-              </div>
-            </div>
-            <div>
-              <div style={S.cardLabel}>Custos totais R$/ha</div>
-              <div style={S.inputBlock}>
-                <label style={S.inputLabel}>Soja (custo R$/ha)</label>
-                <input type="number" step="100" value={custoSojaHa} onChange={e => setCustoSojaHa(parseFloat(e.target.value)||0)} />
-              </div>
-              <div style={S.inputBlock}>
-                <label style={S.inputLabel}>Milho (custo R$/ha)</label>
-                <input type="number" step="100" value={custoMilhoHa} onChange={e => setCustoMilhoHa(parseFloat(e.target.value)||0)} />
-              </div>
-              <div style={S.inputBlock}>
-                <label style={S.inputLabel}>Pecuária (custo R$/ha/ano)</label>
-                <input type="number" step="100" value={custoPecHa} onChange={e => setCustoPecHa(parseFloat(e.target.value)||0)} />
-              </div>
-            </div>
-          </div>
-
-          <div style={{height: 200, marginTop: 16}}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={culturas} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
-                <XAxis dataKey="nome" stroke="#6B7065" style={{fontSize: 12, fontFamily: 'IBM Plex Mono'}} />
-                <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
-                <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 12}} />
-                <Bar dataKey="m" name="Margem R$/ha">
-                  {culturas.map((c, i) => <Cell key={i} fill={c.cor} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div style={S.simGrid}>
-            {culturas.map((c, i) => (
-              <div key={i} style={{...S.simCell, borderColor: i === 0 ? c.cor : '#2A2F28'}}>
-                <div style={S.simCellLabel}>
-                  {i === 0 && '★ '}{c.nome} {i === 0 && '(melhor)'}
-                </div>
-                <div style={{...S.simCellValor, color: c.m > 0 ? c.cor : '#D9542B'}}>R$ {c.m.toFixed(0)}/ha</div>
-                <div style={S.simCellDelta}>
-                  Receita R$ {c.receita.toFixed(0)} − Custo R$ {c.custo.toFixed(0)} = {c.pct.toFixed(0)}%
-                </div>
-                <div style={{...S.simCellDelta, marginTop: 4, color: '#A89968'}}>
-                  Em {areaTotal} ha: R$ {(c.m * areaTotal / 1000).toFixed(0)}k
-                </div>
-              </div>
+          <div style={S.tabRow}>
+            {[
+              { k: 'mundial', l: 'USDA mundial' },
+              { k: 'su', l: 'Stocks-to-use · indicador-chave' },
+              { k: 'brasil', l: 'Conab Brasil' },
+            ].map(t => (
+              <button key={t.k} className={`exp ${fundVer === t.k ? 'ativo' : ''}`} onClick={() => setFundVer(t.k)}>
+                {t.l}
+              </button>
             ))}
           </div>
 
-          <div style={{...S.sintese, marginTop: 16}}>
-            <div style={S.sinteseLabel}>DECISÃO DE PORTFÓLIO</div>
-            <div style={S.sinteseTexto}>
-              Aos preços atuais e custos informados, <strong style={{color: culturas[0].cor}}>{culturas[0].nome.toUpperCase()}</strong> entrega o melhor retorno por hectare (R$ {culturas[0].m.toFixed(0)}/ha). Diferença para a 2ª melhor: R$ {(culturas[0].m - culturas[1].m).toFixed(0)}/ha. ATENÇÃO: análise estática — não considera rotação, risco climático, ou amortização de pastagem/ILP. Use como filtro, não como decisão única.
-            </div>
+          {fundVer === 'mundial' && (
+            <>
+              <div style={{height: 300, marginTop: 16}}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={USDA_WORLD} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
+                    <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
+                    <XAxis dataKey="safra" stroke="#6B7065" angle={-45} textAnchor="end" style={{fontSize: 10, fontFamily: 'IBM Plex Mono'}} />
+                    <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                    <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 11}} />
+                    <Bar dataKey="producao" fill="#C8E04A" name="Produção mundial (Mt)" />
+                    <Bar dataKey="demanda" fill="#7AB8E0" name="Demanda mundial (Mt)" />
+                    <Bar dataKey="estoqueFinal" fill="#E6B84A" name="Estoque final (Mt)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div style={S.legendaHist}>
+                Produção mundial saltou de 264 Mt (10/11) para 425 Mt (25/26) — <strong>+61% em 15 anos</strong>, puxado pelo Brasil.
+                Demanda subiu de 252 para 415 Mt (+65%), basicamente China importando para esmagamento (farelo + óleo).
+                Estoque final dobrou (71 → 128 Mt) — daí o CBOT médio ter recuado de ~$15/bu (2012) para ~$10-11/bu (2024-25): <strong>oferta cresceu mais rápido que demanda</strong>.
+              </div>
+            </>
+          )}
+
+          {fundVer === 'su' && (
+            <>
+              <div style={{height: 280, marginTop: 16}}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={USDA_WORLD} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
+                    <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
+                    <XAxis dataKey="safra" stroke="#6B7065" angle={-45} textAnchor="end" style={{fontSize: 10, fontFamily: 'IBM Plex Mono'}} />
+                    <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} domain={[15, 35]} />
+                    <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 11}} />
+                    <ReferenceLine y={22} stroke="#D9542B" strokeDasharray="3 3" label={{value: 'aperto (preço sobe)', fill: '#D9542B', fontSize: 10, position: 'insideTopRight'}} />
+                    <ReferenceLine y={28} stroke="#C8E04A" strokeDasharray="3 3" label={{value: 'folga (preço cai)', fill: '#C8E04A', fontSize: 10, position: 'insideBottomRight'}} />
+                    <Line type="monotone" dataKey="stocksUse" stroke="#7AB8E0" strokeWidth={2.5} dot={{r: 4, fill: '#7AB8E0'}} name="Stocks/Use ratio (%)" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <div style={S.legendaHist}>
+                <strong>S/U = estoque final ÷ demanda total.</strong> É o melhor preditor isolado de preço. Linha vermelha em 22% = aperto (CBOT tende a subir); linha verde em 28% = folga (CBOT tende a cair).<br/><br/>
+                <strong>Leituras históricas:</strong><br/>
+                · 11/12: S/U 20,7% — apertou após seca Argentina → CBOT subiu a $17 em 12Q3<br/>
+                · 13/14: S/U 24,5% — normalização → CBOT recuou para $13-14<br/>
+                · 18/19: S/U 32,9% — pico de folga com guerra comercial (China parou de comprar EUA) → CBOT caiu para $8-9<br/>
+                · 20/21: S/U 27,1% — COVID + China retomada → CBOT disparou a $16<br/>
+                · 24/25–25/26: S/U 30%+ — folga estrutural, CBOT lateral em $10-11<br/><br/>
+                <strong>Para travar:</strong> quando S/U está abaixo de 22% e o CBOT já reagiu, não é momento de travar (potencial de alta ainda existe). Quando S/U está acima de 28% e o CBOT está fraco, qualquer alta é janela para fixar.
+              </div>
+            </>
+          )}
+
+          {fundVer === 'brasil' && (
+            <>
+              <div style={{height: 300, marginTop: 16}}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={CONAB_BR} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
+                    <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
+                    <XAxis dataKey="safra" stroke="#6B7065" angle={-45} textAnchor="end" style={{fontSize: 10, fontFamily: 'IBM Plex Mono'}} />
+                    <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                    <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 11}} />
+                    <Bar dataKey="producao" fill="#C8E04A" name="Produção BR (Mt)" />
+                    <Bar dataKey="exportacao" fill="#7AB8E0" name="Exportação (Mt)" />
+                    <Bar dataKey="esmagamento" fill="#E6B84A" name="Esmagamento interno (Mt)" />
+                    <Bar dataKey="estoqueFinal" fill="#D9542B" name="Estoque carryover (Mt)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div style={S.legendaHist}>
+                <strong>Brasil triplicou produção em 15 anos:</strong> 75 Mt (10/11) → 175 Mt (25/26 estimado).
+                Em 17/18 ultrapassamos os EUA pela primeira vez na produção mundial; hoje Brasil sozinho responde por ~40% da oferta global.<br/><br/>
+                <strong>Padrões importantes:</strong><br/>
+                · Brasil <strong>quase não estoca</strong> — esmaga ou exporta tudo (estoque carryover normalmente &lt; 10 Mt, frequentemente próximo de zero)<br/>
+                · Exportações dispararam: 33 Mt (10/11) → 110 Mt (25/26). China leva ~70% disso<br/>
+                · Esmagamento dobrou (36 → 60 Mt) com expansão do biodiesel B12-B15<br/>
+                · 22/23 foi safra recorde absoluta (154,6 Mt) — derrubou prêmio Paranaguá de 1,8 para 0,3 USD/bu em 6 meses<br/>
+                · 21/22 e 22/23 (quebra RS por La Niña) explicam por que Brasil ficou abaixo do esperado<br/><br/>
+                <strong>Para o produtor JC/RS:</strong> safras de produção mundial recorde combinadas com safra recorde BR significam basis derretendo. Trave prêmio cedo (nov-dez) nesses anos.
+              </div>
+            </>
+          )}
+
+          <div style={{marginTop: 14, padding: 12, background: '#0F1410', borderLeft: '2px solid #7AB8E0', fontSize: 11, color: '#A89968', lineHeight: 1.5}}>
+            <strong>Próximo WASDE (USDA):</strong> mensalmente, segunda quinta-feira do mês. <strong>Próximo Conab:</strong> levantamento mensal, geralmente segunda semana. Acompanhe <em>usda.gov/oce/commodity/wasde</em> e <em>conab.gov.br/info-agro/safras</em>.
           </div>
         </section>
 
-        {/* 13 — RELATÓRIO DE MERCADO (estilo Agrinvest/Delara) */}
+        {/* 10 — PAINEL EXECUTIVO SOJA (consolidação Agrinvest + Delara + SLC) */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#C8E04A', background: '#1A211A'}}>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8}}>
-            <div style={{...S.cardLabel, color: '#C8E04A', margin: 0}}>13 — Relatório de mercado (gerado automaticamente)</div>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 4}}>
+            <div style={{...S.cardLabel, color: '#C8E04A', margin: 0}}>10 — Painel Executivo SOJA · Decisão do dia</div>
             <button onClick={copiarRelatorio} style={{
-              background: '#C8E04A', color: '#0F1410', border: 'none', padding: '8px 16px',
+              background: '#C8E04A', color: '#0F1410', border: 'none', padding: '8px 14px',
               fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 600,
               letterSpacing: 1, cursor: 'pointer', textTransform: 'uppercase'
-            }}>📋 Copiar texto</button>
+            }}>📋 Copiar relatório</button>
           </div>
-          <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: '#E8E2D0', lineHeight: 1.7, whiteSpace: 'pre-wrap'}}>
-            <div style={{borderBottom: '1px solid #2A2F28', paddingBottom: 10, marginBottom: 10}}>
-              <div style={{fontFamily: "'IBM Plex Serif', serif", fontSize: 18, fontWeight: 600, color: '#C8E04A'}}>
-                Relatório de Mercado — Júlio de Castilhos / RS
+          <div style={{fontSize: 11, color: '#6B7065', marginBottom: 16, fontFamily: "'IBM Plex Mono', monospace"}}>
+            Inspirado em: Agrinvest (recomendação + targets) · Delara (preço local efetivo) · SLC Agrícola (hedge ratio + margem por ha)
+          </div>
+
+          {/* BLOCO 1: SNAPSHOT DE PREÇOS SOJA */}
+          <div style={{borderTop: '1px solid #2A2F28', paddingTop: 14, marginBottom: 16}}>
+            <div style={{...S.sinteseLabel, color: '#A89968', marginBottom: 10}}>SNAPSHOT SOJA · {new Date().toLocaleDateString('pt-BR')}</div>
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10}}>
+              <div style={{...S.simCell, borderColor: '#C8E04A'}}>
+                <div style={S.simCellLabel}>★ CEPEA Paranaguá FOB</div>
+                <div style={{...S.simCellValor, color: '#C8E04A'}}>R$ {sacaFOB.toFixed(2)}</div>
+                <div style={S.simCellDelta}>benchmark nacional</div>
               </div>
-              <div style={{fontSize: 11, color: '#6B7065', marginTop: 4}}>{relatorio.data} · Painel proprietário</div>
+              <div style={S.simCell}>
+                <div style={S.simCellLabel}>CIF Júlio de Castilhos</div>
+                <div style={S.simCellValor}>R$ {sacaCIF.toFixed(2)}</div>
+                <div style={S.simCellDelta}>menos frete R$ {freteCIF}/saca</div>
+              </div>
+              <div style={{...S.simCell, borderColor: '#E6B84A'}}>
+                <div style={S.simCellLabel}>BALCÃO Cotrijuc</div>
+                <div style={{...S.simCellValor, color: '#E6B84A'}}>R$ {balcaoSoja.toFixed(2)}</div>
+                <div style={S.simCellDelta}>
+                  spread <span style={{color: spreadBalcaoSoja >= 0 ? '#C8E04A' : '#D9542B'}}>
+                    {spreadBalcaoSoja >= 0 ? '+' : ''}R$ {spreadBalcaoSoja.toFixed(2)} ({spreadBalcaoSojaPct.toFixed(1)}%)
+                  </span> vs CIF
+                </div>
+              </div>
+              <div style={S.simCell}>
+                <div style={S.simCellLabel}>CBOT futures</div>
+                <div style={S.simCellValor}>{cbot.toFixed(2)} <span style={{fontSize: 11, color: '#6B7065'}}>USD/bu</span></div>
+                <div style={S.simCellDelta}>nível {niveis.cbot}</div>
+              </div>
+              <div style={S.simCell}>
+                <div style={S.simCellLabel}>Prêmio Paranaguá</div>
+                <div style={{...S.simCellValor, color: premio >= 0 ? '#C8E04A' : '#D9542B'}}>
+                  {premio >= 0 ? '+' : ''}{premio.toFixed(2)} <span style={{fontSize: 11, color: '#6B7065'}}>USD/bu</span>
+                </div>
+                <div style={S.simCellDelta}>nível {niveis.premio}</div>
+              </div>
+              <div style={S.simCell}>
+                <div style={S.simCellLabel}>USD/BRL</div>
+                <div style={S.simCellValor}>R$ {dolar.toFixed(2)}</div>
+                <div style={S.simCellDelta}>nível {niveis.dolar}</div>
+              </div>
             </div>
 
-            <div style={{marginBottom: 12}}>
-              <div style={{color: '#A89968', fontSize: 10, letterSpacing: 1.5, marginBottom: 6}}>CENÁRIO MACRO</div>
-              <div>{relatorio.cenarioMacro}</div>
+            {/* Edição rápida do balcão soja */}
+            <div style={{marginTop: 14, padding: 12, background: '#0F1410', border: '1px dashed #2A2F28'}}>
+              <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#6B7065', letterSpacing: 1, marginBottom: 8, textTransform: 'uppercase'}}>
+                Atualize o balcão Cotrijuc (cotrijuc.com.br/graos)
+              </div>
+              <div style={S.inputBlock}>
+                <label style={S.inputLabel}>Soja balcão R$/saca</label>
+                <input type="number" step="0.5" value={balcaoSoja} onChange={e => setBalcaoSoja(parseFloat(e.target.value)||0)} />
+              </div>
             </div>
+          </div>
 
-            <div style={{marginBottom: 12}}>
-              <div style={{color: '#A89968', fontSize: 10, letterSpacing: 1.5, marginBottom: 6}}>INDICADORES</div>
-              <div>• CBOT: <strong>{cbot.toFixed(2)} USD/bu</strong> ({niveis.cbot})</div>
-              <div>• Prêmio Pgua: <strong>{premio >= 0 ? '+' : ''}{premio.toFixed(2)} USD/bu</strong> ({niveis.premio})</div>
-              <div>• USD/BRL: <strong>R$ {dolar.toFixed(2)}</strong> ({niveis.dolar})</div>
-              <div>• Saca CIF JC calc: <strong>R$ {sacaCIF.toFixed(2)}</strong></div>
-              <div>• Balcão Cotrijuc soja: <strong>R$ {balcaoSoja.toFixed(2)}</strong> ({spreadBalcaoSoja >= 0 ? '+' : ''}R$ {spreadBalcaoSoja.toFixed(2)} vs ref)</div>
-              <div>• Boi vivo NESPRO: <strong>R$ {boiAtualVal.boiVivo.toFixed(2)}/kg</strong> · arroba R$ {boiAtualVal.arroba}</div>
+          {/* BLOCO 2: DECISÃO DO DIA */}
+          <div style={{borderTop: '1px solid #2A2F28', paddingTop: 14, marginBottom: 16}}>
+            <div style={{...S.sinteseLabel, color: '#C8E04A', marginBottom: 10}}>DECISÃO DO DIA · RECOMENDAÇÃO</div>
+            <div style={{padding: 14, background: '#0F1410', borderLeft: '3px solid #C8E04A'}}>
+              <div style={{fontFamily: "'IBM Plex Serif', serif", fontSize: 17, lineHeight: 1.5, color: '#E8E2D0', marginBottom: 10}}>
+                {relatorio.cenarioMacro}
+              </div>
+              <div style={{fontFamily: "'IBM Plex Serif', serif", fontSize: 15, lineHeight: 1.5, color: '#C8E04A', fontWeight: 600}}>
+                → {relatorio.recSoja}
+              </div>
+              <div style={{marginTop: 14, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10}}>
+                <div style={{background: '#181C18', padding: 10, textAlign: 'center'}}>
+                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: '#6B7065', letterSpacing: 1}}>PESSIMISTA</div>
+                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 20, color: '#D9542B', fontWeight: 500}}>R$ {relatorio.pessimista}</div>
+                  <div style={{fontSize: 9, color: '#6B7065'}}>-12%</div>
+                </div>
+                <div style={{background: '#181C18', padding: 10, textAlign: 'center', border: '1px solid #A89968'}}>
+                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: '#A89968', letterSpacing: 1}}>BASE</div>
+                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 20, color: '#E8E2D0', fontWeight: 500}}>R$ {relatorio.base}</div>
+                  <div style={{fontSize: 9, color: '#A89968'}}>atual</div>
+                </div>
+                <div style={{background: '#181C18', padding: 10, textAlign: 'center'}}>
+                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: '#6B7065', letterSpacing: 1}}>OTIMISTA</div>
+                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 20, color: '#C8E04A', fontWeight: 500}}>R$ {relatorio.otimista}</div>
+                  <div style={{fontSize: 9, color: '#6B7065'}}>+12%</div>
+                </div>
+              </div>
             </div>
+          </div>
 
-            <div style={{marginBottom: 12}}>
-              <div style={{color: '#A89968', fontSize: 10, letterSpacing: 1.5, marginBottom: 6}}>RECOMENDAÇÃO SOJA</div>
-              <div>{relatorio.recSoja}</div>
+          {/* BLOCO 3: HEDGE RATIO + MARGEM POR HA SOJA (estilo SLC Agrícola) */}
+          <div style={{borderTop: '1px solid #2A2F28', paddingTop: 14, marginBottom: 16}}>
+            <div style={{...S.sinteseLabel, color: '#A89968', marginBottom: 10}}>POSIÇÃO DE HEDGE · MARGEM REALIZADA</div>
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16}}>
+              <div>
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10}}>
+                  <div style={S.inputBlock}>
+                    <label style={S.inputLabel}>% safra travada</label>
+                    <input type="number" step="5" min="0" max="100" value={pctTravadoSoja} onChange={e => setPctTravadoSoja(parseFloat(e.target.value)||0)} />
+                  </div>
+                  <div style={S.inputBlock}>
+                    <label style={S.inputLabel}>Preço médio travado</label>
+                    <input type="number" step="1" value={precoMedioTravado} onChange={e => setPrecoMedioTravado(parseFloat(e.target.value)||0)} />
+                  </div>
+                </div>
+                <div style={{background: '#0F1410', padding: 12, border: '1px solid #2A2F28'}}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 6}}>
+                    <span style={{color: '#A89968'}}>Travado</span>
+                    <span style={{color: '#C8E04A', fontWeight: 600}}>{pctTravadoSoja}% @ R$ {precoMedioTravado}</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 6}}>
+                    <span style={{color: '#A89968'}}>Em aberto</span>
+                    <span style={{color: '#E6B84A'}}>{100-pctTravadoSoja}% @ R$ {balcaoSoja.toFixed(2)} (balcão)</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", borderTop: '1px solid #2A2F28', paddingTop: 6, marginTop: 6}}>
+                    <span style={{color: '#A89968'}}>Preço médio ponderado</span>
+                    <span style={{color: '#E8E2D0', fontWeight: 600}}>
+                      R$ {((pctTravadoSoja * precoMedioTravado + (100 - pctTravadoSoja) * balcaoSoja) / 100).toFixed(2)}
+                    </span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginTop: 4}}>
+                    <span style={{color: '#A89968'}}>Margem @ ponderado</span>
+                    <span style={{color: '#C8E04A'}}>
+                      R$ {(((pctTravadoSoja * precoMedioTravado + (100 - pctTravadoSoja) * balcaoSoja) / 100) - custoSaca).toFixed(2)}/saca
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div style={{...S.sinteseLabel, color: '#A89968', marginBottom: 8}}>Soja · margem por hectare</div>
+                <div style={{background: '#0F1410', padding: 14, border: '1px solid #C8E04A'}}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 6}}>
+                    <span style={{color: '#A89968'}}>Produtividade</span>
+                    <span style={{color: '#E8E2D0'}}>{prodSoja} sc/ha</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 6}}>
+                    <span style={{color: '#A89968'}}>Receita (a balcão)</span>
+                    <span style={{color: '#E8E2D0'}}>R$ {receitaSojaHa.toFixed(0)}/ha</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 6}}>
+                    <span style={{color: '#A89968'}}>Custo</span>
+                    <span style={{color: '#E8E2D0'}}>R$ {custoSojaHa}/ha</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 14, fontFamily: "'IBM Plex Mono', monospace", borderTop: '1px solid #2A2F28', paddingTop: 8, marginTop: 4}}>
+                    <span style={{color: '#A89968'}}>Margem</span>
+                    <span style={{color: margemSojaHa > 0 ? '#C8E04A' : '#D9542B', fontWeight: 700}}>
+                      R$ {margemSojaHa.toFixed(0)}/ha ({margemSojaPct.toFixed(0)}%)
+                    </span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginTop: 6, color: '#6B7065'}}>
+                    <span>Em {areaTotal} ha (fazenda)</span>
+                    <span>R$ {(margemSojaHa * areaTotal / 1000).toFixed(0)}k</span>
+                  </div>
+                </div>
+                <details style={{marginTop: 10, fontSize: 11, color: '#6B7065'}}>
+                  <summary style={{cursor: 'pointer', fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 0.5}}>
+                    ▸ ajustar produtividade · custo · área
+                  </summary>
+                  <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 10}}>
+                    <div style={S.inputBlock}><label style={S.inputLabel}>sc/ha</label>
+                      <input type="number" value={prodSoja} onChange={e => setProdSoja(parseFloat(e.target.value)||0)} /></div>
+                    <div style={S.inputBlock}><label style={S.inputLabel}>R$/ha custo</label>
+                      <input type="number" value={custoSojaHa} onChange={e => setCustoSojaHa(parseFloat(e.target.value)||0)} /></div>
+                    <div style={S.inputBlock}><label style={S.inputLabel}>Área (ha)</label>
+                      <input type="number" value={areaTotal} onChange={e => setAreaTotal(parseFloat(e.target.value)||0)} /></div>
+                  </div>
+                </details>
+              </div>
             </div>
+          </div>
 
-            <div style={{marginBottom: 12}}>
-              <div style={{color: '#A89968', fontSize: 10, letterSpacing: 1.5, marginBottom: 6}}>CENÁRIOS 3–6 MESES (R$/saca CIF JC)</div>
-              <div>• Pessimista (−12%): <span style={{color: '#D9542B'}}>R$ {relatorio.pessimista}</span></div>
-              <div>• Base: <span style={{color: '#A89968'}}>R$ {relatorio.base}</span></div>
-              <div>• Otimista (+12%): <span style={{color: '#C8E04A'}}>R$ {relatorio.otimista}</span></div>
-            </div>
-
-            <div style={{marginBottom: 12}}>
-              <div style={{color: '#A89968', fontSize: 10, letterSpacing: 1.5, marginBottom: 6}}>RELAÇÕES DE TROCA</div>
-              <div>• 1 saca soja paga <strong>{relatorio.trocaSojaMilho}</strong> sacas milho</div>
-              <div>• 1 arroba boi = <strong>{relatorio.trocaArrobaSoja}</strong> sacas soja</div>
-            </div>
-
-            <div>
-              <div style={{color: '#A89968', fontSize: 10, letterSpacing: 1.5, marginBottom: 6}}>DECISÃO DE PORTFÓLIO (margem/ha aos preços de balcão)</div>
-              <div>• Soja: <strong>R$ {margemSojaHa.toFixed(0)}/ha</strong> ({margemSojaPct.toFixed(0)}%)</div>
-              <div>• Milho: <strong>R$ {margemMilhoHa.toFixed(0)}/ha</strong> ({margemMilhoPct.toFixed(0)}%)</div>
-              <div>• Pecuária: <strong>R$ {margemPecHa.toFixed(0)}/ha</strong> ({margemPecPct.toFixed(0)}%)</div>
-              <div style={{marginTop: 6, color: '#C8E04A'}}>★ Melhor retorno: <strong>{culturas[0].nome}</strong></div>
-            </div>
-
-            <div style={{marginTop: 16, paddingTop: 10, borderTop: '1px solid #2A2F28', fontSize: 10, color: '#6B7065'}}>
-              Fontes: CEPEA/Esalq Paranaguá · CEPEA/Esalq Campinas · NESPRO/UFRGS · Cotrijuc balcão local
+          {/* BLOCO 4: GATILHOS SOJA */}
+          <div style={{borderTop: '1px solid #2A2F28', paddingTop: 14}}>
+            <div style={{...S.sinteseLabel, color: '#E6B84A', marginBottom: 10}}>GATILHOS · QUANDO REAGIR</div>
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10}}>
+              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #C8E04A'}}>
+                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE CBOT &gt; 12,50</div>
+                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>Trave +20% adicional em camada</div>
+              </div>
+              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #D9542B'}}>
+                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE CBOT &lt; 10,50</div>
+                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>Avalie put protetiva strike R$ {(custoSaca * 1.1).toFixed(0)}</div>
+              </div>
+              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #C8E04A'}}>
+                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE DÓLAR &gt; 5,40</div>
+                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>Trave câmbio NDF (oportunidade alta vol)</div>
+              </div>
+              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #D9542B'}}>
+                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE DÓLAR &lt; 4,90</div>
+                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>NÃO travar; comprar call de USD</div>
+              </div>
+              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #E6B84A'}}>
+                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE BALCÃO &gt; CIF</div>
+                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>Venda física local (sem frete)</div>
+              </div>
+              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #E6B84A'}}>
+                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE PRÊMIO &gt; 1,50</div>
+                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>Trave prêmio agressivo (cai rápido)</div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* 09 — EVENTOS — antigo, renumerado para 11 */}
+
         <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
-          <div style={S.cardLabel}>14 — Eventos-chave para calibrar leitura</div>
+          <div style={S.cardLabel}>11 — Eventos-chave para calibrar leitura</div>
           <div className="eventos-grid" style={S.eventosGrid}>
             {[
               { p: '12Q3', e: 'Seca histórica EUA', li: 'CBOT bateu 17,6 USD/bu — recorde até então. Quem travou em ago/set garantiu o maior preço da década. Quem segurou para "ir a 20" perdeu 30% nos meses seguintes.' },
@@ -1217,8 +1744,9 @@ Fontes: CEPEA/Esalq Paranaguá · CEPEA/Esalq Campinas · NESPRO/UFRGS · Cotrij
         <div>· <strong>CBOT futures (USD/bu):</strong> Soja Rotterdam CIF (Banco Mundial / Oil World / USDA via IndexMundi), conversão (USD/ton − 30) ÷ 36,7437.</div>
         <div>· <strong>Prêmio Paranaguá:</strong> calculado como (CEPEA USD/bu − CBOT futures) — prêmio físico EFETIVO sobre Chicago, sem interpolação.</div>
         <div>· <strong>Ureia (R$/ton):</strong> Black Sea FOB (Banco Mundial via IndexMundi) × USD/BRL × 1,3 (markup posto-BR para logística + ICMS).</div>
-        <div>· <strong>Milho:</strong> Indicador <strong>CEPEA/Esalq-BM&FBOVESPA Campinas-SP</strong> (R$/saca 60 kg), trimestral nominal estimado a partir de releases CEPEA. Preço posto JC = Campinas − R$ 8/saca (frete rodoviário). Fonte: <em>cepea.org.br/br/indicador/milho.aspx</em></div>
-        <div>· <strong>Boi gordo RS:</strong> <strong>NESPRO/UFRGS</strong> — Núcleo de Estudos em Sistemas de Produção de Bovinos de Corte e Cadeia Produtiva, UFRGS. Pesquisa semanal preço gado gordo e reposição RS, desde 2015. Série em R$/kg peso vivo (PV) e em R$/arroba equivalente. Fonte: <em>ufrgs.br/nespro/?page_id=3337</em> (Histórico de Índices — Preço do Boi Gordo)</div>
+        <div>· <strong>Balcão Cotrijuc</strong> (Cooperativa Agropecuária Júlio de Castilhos): cotação real do cartaz em 17/06/2026 — Soja R$ 114,50. Atualize manualmente no painel para acompanhar o dia. Fonte: <em>cotrijuc.com.br/graos</em></div>
+        <div>· <strong>Macro/financeiro (módulo 08):</strong> Ouro USD/oz (LBMA London PM Fix), Cobre USD/ton (LME), CDI anual (BCB/Cetip), IPCA anual (IBGE), Custo de produção soja RS (Conab Companhia Nacional de Abastecimento). Valores anuais aplicados a cada trimestre; CDI e IPCA compostos. Milho posto JC = CEPEA Campinas − R$ 8/saca (frete rodoviário, embutido na série multi-ativo). Boi gordo RS via NESPRO/UFRGS.</div>
+        <div>· <strong>Fundamentos S&D (módulo 09):</strong> USDA WASDE (World Agricultural Supply and Demand Estimates, <em>usda.gov/oce/commodity/wasde</em>) para mundial; Conab/Companhia Nacional de Abastecimento (<em>conab.gov.br/info-agro/safras</em>) para Brasil. Valores anuais por safra agrícola, em milhões de toneladas. Próximas atualizações: WASDE mensal (2ª quinta-feira); Conab mensal (~2ª semana).</div>
         <div>· <strong>Frete JC → Rio Grande:</strong> R$ 4 (2010-12) a R$ 13 (2022, diesel) por saca; estimado conforme combustível/sazonalidade.</div>
         <div style={{marginTop: 8, fontStyle: 'italic'}}>Para atualizar: baixe nova planilha em CEPEA-Esalq/USP (gratuito) e substitua o array HISTORICO. Os 66 trimestres têm <code>conf: true</code> (dados reais), nenhum interpolado.</div>
         <div style={{marginTop: 6}}>Faixas calibradas para janela atual: CBOT {FAIXAS.cbot.baixo}–{FAIXAS.cbot.alto}, prêmio {FAIXAS.premio.baixo}–{FAIXAS.premio.alto}, dólar {FAIXAS.dolar.baixo}–{FAIXAS.dolar.alto}.</div>
