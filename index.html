@@ -2497,6 +2497,363 @@ function DecisaoEstrategicaBloco() {
   );
 }
 
+// ============================================================
+// BLOCO PLANO DE HEDGE · roadmap mensal de ações baseado em
+// custo real, sazonalidade JC, WASDE, ANEC e calendário agrícola
+// ============================================================
+function PlanoHedgeBloco({ custoRealSc, precoAtualSc, prodEsperada, areaTotal, balcaoSoja }) {
+  const hoje = new Date();
+  const mesAtual = hoje.getMonth(); // 0=jan, 11=dez
+  const breakEven = custoRealSc;
+  const margem = precoAtualSc - breakEven;
+  const cobreCustoVar = precoAtualSc > breakEven * 0.6;  // ~60% é custo variável
+  const cobreFull = precoAtualSc >= breakEven;
+  const totalSacas = prodEsperada * areaTotal;
+  // Calendário JC: ano agrícola começa em outubro
+  const calendario = [
+    { m:0,  nome:'JANEIRO',   fase:'★ Florescimento + enchimento crítico',
+      acoes:[
+        { txt:'NÃO travar mais de 50% até passar chuva de fev', cor:'#D9542B', tipo:'evitar' },
+        { txt:'Acompanhar chuva diária · WASDE jan 12', cor:'#7AB8E0', tipo:'monitorar' },
+        { txt:'Se safra confirmada cheia, considerar mais 10% forward', cor:'#E6B84A', tipo:'condicional' },
+      ]},
+    { m:1,  nome:'FEVEREIRO', fase:'Enchimento final → colheita precoce MT/GO',
+      acoes:[
+        { txt:'WASDE fev 11 · revisão produção Sul América', cor:'#7AB8E0', tipo:'monitorar' },
+        { txt:'Se margem boa, travar +25% forward antes da pressão MT', cor:'#C8E04A', tipo:'travar' },
+        { txt:'Confirmar logística colheita (frete, armazenagem)', cor:'#A89968', tipo:'preparar' },
+      ]},
+    { m:2,  nome:'MARÇO',     fase:'★ COLHEITA JC · pressão máxima de oferta',
+      acoes:[
+        { txt:'EVITE vender físico spot (preço no piso anual)', cor:'#D9542B', tipo:'evitar' },
+        { txt:'Cumprir contratos forward já fechados', cor:'#A89968', tipo:'executar' },
+        { txt:'Estocar safra restante se CDI baixo + tem armazém', cor:'#E6B84A', tipo:'condicional' },
+        { txt:'Comprar Put protetiva para safra estocada', cor:'#7AB8E0', tipo:'hedge' },
+      ]},
+    { m:3,  nome:'ABRIL',     fase:'Pós-colheita · pico ANEC embarques',
+      acoes:[
+        { txt:'Avaliar barter NPK apenas se base CBOT estiver alta (>11,5 USD/bu)', cor:'#E6B84A', tipo:'condicional' },
+        { txt:'Pico de embarques BR = prêmio Paranaguá pressionado', cor:'#7AB8E0', tipo:'monitorar' },
+        { txt:'Levantamento de necessidade NPK safra 26/27 (planejamento)', cor:'#A89968', tipo:'preparar' },
+      ]},
+    { m:4,  nome:'MAIO',      fase:'Entressafra · monitorar mercado NPK internacional',
+      acoes:[
+        { txt:'Acompanhar preço NPK internacional · sem pressa de comprar', cor:'#7AB8E0', tipo:'monitorar' },
+        { txt:'★ Para produtor físico: melhor janela é set-out (próximo do plantio)', cor:'#A89968', tipo:'analisar' },
+        { txt:'Compra antecipada só faz sentido se: barter favorável OU revenda dando desconto agressivo', cor:'#E6B84A', tipo:'condicional' },
+      ]},
+    { m:5,  nome:'JUNHO',     fase:'Plantio EUA · CBOT começa volatilidade',
+      acoes:[
+        { txt:'USDA Acreage Report 30/jun · área plantada final EUA', cor:'#7AB8E0', tipo:'monitorar' },
+        { txt:'WASDE jun 11 + Acreage = pivô de preço soja', cor:'#7AB8E0', tipo:'monitorar' },
+        { txt:'NPK: continuar monitorando · não comprar antecipado sem vantagem clara', cor:'#A89968', tipo:'analisar' },
+      ]},
+    { m:6,  nome:'JULHO',     fase:'★ Pollination EUA · CBOT volátil',
+      acoes:[
+        { txt:'★ Mês MAIS VOLÁTIL do CBOT (pollination)', cor:'#D9542B', tipo:'monitorar' },
+        { txt:'Aproveitar picos para travar 25% adicional', cor:'#C8E04A', tipo:'travar' },
+        { txt:'WASDE jul é decisivo · cuidado com posicionamento', cor:'#E6B84A', tipo:'preparar' },
+        { txt:'NPK: iniciar cotações com 3-4 revendas locais', cor:'#A89968', tipo:'preparar' },
+      ]},
+    { m:7,  nome:'AGOSTO',    fase:'Crescimento EUA · janela hedge premium',
+      acoes:[
+        { txt:'Pro Farmer Crop Tour 19-22/ago · revisa produção EUA', cor:'#7AB8E0', tipo:'monitorar' },
+        { txt:'WASDE ago revela rendimentos finais EUA', cor:'#7AB8E0', tipo:'monitorar' },
+        { txt:'★ Travar 30-40% forward safra 26/27 se margem boa', cor:'#C8E04A', tipo:'travar' },
+        { txt:'NPK: cotações firmes · revendas mostrando estoque · negociar', cor:'#A89968', tipo:'preparar' },
+      ]},
+    { m:8,  nome:'SETEMBRO',  fase:'★★ MELHOR PREÇO SOJA · pré-plantio JC · ★ COMPRA NPK',
+      acoes:[
+        { txt:'★★ SET-NOV: melhor janela de preço sazonal RS (índice 105+)', cor:'#C8E04A', tipo:'travar' },
+        { txt:'TRAVAR 40-60% da safra 26/27 nesta janela', cor:'#C8E04A', tipo:'travar' },
+        { txt:'★ NPK: melhor janela REAL para produtor físico · revendas em distress', cor:'#C8E04A', tipo:'comprar' },
+        { txt:'Negociar desconto à vista 4-7% · barter com soja a R$ 135+', cor:'#C8E04A', tipo:'comprar' },
+      ]},
+    { m:9,  nome:'OUTUBRO',   fase:'★ Pré-plantio JC · ★ ÚLTIMA JANELA NPK',
+      acoes:[
+        { txt:'JC: plantio só após 20/out (risco geada)', cor:'#A89968', tipo:'preparar' },
+        { txt:'★ NPK: última janela com poder de negociação · spot competitivo', cor:'#C8E04A', tipo:'comprar' },
+        { txt:'Conab estima área BR · WASDE out 09', cor:'#7AB8E0', tipo:'monitorar' },
+        { txt:'Não travar mais soja até iniciar plantio', cor:'#D9542B', tipo:'evitar' },
+      ]},
+    { m:10, nome:'NOVEMBRO',  fase:'★★ PICO PLANTIO JC · auge 10/nov',
+      acoes:[
+        { txt:'★★ JC: PICO de plantio dia 10/nov · janela 1-30 nov', cor:'#C8E04A', tipo:'executar' },
+        { txt:'Última janela para travar >50% (após = risco entrega)', cor:'#E6B84A', tipo:'condicional' },
+        { txt:'NDVI satélite primeira leitura · monitorar', cor:'#7AB8E0', tipo:'monitorar' },
+        { txt:'Decisão sobre topdressing ou suprimento extra', cor:'#A89968', tipo:'analisar' },
+      ]},
+    { m:11, nome:'DEZEMBRO',  fase:'Plantio até 15/dez · desenvolvimento V1-V4',
+      acoes:[
+        { txt:'JC: plantio finaliza 15/dez (replantios tardios)', cor:'#A89968', tipo:'executar' },
+        { txt:'Avalie comprar Calls para upside · monitorar La Niña', cor:'#7AB8E0', tipo:'hedge' },
+        { txt:'Conab dez revisa custos anuais', cor:'#7AB8E0', tipo:'monitorar' },
+        { txt:'Orçamento safra 27/28', cor:'#A89968', tipo:'preparar' },
+      ]},
+  ];
+
+  // Próximos 6 meses
+  const proximos = [];
+  for (let i = 0; i < 6; i++) {
+    proximos.push(calendario[(mesAtual + i) % 12]);
+  }
+  const corTipo = {
+    travar:    '#C8E04A',
+    comprar:   '#C8E04A',
+    executar:  '#C8E04A',
+    evitar:    '#D9542B',
+    monitorar: '#7AB8E0',
+    hedge:     '#7AB8E0',
+    analisar:  '#9C7DBF',
+    condicional:'#E6B84A',
+    preparar:  '#A89968',
+  };
+  const iconeTipo = {
+    travar:    '🔒',
+    comprar:   '💰',
+    executar:  '✓',
+    evitar:    '⛔',
+    monitorar: '👁',
+    hedge:     '🛡',
+    analisar:  '📊',
+    condicional:'⚠',
+    preparar:  '⚙',
+  };
+
+  return (
+    <div>
+      {/* Nota sobre lógica produtor físico */}
+      <div style={{padding: 10, background: '#0F1410', borderLeft: '3px solid #9C7DBF', marginBottom: 14, fontSize: 11, color: '#A89968', lineHeight: 1.5}}>
+        <strong style={{color: '#E8E2D0'}}>★ Lógica de produtor físico (não trader):</strong> NPK não segue regra "compre cedo para travar preço". Para produtor JC, a melhor janela costuma ser <strong style={{color:'#C8E04A'}}>set-out</strong> (30-60 dias antes do plantio) — revendas em distress para girar estoque, base CBOT alta favorece barter, spot competitivo. Comprar em mai-jun trava capital 4-5 meses sem garantia de vantagem.
+      </div>
+
+      {/* Diagnóstico atual */}
+      <div style={{padding: 12, background: '#181C18', border: '1px solid '+(cobreFull ? '#C8E04A' : cobreCustoVar ? '#E6B84A' : '#D9542B'), marginBottom: 14}}>
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10}}>
+          <div>
+            <div style={{fontSize: 10, color: '#A89968', letterSpacing: 1}}>PREÇO ATUAL</div>
+            <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 18, color: '#E8E2D0', fontWeight: 700}}>R$ {precoAtualSc.toFixed(2)}</div>
+            <div style={{fontSize: 9, color: '#A89968'}}>CIF JC</div>
+          </div>
+          <div>
+            <div style={{fontSize: 10, color: '#A89968', letterSpacing: 1}}>SEU BREAK-EVEN</div>
+            <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 18, color: '#FF7F50', fontWeight: 700}}>R$ {breakEven.toFixed(2)}</div>
+            <div style={{fontSize: 9, color: '#A89968'}}>custo total R$/sc</div>
+          </div>
+          <div>
+            <div style={{fontSize: 10, color: '#A89968', letterSpacing: 1}}>MARGEM ATUAL</div>
+            <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 18, color: margem > 0 ? '#C8E04A' : '#D9542B', fontWeight: 700}}>
+              {margem > 0 ? '+' : ''}R$ {margem.toFixed(2)}
+            </div>
+            <div style={{fontSize: 9, color: '#A89968'}}>{((margem/breakEven)*100).toFixed(1)}% sobre custo</div>
+          </div>
+          <div>
+            <div style={{fontSize: 10, color: '#A89968', letterSpacing: 1}}>STATUS</div>
+            <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 14, color: cobreFull ? '#C8E04A' : cobreCustoVar ? '#E6B84A' : '#D9542B', fontWeight: 700, marginTop: 4}}>
+              {cobreFull ? '✓ COBRE CUSTO' : cobreCustoVar ? '⚠ COBRE VARIÁVEL' : '✗ NÃO COBRE'}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recomendação tática agora */}
+      <div style={{padding: 12, background: '#1A211A', borderLeft: '3px solid #C8E04A', marginBottom: 14, fontSize: 12, color: '#E8E2D0', lineHeight: 1.6}}>
+        <div style={{fontSize: 11, color: '#C8E04A', letterSpacing: 1, marginBottom: 6, fontFamily: "'IBM Plex Mono', monospace"}}>★ RECOMENDAÇÃO TÁTICA AGORA</div>
+        {cobreFull && margem > breakEven * 0.15 ? (
+          <>
+            <strong style={{color:'#C8E04A'}}>Margem excelente</strong> ({((margem/breakEven)*100).toFixed(0)}% sobre custo). 
+            Considere travar agora <strong>30-40% da safra</strong> via forward direto, contrato a fixar com preço-piso, ou put protetiva.
+            Total a travar: <strong>{(totalSacas * 0.35).toFixed(0)} sacas</strong> (~35%) a R$ {precoAtualSc.toFixed(2)} = R$ {(totalSacas * 0.35 * precoAtualSc).toLocaleString('pt-BR', {maximumFractionDigits: 0})}.
+          </>
+        ) : cobreFull && margem > 0 ? (
+          <>
+            <strong style={{color:'#E6B84A'}}>Margem positiva mas modesta</strong> ({((margem/breakEven)*100).toFixed(0)}%). 
+            Trave apenas <strong>15-25%</strong> da safra para garantir cobertura do custo fixo. Espere janela SET-NOV para travar volume maior.
+            Considere put protetiva no custo + 5%.
+          </>
+        ) : cobreCustoVar ? (
+          <>
+            <strong style={{color:'#E6B84A'}}>Preço cobre custo variável mas NÃO o fixo</strong>. 
+            Trave apenas o suficiente para cobrir o financiamento de custeio (10-15%). 
+            Evite forward acima disso. Considere call para aproveitar alta sem comprometer.
+            <strong style={{color:'#D9542B'}}> ATENÇÃO:</strong> Sem mudança, prejuízo de R$ {((breakEven - precoAtualSc) * totalSacas).toLocaleString('pt-BR', {maximumFractionDigits: 0})}/safra.
+          </>
+        ) : (
+          <>
+            <strong style={{color:'#D9542B'}}>Preço atual NÃO cobre nem o custo variável</strong>. 
+            NÃO TRAVAR forward. Possíveis ações: (1) aguardar recuperação · (2) put protetiva profunda · (3) seguro Proagro Mais como piso · (4) reduzir custos no módulo 02.
+            Prejuízo potencial: R$ {((breakEven - precoAtualSc) * totalSacas).toLocaleString('pt-BR', {maximumFractionDigits: 0})}.
+          </>
+        )}
+      </div>
+
+      {/* Roadmap 6 meses */}
+      <div style={{fontSize: 11, color: '#9C7DBF', marginBottom: 8, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 1, fontWeight: 600}}>
+        ▸ ROADMAP 6 MESES · ações por mês a partir de agora
+      </div>
+      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10}}>
+        {proximos.map((m, i) => {
+          const isAtual = i === 0;
+          return (
+            <div key={m.m} style={{padding: 12, background: isAtual ? '#1A211A' : '#181C18', border: '1px solid '+(isAtual ? '#C8E04A' : '#2A2F28')}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8}}>
+                <div style={{fontSize: 13, color: isAtual ? '#C8E04A' : '#E8E2D0', fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 1, fontWeight: 700}}>
+                  {isAtual && '◉ '}{m.nome}
+                </div>
+                {isAtual && <div style={{fontSize: 9, color: '#C8E04A', letterSpacing: 1}}>MÊS ATUAL</div>}
+              </div>
+              <div style={{fontSize: 10, color: '#A89968', marginBottom: 8, fontStyle: 'italic'}}>{m.fase}</div>
+              <ul style={{listStyle: 'none', padding: 0, margin: 0}}>
+                {m.acoes.map((a, j) => (
+                  <li key={j} style={{display: 'flex', gap: 8, marginBottom: 6, fontSize: 11, color: '#E8E2D0', lineHeight: 1.4}}>
+                    <span style={{color: corTipo[a.tipo] || '#A89968'}}>{iconeTipo[a.tipo] || '·'}</span>
+                    <span style={{color: a.cor}}>{a.txt}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Legenda tipos */}
+      <div style={{marginTop: 14, padding: 10, background: '#0F1410', fontSize: 10, color: '#A89968', display: 'flex', flexWrap: 'wrap', gap: 14}}>
+        <span>🔒 travar/hedge</span>
+        <span>💰 comprar (insumo)</span>
+        <span>✓ executar contrato</span>
+        <span>⛔ evitar ação</span>
+        <span>👁 monitorar release</span>
+        <span>🛡 proteção opcional</span>
+        <span>⚠ condicional</span>
+        <span>📊 analisar</span>
+        <span>⚙ preparar</span>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// TOUR GUIADO · primeiro acesso ou sob demanda
+// ============================================================
+function TourGuiado({ onClose }) {
+  const TOUR_STEPS = [
+    {
+      titulo: '👋 Bem-vindo ao Painel Soja JC',
+      texto: 'Este painel é seu centro de comando para decisões sobre soja em Júlio de Castilhos. Tem 17 módulos cobrindo desde formação de preço até decisão estratégica entre plantar e CDI. Tour rápido em 8 telas.',
+    },
+    {
+      titulo: '01 · Formação do preço',
+      texto: 'Slides para CBOT (cents/bu) · prêmio Paranaguá · dólar · target de preço. Mostra o preço CIF JC composto. Aqui você simula "e se CBOT subir 50 cents?". O preço aqui alimenta todos os outros módulos.',
+    },
+    {
+      titulo: '02 · Custos detalhados',
+      texto: 'Edite 23 itens de custo (insumos, defensivos, máquinas, terra, etc.) — vê referência Conab + sua diferença. Salve cenários nomeados (Realista, Otimista). Histórico das últimas 50 edições. Export/Import JSON para backup.',
+    },
+    {
+      titulo: '03 a 08 · Análise de mercado',
+      texto: 'Crush margin BR + China · curvas futuros CBOT/CME · sazonalidade · estratégias clássicas com calculadoras (forward, barter, put, collar, three-way). Cada calculadora usa seu custo real do módulo 02.',
+    },
+    {
+      titulo: '09 · Histórico 16 anos',
+      texto: '8 abas com gráficos: todos ativos em base 100, agrícolas, metais, renda fixa, custos, margem soja, e ★ RENTABILIDADE REAL JC/RS com dados SIDRA oficiais. Tudo reativo aos sliders do módulo 02.',
+    },
+    {
+      titulo: '15 · Decisão estratégica',
+      texto: 'A pergunta que importa: plantar só a área PRÓPRIA, plantar + arrendar mais, ou capital em CDI? Compara as 3 estratégias com probabilidades históricas SIDRA (25 anos) e mostra Value at Risk.',
+    },
+    {
+      titulo: '17 · Plano de hedge',
+      texto: 'Roadmap mensal de ações para os próximos 6 meses, com diagnóstico tático imediato baseado no seu custo real vs preço atual. Mostra "trave agora 35%" ou "evite forward, prejuízo provável".',
+    },
+    {
+      titulo: '✓ Pronto!',
+      texto: 'Dica: comece editando o módulo 02 com seus custos reais. Em seguida veja o módulo 17 (plano de hedge) e 15 (decisão estratégica). Use o botão ? no rodapé para reabrir este tour. Boa safra!',
+    },
+  ];
+  const [step, setStep] = useState(0);
+  const total = TOUR_STEPS.length;
+  const atual = TOUR_STEPS[step];
+  const irPara = (n) => {
+    if (n < 0 || n >= total) return;
+    setStep(n);
+  };
+  const finalizar = () => {
+    try { localStorage.setItem('painelSoja_tourCompleted', 'true'); } catch (e) {}
+    onClose();
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      background: 'rgba(10, 15, 11, 0.92)', zIndex: 9999,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 20, backdropFilter: 'blur(4px)',
+    }}>
+      <div style={{
+        maxWidth: 560, width: '100%', background: '#0F1410',
+        border: '2px solid #C8E04A', padding: 24,
+        fontFamily: "'IBM Plex Mono', monospace",
+      }}>
+        {/* Progress */}
+        <div style={{display: 'flex', gap: 4, marginBottom: 16}}>
+          {TOUR_STEPS.map((_, i) => (
+            <div key={i} style={{
+              flex: 1, height: 3,
+              background: i <= step ? '#C8E04A' : '#2A2F28',
+              transition: 'background 0.3s'
+            }}/>
+          ))}
+        </div>
+
+        <div style={{fontSize: 10, color: '#A89968', letterSpacing: 2, marginBottom: 6}}>
+          PASSO {step + 1} DE {total}
+        </div>
+
+        <div style={{fontSize: 18, color: '#C8E04A', marginBottom: 12, letterSpacing: 0.5, fontWeight: 700}}>
+          {atual.titulo}
+        </div>
+
+        <div style={{fontSize: 13, color: '#E8E2D0', lineHeight: 1.7, marginBottom: 20, fontFamily: 'Inter, sans-serif'}}>
+          {atual.texto}
+        </div>
+
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8}}>
+          <button onClick={finalizar} style={{
+            padding: '8px 14px', background: 'none', border: '1px solid #A89968',
+            color: '#A89968', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
+            letterSpacing: 1, cursor: 'pointer'
+          }}>✕ PULAR TOUR</button>
+
+          <div style={{display: 'flex', gap: 6}}>
+            <button onClick={() => irPara(step - 1)} disabled={step === 0} style={{
+              padding: '8px 14px',
+              background: step === 0 ? '#0A0F0B' : '#181C18',
+              border: '1px solid '+(step === 0 ? '#2A2F28' : '#7AB8E0'),
+              color: step === 0 ? '#6B7065' : '#7AB8E0',
+              fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 1,
+              cursor: step === 0 ? 'not-allowed' : 'pointer'
+            }}>← ANTERIOR</button>
+
+            {step < total - 1 ? (
+              <button onClick={() => irPara(step + 1)} style={{
+                padding: '8px 18px', background: '#1A211A', border: '1px solid #C8E04A',
+                color: '#C8E04A', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
+                letterSpacing: 1, cursor: 'pointer', fontWeight: 700
+              }}>PRÓXIMO →</button>
+            ) : (
+              <button onClick={finalizar} style={{
+                padding: '8px 18px', background: '#1A211A', border: '1px solid #C8E04A',
+                color: '#C8E04A', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
+                letterSpacing: 1, cursor: 'pointer', fontWeight: 700
+              }}>✓ COMEÇAR</button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PainelSoja() {
   const [cbot, setCbot] = useState(11.97);
   const [premio, setPremio] = useState(-0.34);
@@ -2661,6 +3018,8 @@ function PainelSoja() {
   };
 
   const cenarioAtivo = custosConfig.cenarios.find(c => c.id === custosConfig.cenarioAtivoId);
+  const [compararA, setCompararA] = useState(null);
+  const [compararB, setCompararB] = useState(null);
   const prodEsperada = 50;
   const [custoFert, setCustoFert] = useState(3500);
   const [expCbot, setExpCbot] = useState('neutra');
@@ -2677,6 +3036,12 @@ function PainelSoja() {
   const [gatilhoTrava, setGatilhoTrava] = useState(160);
   const [estratExp, setEstratExp] = useState(null);
   const [multiVer, setMultiVer] = useState('tudo');
+  // Tour guiado: abre no primeiro acesso automaticamente
+  const [tourAberto, setTourAberto] = useState(() => {
+    try {
+      return !localStorage.getItem('painelSoja_tourCompleted');
+    } catch (e) { return false; }
+  });
   const [fundVer, setFundVer] = useState('mundial');
   // Balcão Cotrijuc soja — cotação real do dia (cotrijuc.com.br/graos)
   // 17/06/2026: Soja R$ 114,50
@@ -3068,6 +3433,26 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
   return (
     <div style={S.app}>
+      {/* TOUR GUIADO · primeiro acesso */}
+      {tourAberto && <TourGuiado onClose={() => setTourAberto(false)} />}
+
+      {/* BOTÃO ? FLUTUANTE · reabre tour a qualquer momento */}
+      <button
+        onClick={() => setTourAberto(true)}
+        title="Reabrir tour guiado"
+        style={{
+          position: 'fixed', bottom: 20, right: 20, zIndex: 100,
+          width: 44, height: 44, borderRadius: '50%',
+          background: '#1A211A', border: '2px solid #C8E04A',
+          color: '#C8E04A', fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 20, fontWeight: 700, cursor: 'pointer',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+          transition: 'transform 0.15s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+      >?</button>
+
       <header style={S.header}>
         <div>
           <div style={S.eyebrow}>Painel · Soja · Júlio de Castilhos / RS · <span style={{color: '#C8E04A'}}>dados CEPEA 17/06/2026</span></div>
@@ -3278,6 +3663,18 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
               color: custosTabAtiva==='resumo'?'#FF7F50':'#A89968', fontFamily:"'IBM Plex Mono', monospace",
               fontSize:11, letterSpacing:1, cursor:'pointer', fontWeight: 600
             }}>RESUMO + TERRA</button>
+            <button onClick={() => setCustosTabAtiva('comparar')} style={{
+              padding:'10px 16px', background: custosTabAtiva==='comparar'?'#1A211A':'transparent',
+              border:'none', borderBottom: custosTabAtiva==='comparar'?'2px solid #9C7DBF':'2px solid transparent',
+              color: custosTabAtiva==='comparar'?'#9C7DBF':'#A89968', fontFamily:"'IBM Plex Mono', monospace",
+              fontSize:11, letterSpacing:1, cursor:'pointer', fontWeight: 600
+            }}>★ COMPARAR CENÁRIOS</button>
+            <button onClick={() => setCustosTabAtiva('impacto')} style={{
+              padding:'10px 16px', background: custosTabAtiva==='impacto'?'#1A211A':'transparent',
+              border:'none', borderBottom: custosTabAtiva==='impacto'?'2px solid #FF7F50':'2px solid transparent',
+              color: custosTabAtiva==='impacto'?'#FF7F50':'#A89968', fontFamily:"'IBM Plex Mono', monospace",
+              fontSize:11, letterSpacing:1, cursor:'pointer', fontWeight: 600
+            }}>🔄 IMPACTO DE MUDANÇAS</button>
           </div>
 
           {/* Tabela de custos */}
@@ -3403,6 +3800,362 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                       <strong style={{color: '#7AB8E0'}}>Comparativo com Conab RS Planalto 2026:</strong> custo total Conab nominal ~R$ 95/sc (com terra teórica). Sua configuração: R$ {custoPorSc.toFixed(2)}/sc. {custoPorSc > 100 ? <span style={{color:'#D9542B'}}>★ Acima do Conab — verifique se arrendamento real está sendo capturado.</span> : custoPorSc < 90 ? <span style={{color:'#C8E04A'}}>★ Abaixo do Conab — favorável, conferir se algum item está subestimado.</span> : <span>Dentro da faixa esperada.</span>}
                     </div>
                   </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* Tab COMPARAR: lado-a-lado de 2 cenários */}
+          {custosTabAtiva === 'comparar' && (
+            <div style={{padding: 14, background: '#0F1410', border: '1px solid #2A2F28', borderTop: 'none'}}>
+              {custosConfig.cenarios.length < 2 ? (
+                <div style={{padding: 20, textAlign: 'center', color: '#A89968', fontSize: 12}}>
+                  ⚠ Você precisa de pelo menos <strong style={{color:'#E6B84A'}}>2 cenários salvos</strong> para comparar.<br/>
+                  <span style={{fontSize:11, color:'#6B7065'}}>Edite valores → clique "💾 SALVAR COMO" → repita com outro nome → volte aqui.</span>
+                </div>
+              ) : (() => {
+                // Compõe lista de "cenários comparáveis": cenários salvos + "atual"
+                const opcoes = [
+                  { id: '__atual__', nome: '★ Edição atual', custos: custosUsuario },
+                  { id: '__conab__', nome: '↻ Conab referência', custos: initDefault() },
+                  ...custosConfig.cenarios,
+                ];
+                const cenA = opcoes.find(c => c.id === compararA) || opcoes[0];
+                const cenB = opcoes.find(c => c.id === compararB) || opcoes[Math.min(2, opcoes.length - 1)];
+                const totalA = Object.values(cenA.custos).reduce((s, v) => s + v, 0);
+                const totalB = Object.values(cenB.custos).reduce((s, v) => s + v, 0);
+                const deltaTotal = totalA - totalB;
+                return (
+                  <>
+                    {/* Seletores */}
+                    <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap: 12, marginBottom: 14}}>
+                      <div>
+                        <div style={{fontSize: 10, color: '#7AB8E0', letterSpacing: 1, marginBottom: 4}}>CENÁRIO A</div>
+                        <select value={cenA.id} onChange={e => setCompararA(e.target.value)} style={{width:'100%', padding: 8, background: '#181C18', border:'1px solid #7AB8E0', color: '#7AB8E0', fontFamily: "'IBM Plex Mono', monospace", fontSize: 12}}>
+                          {opcoes.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <div style={{fontSize: 10, color: '#E6B84A', letterSpacing: 1, marginBottom: 4}}>CENÁRIO B</div>
+                        <select value={cenB.id} onChange={e => setCompararB(e.target.value)} style={{width:'100%', padding: 8, background: '#181C18', border: '1px solid #E6B84A', color: '#E6B84A', fontFamily: "'IBM Plex Mono', monospace", fontSize: 12}}>
+                          {opcoes.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Cards de total */}
+                    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 14}}>
+                      <div style={{padding: 12, background: '#181C18', borderLeft: '3px solid #7AB8E0'}}>
+                        <div style={{fontSize: 10, color: '#7AB8E0', letterSpacing: 1}}>{cenA.nome}</div>
+                        <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 22, color: '#7AB8E0', fontWeight: 700, marginTop: 4}}>R$ {totalA.toFixed(0)}</div>
+                        <div style={{fontSize: 10, color: '#A89968'}}>por ha (sem terra)</div>
+                      </div>
+                      <div style={{padding: 12, background: '#181C18', borderLeft: '3px solid #E6B84A'}}>
+                        <div style={{fontSize: 10, color: '#E6B84A', letterSpacing: 1}}>{cenB.nome}</div>
+                        <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 22, color: '#E6B84A', fontWeight: 700, marginTop: 4}}>R$ {totalB.toFixed(0)}</div>
+                        <div style={{fontSize: 10, color: '#A89968'}}>por ha (sem terra)</div>
+                      </div>
+                      <div style={{padding: 12, background: '#181C18', borderLeft: '3px solid ' + (deltaTotal > 0 ? '#D9542B' : '#C8E04A')}}>
+                        <div style={{fontSize: 10, color: '#A89968', letterSpacing: 1}}>Δ A−B</div>
+                        <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 22, color: deltaTotal > 0 ? '#D9542B' : '#C8E04A', fontWeight: 700, marginTop: 4}}>
+                          {deltaTotal > 0 ? '+' : ''}R$ {deltaTotal.toFixed(0)}
+                        </div>
+                        <div style={{fontSize: 10, color: '#A89968'}}>{totalB > 0 ? ((deltaTotal/totalB*100).toFixed(1) + '%') : ''}</div>
+                      </div>
+                    </div>
+
+                    {/* Tabela item-a-item */}
+                    <div style={{overflowX:'auto', border: '1px solid #2A2F28'}}>
+                      <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace"}}>
+                        <thead>
+                          <tr style={{background: '#181C18'}}>
+                            <th style={{padding: 8, textAlign: 'left', color: '#A89968', letterSpacing: 1}}>ITEM</th>
+                            <th style={{padding: 8, textAlign: 'right', color: '#7AB8E0', letterSpacing: 1}}>A · {cenA.nome.slice(0, 20)}</th>
+                            <th style={{padding: 8, textAlign: 'right', color: '#E6B84A', letterSpacing: 1}}>B · {cenB.nome.slice(0, 20)}</th>
+                            <th style={{padding: 8, textAlign: 'right', color: '#A89968', letterSpacing: 1}}>Δ R$</th>
+                            <th style={{padding: 8, textAlign: 'right', color: '#A89968'}}>Δ %</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {['variavel', 'fixo'].map(tipo => (
+                            <React.Fragment key={tipo}>
+                              <tr style={{background: '#0A0F0B'}}>
+                                <td colSpan={5} style={{padding: 6, color: tipo === 'variavel' ? '#C8E04A' : '#E6B84A', letterSpacing: 1, fontWeight: 600, fontSize: 10}}>
+                                  ▸ {tipo === 'variavel' ? 'VARIÁVEIS' : 'FIXOS BASE'}
+                                </td>
+                              </tr>
+                              {Object.entries(CUSTOS_REF_CONAB).filter(([k, v]) => v.tipo === tipo).map(([key, item]) => {
+                                const vA = cenA.custos[key] || 0;
+                                const vB = cenB.custos[key] || 0;
+                                const diff = vA - vB;
+                                const diffPct = vB > 0 ? (diff / vB * 100) : 0;
+                                return (
+                                  <tr key={key} style={{borderBottom: '1px solid #1F231D'}}>
+                                    <td style={{padding: 6, color: '#E8E2D0'}}>{item.lbl}</td>
+                                    <td style={{padding: 6, textAlign: 'right', color: '#7AB8E0'}}>{vA.toFixed(0)}</td>
+                                    <td style={{padding: 6, textAlign: 'right', color: '#E6B84A'}}>{vB.toFixed(0)}</td>
+                                    <td style={{padding: 6, textAlign: 'right', color: diff === 0 ? '#6B7065' : diff > 0 ? '#D9542B' : '#C8E04A', fontWeight: 600}}>
+                                      {diff === 0 ? '—' : (diff > 0 ? '+' : '') + diff.toFixed(0)}
+                                    </td>
+                                    <td style={{padding: 6, textAlign: 'right', color: diff === 0 ? '#6B7065' : diff > 0 ? '#D9542B' : '#C8E04A', fontSize: 10}}>
+                                      {diff === 0 ? '' : (diff > 0 ? '+' : '') + diffPct.toFixed(1) + '%'}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </React.Fragment>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr style={{background: '#1A211A', borderTop: '2px solid #C8E04A'}}>
+                            <td style={{padding: 10, color: '#C8E04A', fontWeight: 700, letterSpacing: 1}}>TOTAL</td>
+                            <td style={{padding: 10, textAlign: 'right', color: '#7AB8E0', fontWeight: 700, fontSize: 13}}>R$ {totalA.toFixed(0)}</td>
+                            <td style={{padding: 10, textAlign: 'right', color: '#E6B84A', fontWeight: 700, fontSize: 13}}>R$ {totalB.toFixed(0)}</td>
+                            <td style={{padding: 10, textAlign: 'right', color: deltaTotal > 0 ? '#D9542B' : '#C8E04A', fontWeight: 700, fontSize: 13}}>
+                              {deltaTotal > 0 ? '+' : ''}R$ {deltaTotal.toFixed(0)}
+                            </td>
+                            <td style={{padding: 10, textAlign: 'right', color: deltaTotal > 0 ? '#D9542B' : '#C8E04A', fontWeight: 700}}>
+                              {totalB > 0 ? (deltaTotal > 0 ? '+' : '') + (deltaTotal/totalB*100).toFixed(1) + '%' : ''}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+
+                    {/* Análise textual */}
+                    <div style={{marginTop: 12, padding: 10, background: '#181C18', borderLeft: '3px solid #9C7DBF', fontSize: 11, color: '#A89968', lineHeight: 1.5}}>
+                      {(() => {
+                        // Identifica top 3 itens com maior diferença absoluta
+                        const items = Object.entries(CUSTOS_REF_CONAB).map(([key, item]) => ({
+                          lbl: item.lbl,
+                          vA: cenA.custos[key] || 0,
+                          vB: cenB.custos[key] || 0,
+                          diff: (cenA.custos[key] || 0) - (cenB.custos[key] || 0),
+                        })).filter(x => x.diff !== 0).sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff)).slice(0, 3);
+                        if (items.length === 0) return <span>Os cenários são idênticos.</span>;
+                        return (
+                          <>
+                            <strong style={{color: '#E8E2D0'}}>Top diferenças:</strong>
+                            <ol style={{margin: '4px 0 0 16px', padding: 0}}>
+                              {items.map((it, i) => (
+                                <li key={i}>
+                                  <strong style={{color: it.diff > 0 ? '#D9542B' : '#C8E04A'}}>{it.lbl}:</strong> A tem R$ {it.vA.toFixed(0)} vs B R$ {it.vB.toFixed(0)} ({it.diff > 0 ? '+' : ''}{it.diff.toFixed(0)})
+                                </li>
+                              ))}
+                            </ol>
+                            <div style={{marginTop: 6}}>
+                              Custo por saca (a 50 sc/ha): <strong style={{color:'#7AB8E0'}}>A R$ {(totalA/50).toFixed(2)}</strong> vs <strong style={{color:'#E6B84A'}}>B R$ {(totalB/50).toFixed(2)}</strong>. 
+                              {Math.abs(deltaTotal) > 200 ? <span style={{color:'#E6B84A'}}> Diferença material para decisão.</span> : <span> Diferença pequena.</span>}
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* Tab IMPACTO: mapa de dependência dos valores */}
+          {custosTabAtiva === 'impacto' && (
+            <div style={{padding: 14, background: '#0F1410', border: '1px solid #2A2F28', borderTop: 'none'}}>
+              <div style={{fontSize: 12, color: '#FF7F50', letterSpacing: 1, fontWeight: 600, marginBottom: 8, fontFamily: "'IBM Plex Mono', monospace"}}>
+                🔄 O QUE MUDA QUANDO VOCÊ ALTERA UM VALOR (foco JC/RS)
+              </div>
+              <div style={{padding: 10, background: '#181C18', borderLeft: '3px solid #FF7F50', marginBottom: 14, fontSize: 11, color: '#A89968', lineHeight: 1.5}}>
+                Esta tabela mapeia <strong>cada input do painel</strong> para os módulos e cálculos afetados. Use para entender o "porquê" de cada decisão. Tudo é <strong>reativo</strong>: ao mudar um valor, todos os derivados recalculam instantaneamente.
+              </div>
+
+              {(() => {
+                const dependencias = [
+                  // === MÓDULO 02 · CUSTOS ===
+                  {
+                    grupo: 'CUSTOS', cor: '#C8E04A',
+                    inputs: [
+                      {
+                        nome: 'Custo VARIÁVEL total (14 itens)',
+                        atual: `R$ ${custoVarHa.toFixed(0)}/ha`,
+                        afeta: [
+                          { onde: 'Mód 02', desc: 'MC unitária, PE sc/ha, MS%', critico: true },
+                          { onde: 'Mód 07', desc: 'Custo base do simulador escalonado', critico: false },
+                          { onde: 'Mód 08', desc: 'Calculadoras barter, forward, three-way', critico: false },
+                          { onde: 'Mód 09 · Rentab', desc: 'Custo real R$/ha histórico (16 anos)', critico: true },
+                          { onde: 'Mód 09 · Margem', desc: 'Recalcula margem soja %', critico: false },
+                          { onde: 'Mód 15', desc: 'Esperança matemática 3 cenários', critico: true },
+                          { onde: 'Mód 17', desc: 'Break-even atual + recomendação tática', critico: true },
+                        ],
+                      },
+                      {
+                        nome: 'Custo FIXO BASE (9 itens, sem terra)',
+                        atual: `R$ ${custoFixoBase.toFixed(0)}/ha`,
+                        afeta: [
+                          { onde: 'Mód 02', desc: 'Ponto de equilíbrio sc/ha', critico: true },
+                          { onde: 'Mód 09 · Rentab', desc: 'Custo fixo histórico (80% do custo R$/ha)', critico: true },
+                          { onde: 'Mód 15', desc: 'Capital empregado em custeio', critico: true },
+                          { onde: 'Mód 17', desc: 'Break-even total · status COBRE/NÃO COBRE', critico: true },
+                        ],
+                      },
+                      {
+                        nome: 'Arrendamento sc/ha (JC=20)',
+                        atual: `${arrendamentoScHa} sc/ha`,
+                        afeta: [
+                          { onde: 'Mód 02', desc: 'Terra R$/ha = arrend × % × preço CIF', critico: true },
+                          { onde: 'Mód 09 · Tudo', desc: 'Margem yield idx recalcula 66 trimestres', critico: true },
+                          { onde: 'Mód 09 · Rentab', desc: 'Rentabilidade JC ano-a-ano com arrendamento real', critico: true },
+                          { onde: 'Mód 15', desc: 'Cenário B (arrendar adicional)', critico: true },
+                        ],
+                      },
+                      {
+                        nome: '% área arrendada (0-100)',
+                        atual: `${pctArrendada}%`,
+                        afeta: [
+                          { onde: 'Mód 02', desc: 'Terra efetiva = arrend × ESTE × preço', critico: true },
+                          { onde: 'Mód 09 inteiro', desc: 'Todo histórico recalcula com sua estrutura', critico: true },
+                          { onde: 'Mód 15', desc: 'Define qual cenário (A: 0% · B: ~50% · C: independe)', critico: true },
+                        ],
+                      },
+                    ]
+                  },
+                  // === MÓDULO 01 · PREÇO ===
+                  {
+                    grupo: 'PREÇO', cor: '#7AB8E0',
+                    inputs: [
+                      {
+                        nome: 'CBOT cents/bu (slider mód 01)',
+                        atual: `${cbot.toFixed(2)} USD/bu`,
+                        afeta: [
+                          { onde: 'Mód 01', desc: 'Preço CIF JC = (CBOT+prêmio) × 2,2046 × dólar − frete', critico: true },
+                          { onde: 'Mód 03', desc: 'Crush margin BR e China', critico: false },
+                          { onde: 'Mód 06', desc: 'Estratégia recomendada (preço alto/baixo)', critico: true },
+                          { onde: 'Mód 08', desc: 'Todas calculadoras (preço base)', critico: true },
+                          { onde: 'Mód 17', desc: 'Diagnóstico margem atual', critico: true },
+                        ],
+                      },
+                      {
+                        nome: 'Dólar R$/USD',
+                        atual: `R$ ${dolar.toFixed(2)}`,
+                        afeta: [
+                          { onde: 'Mód 01', desc: 'Multiplica direto no preço CIF JC', critico: true },
+                          { onde: 'Mód 03 · China', desc: 'Crush China usa este dólar para frete Santos', critico: false },
+                          { onde: 'Mód 06 a 08', desc: 'Todos preços spot ajustam', critico: true },
+                        ],
+                      },
+                      {
+                        nome: 'Prêmio Paranaguá',
+                        atual: `${premio.toFixed(0)} cents/bu`,
+                        afeta: [
+                          { onde: 'Mód 01', desc: 'Soma ao CBOT antes de converter para R$', critico: true },
+                          { onde: 'Mód 06', desc: 'Estratégia depende de prêmio firme/fraco', critico: false },
+                        ],
+                      },
+                      {
+                        nome: 'Frete CIF R$/sc',
+                        atual: `R$ ${freteCIF}`,
+                        afeta: [
+                          { onde: 'Mód 01', desc: 'CIF JC = FOB Rio Grande − ESTE', critico: true },
+                          { onde: 'Mód 02', desc: 'Reduz preço para cálculo margem', critico: false },
+                        ],
+                      },
+                    ]
+                  },
+                  // === MÓDULO 02 · PRODUÇÃO ===
+                  {
+                    grupo: 'PRODUÇÃO', cor: '#E6B84A',
+                    inputs: [
+                      {
+                        nome: 'Produtividade esperada (sc/ha)',
+                        atual: `${prodSoja} sc/ha`,
+                        afeta: [
+                          { onde: 'Mód 02', desc: 'Custo R$/sc = R$/ha ÷ produtividade', critico: true },
+                          { onde: 'Mód 02', desc: 'PE sc/ha vs produtividade = MS%', critico: true },
+                          { onde: 'Mód 06', desc: 'Total fazenda = prod × área × preço', critico: true },
+                          { onde: 'Mód 07', desc: 'Total sacas a distribuir nas vendas', critico: true },
+                          { onde: 'Mód 08', desc: '% safra hedgeada nas calculadoras', critico: true },
+                          { onde: 'Mód 15', desc: 'Receita esperada × probabilidades', critico: true },
+                          { onde: 'Mód 17', desc: 'Total sacas para travar', critico: true },
+                        ],
+                      },
+                      {
+                        nome: 'NPK R$/ton',
+                        atual: `R$ ${custoFert}/ton`,
+                        afeta: [
+                          { onde: 'Mód 02', desc: 'Relação de troca soja:NPK = NPK ÷ sacaCIF', critico: false },
+                          { onde: 'Mód 08 · Barter', desc: 'Calcula sacas pagas em NPK', critico: false },
+                          { onde: 'Mód 04', desc: 'Aparece no gráfico de NPK histórico', critico: false },
+                        ],
+                      },
+                    ]
+                  },
+                ];
+
+                return (
+                  <>
+                    {dependencias.map((grupo, gi) => (
+                      <div key={gi} style={{marginBottom: 18}}>
+                        <div style={{fontSize: 11, color: grupo.cor, letterSpacing: 1, marginBottom: 8, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600}}>
+                          ▸ INPUTS DE {grupo.grupo}
+                        </div>
+                        {grupo.inputs.map((inp, ii) => (
+                          <div key={ii} style={{marginBottom: 12, border: '1px solid #2A2F28', background: '#181C18'}}>
+                            <div style={{padding: 10, borderBottom: '1px solid #2A2F28', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8}}>
+                              <div style={{fontSize: 12, color: '#E8E2D0', fontWeight: 600, fontFamily: "'IBM Plex Mono', monospace"}}>
+                                {inp.nome}
+                              </div>
+                              <div style={{fontSize: 12, color: grupo.cor, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 700}}>
+                                ATUAL: {inp.atual}
+                              </div>
+                            </div>
+                            <div style={{padding: 10}}>
+                              {inp.afeta.map((af, ai) => (
+                                <div key={ai} style={{display: 'grid', gridTemplateColumns: '110px 1fr 20px', gap: 8, padding: '4px 0', borderBottom: ai === inp.afeta.length - 1 ? 'none' : '1px solid #1F231D', alignItems: 'center'}}>
+                                  <div style={{fontSize: 10, color: '#9C7DBF', fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600}}>{af.onde}</div>
+                                  <div style={{fontSize: 11, color: '#A89968'}}>{af.desc}</div>
+                                  <div style={{textAlign: 'right'}}>{af.critico && <span style={{color: '#D9542B', fontSize: 14, fontWeight: 700}}>!</span>}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+
+                    {/* Decisões críticas para JC */}
+                    <div style={{padding: 12, background: '#1A211A', border: '1px solid #C8E04A', marginTop: 14}}>
+                      <div style={{fontSize: 11, color: '#C8E04A', letterSpacing: 1, marginBottom: 8, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 700}}>★ DECISÕES CRÍTICAS JC AFETADAS</div>
+                      <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace"}}>
+                        <thead>
+                          <tr style={{borderBottom: '1px solid #2A2F28'}}>
+                            <th style={{padding: 6, textAlign: 'left', color: '#A89968'}}>DECISÃO</th>
+                            <th style={{padding: 6, textAlign: 'left', color: '#A89968'}}>O QUE MAIS INFLUENCIA</th>
+                            <th style={{padding: 6, textAlign: 'left', color: '#A89968'}}>ONDE VER</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {[
+                            { dec: 'Plantar próprio vs arrendar', infl: 'arrendamento sc/ha + % arrendada + produtividade', onde: 'Mód 15' },
+                            { dec: 'Quanto travar agora forward', infl: 'preço CIF JC + custo total + mês atual', onde: 'Mód 17' },
+                            { dec: 'Comprar NPK ou esperar', infl: 'NPK R$/ton + base CBOT + mês até plantio', onde: 'Mód 17 (set-out)' },
+                            { dec: 'Seguro Proagro sim/não', infl: 'custo fixo + histórico de quebras (40% prob)', onde: 'Mód 15 + 09 · Rentab' },
+                            { dec: 'Aumentar área plantada', infl: 'margem real + custo fixo de novo arrendamento', onde: 'Mód 15 cenário B' },
+                            { dec: 'Estocar pós-colheita', infl: 'CDI + spread spot-futuro + custo armazém', onde: 'Mód 08 · Estocagem' },
+                          ].map((d, i) => (
+                            <tr key={i} style={{borderBottom: '1px solid #1F231D'}}>
+                              <td style={{padding: 6, color: '#E8E2D0', fontWeight: 600}}>{d.dec}</td>
+                              <td style={{padding: 6, color: '#A89968'}}>{d.infl}</td>
+                              <td style={{padding: 6, color: '#7AB8E0'}}>{d.onde}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Legenda */}
+                    <div style={{marginTop: 10, fontSize: 10, color: '#6B7065', display: 'flex', gap: 16}}>
+                      <span><strong style={{color: '#D9542B'}}>!</strong> = impacto crítico na decisão</span>
+                      <span>Tudo é reativo · mude um valor, derivados recalculam automaticamente</span>
+                    </div>
+                  </>
                 );
               })()}
             </div>
@@ -5444,6 +6197,21 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
             Status de frescor de cada fonte usada no painel. Verde = recente · Amarelo = revisar · Vermelho = desatualizado. Inclui automação por GitHub Actions, link direto para fonte oficial e onde editar no código se for manual.
           </div>
           <AtualizacaoBloco />
+        </section>
+
+        {/* 17 — PLANO DE HEDGE SUGERIDO */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+          <div style={{...S.cardLabel, color: '#C8E04A'}}>17 — ★ Plano de hedge sugerido · ações por mês</div>
+          <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
+            Roadmap mensal de ações baseado em (1) seu custo real R$/sc do módulo 02 · (2) preço atual CEPEA · (3) sazonalidade JC · (4) calendário WASDE/ANEC. Próximos 6 meses a partir de hoje, com diagnóstico tático imediato.
+          </div>
+          <PlanoHedgeBloco
+            custoRealSc={(custoFixoHa + custoVarHa) / 50}
+            precoAtualSc={balcaoSoja}
+            prodEsperada={prodSoja || 50}
+            areaTotal={200}
+            balcaoSoja={balcaoSoja}
+          />
         </section>
 
 
