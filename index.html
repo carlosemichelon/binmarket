@@ -2498,18 +2498,170 @@ function DecisaoEstrategicaBloco() {
 }
 
 function PainelSoja() {
-  const [cbot, setCbot] = useState(11.44);
+  const [cbot, setCbot] = useState(11.97);
   const [premio, setPremio] = useState(-0.34);
-  const [dolar, setDolar] = useState(5.14);
+  const [dolar, setDolar] = useState(5.09);
   const [freteCIF, setFreteCIF] = useState(10);
-  // CUSTO FIXO refatorado: base (sem terra) + arrendamento configurável JC
-  // Base: depreciação maq+benf + juros capital + mão-obra fixa + admin + seguros = R$ 1500/ha típico JC
-  // Terra: arrendamento sc/ha × % área arrendada × preço/sc (calculado dinamicamente)
-  const [custoFixoBase, setCustoFixoBase] = useState(1500);     // R$/ha sem terra
-  const [arrendamentoScHa, setArrendamentoScHa] = useState(20); // sc/ha pagas em terra (JC = 20)
-  const [pctArrendada, setPctArrendada] = useState(100);        // % da área que é arrendada (0-100)
-  const [custoVarHa, setCustoVarHa] = useState(2850);
-  const [prodEsperada, setProdEsperada] = useState(50);          // sc/ha produtividade esperada
+  // ARRENDAMENTO (terra) — separado dos custos detalhados
+  const [arrendamentoScHa, setArrendamentoScHa] = useState(20); // sc/ha JC=20
+  const [pctArrendada, setPctArrendada] = useState(100);        // % área arrendada (0-100)
+  // CUSTOS DETALHADOS · valores de referência Conab RS Planalto 2026
+  // Cada item editável individualmente; somas alimentam custoFixoBase e custoVarHa
+  const CUSTOS_REF_CONAB = {
+    // === VARIÁVEIS (custo por hectare) ===
+    sementes:       { lbl:'Sementes soja',         tipo:'variavel', ref:380,  desc:'60 kg/ha × R$ 6,30/kg' },
+    fertNPK:        { lbl:'Fertilizante NPK base', tipo:'variavel', ref:950,  desc:'300 kg/ha × R$ 3,17/kg' },
+    calcario:       { lbl:'Calcário (amortizado)', tipo:'variavel', ref:120,  desc:'1 ton/2 anos · R$ 240/ton' },
+    inoculante:     { lbl:'Inoculante + nutrição', tipo:'variavel', ref:35,   desc:'aplicação na semente' },
+    herbicida:      { lbl:'Herbicidas',             tipo:'variavel', ref:480,  desc:'pré-emerg + pós-emerg' },
+    fungicida:      { lbl:'Fungicidas',             tipo:'variavel', ref:410,  desc:'2-3 aplicações ferrugem' },
+    inseticida:     { lbl:'Inseticidas',            tipo:'variavel', ref:230,  desc:'percevejo + lagartas' },
+    combustivel:    { lbl:'Combustível operações',  tipo:'variavel', ref:280,  desc:'plantio+tratos+colheita' },
+    maoOperacional: { lbl:'Mão-obra operacional',   tipo:'variavel', ref:180,  desc:'tratorista, auxiliares' },
+    manutencaoMaq:  { lbl:'Manutenção máquinas',    tipo:'variavel', ref:245,  desc:'peças, óleo, filtros' },
+    freteColheita:  { lbl:'Frete colheita interno', tipo:'variavel', ref:65,   desc:'lavoura → armazém' },
+    secagem:        { lbl:'Secagem + limpeza',      tipo:'variavel', ref:75,   desc:'beneficiamento pós-colheita' },
+    consultoria:    { lbl:'Consultoria técnica',    tipo:'variavel', ref:200,  desc:'eng. agrônomo · acompanhamento' },
+    seguroProd:     { lbl:'Seguro produção',        tipo:'variavel', ref:175,  desc:'Proagro Mais ~3-5% garantia' },
+    // === FIXOS BASE (terra calculada à parte via arrendamento) ===
+    depMaq:         { lbl:'Depreciação maquinário', tipo:'fixo',     ref:380,  desc:'colheitadeira+trator/vida útil' },
+    depBenf:        { lbl:'Depreciação benfeitorias',tipo:'fixo',    ref:65,   desc:'armazém, oficina, cercas' },
+    jurosCap:       { lbl:'Juros capital próprio',  tipo:'fixo',     ref:180,  desc:'0,5% capital empregado/ha' },
+    finCusteio:     { lbl:'Custo financeiro custeio',tipo:'fixo',    ref:240,  desc:'financiamento safra · CDI%' },
+    maoFixa:        { lbl:'Mão-obra fixa',          tipo:'fixo',     ref:220,  desc:'gerente, encarregado' },
+    admin:          { lbl:'Administração',           tipo:'fixo',     ref:145,  desc:'escritório, contador, taxas' },
+    segurosGerais:  { lbl:'Seguros gerais',          tipo:'fixo',     ref:95,   desc:'RC, máquinas, propriedade' },
+    itr:            { lbl:'ITR + taxas',             tipo:'fixo',     ref:35,   desc:'imposto territorial rural' },
+    manutBenf:      { lbl:'Manutenção benfeitorias', tipo:'fixo',     ref:70,   desc:'armazém, cercas, estradas' },
+  };
+
+  // State: cada item tem seu valor editável (inicia com ref Conab)
+  // Sistema completo: cenários nomeados + histórico cronológico + export JSON
+  const STORAGE_KEY = 'painelSoja_custosConfig_v2';
+  const initDefault = () => {
+    const init = {};
+    Object.entries(CUSTOS_REF_CONAB).forEach(([k, v]) => { init[k] = v.ref; });
+    return init;
+  };
+  // Carrega config completa do localStorage
+  const [custosConfig, setCustosConfig] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.cenarios && Array.isArray(parsed.cenarios)) return parsed;
+      }
+      // Migração: tenta carregar v1 antiga
+      const v1 = localStorage.getItem('painelSoja_custos');
+      if (v1) {
+        const custos = JSON.parse(v1);
+        return {
+          cenarioAtivoId: null,
+          custosAtuais: custos,
+          cenarios: [],
+          historicoVersoes: [],
+        };
+      }
+    } catch (e) {}
+    return {
+      cenarioAtivoId: null,
+      custosAtuais: initDefault(),
+      cenarios: [],
+      historicoVersoes: [],
+    };
+  });
+  const custosUsuario = custosConfig.custosAtuais;
+  const [custosTabAtiva, setCustosTabAtiva] = useState('variavel');
+  const [showCenarioDialog, setShowCenarioDialog] = useState(false);
+  const [novoCenarioNome, setNovoCenarioNome] = useState('');
+  const [showHistorico, setShowHistorico] = useState(false);
+
+  // Somas derivadas
+  const custoVarHa = Object.entries(CUSTOS_REF_CONAB)
+    .filter(([k, v]) => v.tipo === 'variavel')
+    .reduce((s, [k]) => s + (custosUsuario[k] || 0), 0);
+  const custoFixoBase = Object.entries(CUSTOS_REF_CONAB)
+    .filter(([k, v]) => v.tipo === 'fixo')
+    .reduce((s, [k]) => s + (custosUsuario[k] || 0), 0);
+
+  // === HELPERS DE PERSISTÊNCIA ===
+  const persistir = (newConfig) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newConfig));
+      setCustosConfig(newConfig);
+    } catch (e) { alert('Erro ao salvar: ' + e.message); }
+  };
+  const setCustoItem = (key, val) => {
+    const novosCustos = { ...custosUsuario, [key]: parseFloat(val) || 0 };
+    persistir({ ...custosConfig, custosAtuais: novosCustos });
+  };
+  const resetCustosConab = () => {
+    if (!confirm('Restaurar TODOS os 23 itens para os valores Conab? Sua edição atual será perdida (mas cenários salvos ficam intactos).')) return;
+    persistir({ ...custosConfig, custosAtuais: initDefault(), cenarioAtivoId: null });
+  };
+  const salvarComoCenario = () => {
+    const nome = novoCenarioNome.trim();
+    if (!nome) { alert('Digite um nome para o cenário'); return; }
+    const agora = new Date().toISOString();
+    const idExistente = custosConfig.cenarios.find(c => c.nome === nome)?.id;
+    const id = idExistente || 'cen_' + Date.now();
+    const novosCenarios = idExistente
+      ? custosConfig.cenarios.map(c => c.id === idExistente ? { ...c, custos: custosUsuario, atualizadoEm: agora } : c)
+      : [...custosConfig.cenarios, { id, nome, custos: { ...custosUsuario }, criadoEm: agora, atualizadoEm: agora }];
+    const novoHist = [
+      { timestamp: agora, cenarioNome: nome, custos: { ...custosUsuario }, acao: idExistente ? 'atualizou' : 'criou' },
+      ...custosConfig.historicoVersoes,
+    ].slice(0, 50);
+    persistir({ ...custosConfig, cenarios: novosCenarios, cenarioAtivoId: id, historicoVersoes: novoHist });
+    setNovoCenarioNome(''); setShowCenarioDialog(false);
+  };
+  const carregarCenario = (id) => {
+    const cen = custosConfig.cenarios.find(c => c.id === id);
+    if (!cen) return;
+    persistir({ ...custosConfig, custosAtuais: { ...cen.custos }, cenarioAtivoId: id });
+  };
+  const deletarCenario = (id) => {
+    const cen = custosConfig.cenarios.find(c => c.id === id);
+    if (!cen || !confirm(`Deletar cenário "${cen.nome}"? Histórico permanece.`)) return;
+    persistir({
+      ...custosConfig,
+      cenarios: custosConfig.cenarios.filter(c => c.id !== id),
+      cenarioAtivoId: custosConfig.cenarioAtivoId === id ? null : custosConfig.cenarioAtivoId,
+    });
+  };
+  const carregarVersaoHist = (custos, nome) => {
+    if (!confirm(`Restaurar valores do snapshot "${nome}"?`)) return;
+    persistir({ ...custosConfig, custosAtuais: { ...custos }, cenarioAtivoId: null });
+  };
+  const exportarJSON = () => {
+    const dataStr = JSON.stringify(custosConfig, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `custos-soja-jc-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  const importarJSON = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const imported = JSON.parse(e.target.result);
+        if (!imported.custosAtuais) throw new Error('JSON inválido (sem custosAtuais)');
+        if (confirm(`Importar config com ${imported.cenarios?.length || 0} cenário(s) e ${imported.historicoVersoes?.length || 0} histórico(s)? Sua config atual será substituída.`)) {
+          persistir(imported);
+        }
+      } catch (err) { alert('Erro ao importar: ' + err.message); }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  };
+
+  const cenarioAtivo = custosConfig.cenarios.find(c => c.id === custosConfig.cenarioAtivoId);
+  const prodEsperada = 50;
   const [custoFert, setCustoFert] = useState(3500);
   const [expCbot, setExpCbot] = useState('neutra');
   const [expPremio, setExpPremio] = useState('neutra');
@@ -2918,7 +3070,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
     <div style={S.app}>
       <header style={S.header}>
         <div>
-          <div style={S.eyebrow}>Painel · Soja · Júlio de Castilhos / RS · <span style={{color: '#C8E04A'}}>dados CEPEA 22/06/2026</span></div>
+          <div style={S.eyebrow}>Painel · Soja · Júlio de Castilhos / RS · <span style={{color: '#C8E04A'}}>dados CEPEA 17/06/2026</span></div>
           <h1 className="h1" style={S.h1}>Margem da saca <span style={S.h1accent}>no campo</span></h1>
           <div style={S.subhead}>Soja CEPEA Paranaguá · Balcão Cotrijuc · Porto Rio Grande</div>
           <div style={{...S.subhead, color: '#C8E04A', marginTop: 4}}>★ Última cotação CEPEA: <strong>R$ 132,26/saca</strong> em <strong>16/06/2026</strong> · Dólar implícito R$ 5,09</div>
@@ -3087,56 +3239,300 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
           </div>
         </section>
 
-        {/* 02 — CUSTOS E TROCA */}
+        {/* 02 — CUSTOS DETALHADOS E TROCA */}
         <section style={S.card}>
-          <div style={S.cardLabel}>02 — Custos, margem & relação de troca</div>
+          <div style={S.cardLabel}>02 — Custos detalhados, margem & relação de troca</div>
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
-            Custo fixo decomposto em <strong>BASE</strong> (depreciação+juros+adm) + <strong>TERRA</strong> (arrendamento configurável JC). Permite simular: 100% própria, 100% arrendada, ou mix.
+            Decomposição em <strong>23 itens</strong>. Valores de referência <strong style={{color:'#7AB8E0'}}>Conab RS Planalto 2026</strong> · edite cada linha com seu custo real. <strong style={{color:'#FF7F50'}}>Terra</strong> calculada separadamente via arrendamento.
           </div>
+
+          {/* Arrendamento + área */}
           <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8}}>
             <div style={S.inputBlock}>
               <label style={S.inputLabel}>Arrendamento (sc/ha) · JC=20</label>
               <input type="number" value={arrendamentoScHa} step="1" min="0" max="50" onChange={e => setArrendamentoScHa(parseFloat(e.target.value)||0)} />
             </div>
             <div style={S.inputBlock}>
-              <label style={S.inputLabel}>% área arrendada (0=própria, 100=arrendada)</label>
+              <label style={S.inputLabel}>% área arrendada (0=própria · 100=arrendada)</label>
               <input type="number" value={pctArrendada} step="5" min="0" max="100" onChange={e => setPctArrendada(parseFloat(e.target.value)||0)} />
             </div>
           </div>
-          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8}}>
-            <div style={S.inputBlock}>
-              <label style={S.inputLabel}>Custo fixo BASE R$/ha (sem terra)</label>
-              <input type="number" value={custoFixoBase} step="100" onChange={e => setCustoFixoBase(parseFloat(e.target.value)||0)} />
-            </div>
-            <div style={S.inputBlock}>
-              <label style={S.inputLabel}>Custo VARIÁVEL R$/ha</label>
-              <input type="number" value={custoVarHa} step="100" onChange={e => setCustoVarHa(parseFloat(e.target.value)||0)} />
-            </div>
+
+          {/* Tabs */}
+          <div style={{display:'flex', gap:0, marginTop: 14, marginBottom: 0, borderBottom: '1px solid #2A2F28'}}>
+            <button onClick={() => setCustosTabAtiva('variavel')} style={{
+              padding:'10px 16px', background: custosTabAtiva==='variavel'?'#1A211A':'transparent',
+              border:'none', borderBottom: custosTabAtiva==='variavel'?'2px solid #C8E04A':'2px solid transparent',
+              color: custosTabAtiva==='variavel'?'#C8E04A':'#A89968', fontFamily:"'IBM Plex Mono', monospace",
+              fontSize:11, letterSpacing:1, cursor:'pointer', fontWeight: 600
+            }}>VARIÁVEIS · R$ {custoVarHa.toFixed(0)}/ha</button>
+            <button onClick={() => setCustosTabAtiva('fixo')} style={{
+              padding:'10px 16px', background: custosTabAtiva==='fixo'?'#1A211A':'transparent',
+              border:'none', borderBottom: custosTabAtiva==='fixo'?'2px solid #E6B84A':'2px solid transparent',
+              color: custosTabAtiva==='fixo'?'#E6B84A':'#A89968', fontFamily:"'IBM Plex Mono', monospace",
+              fontSize:11, letterSpacing:1, cursor:'pointer', fontWeight: 600
+            }}>FIXOS BASE · R$ {custoFixoBase.toFixed(0)}/ha</button>
+            <button onClick={() => setCustosTabAtiva('resumo')} style={{
+              padding:'10px 16px', background: custosTabAtiva==='resumo'?'#1A211A':'transparent',
+              border:'none', borderBottom: custosTabAtiva==='resumo'?'2px solid #FF7F50':'2px solid transparent',
+              color: custosTabAtiva==='resumo'?'#FF7F50':'#A89968', fontFamily:"'IBM Plex Mono', monospace",
+              fontSize:11, letterSpacing:1, cursor:'pointer', fontWeight: 600
+            }}>RESUMO + TERRA</button>
           </div>
-          {/* Box derivado: terra efetivo */}
-          <div style={{padding: 10, background: '#0F1410', borderLeft: '3px solid #FF7F50', marginTop: 8, marginBottom: 8, fontSize: 11, color: '#E8E2D0', lineHeight: 1.6}}>
-            <div style={{fontSize: 10, color: '#FF7F50', letterSpacing: 1, marginBottom: 4}}>★ TERRA EFETIVA (calculado: arrendamento × % × preço CIF JC)</div>
-            <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 13}}>
-              {arrendamentoScHa} sc/ha × {pctArrendada}% × R$ {balcaoSoja.toFixed(2)}/sc = <strong style={{color: '#FF7F50'}}>R$ {custoTerraHa.toFixed(0)}/ha</strong>
+
+          {/* Tabela de custos */}
+          {custosTabAtiva !== 'resumo' && (
+            <div style={{overflowX:'auto', border:'1px solid #2A2F28', borderTop: 'none'}}>
+              <table style={{width:'100%', borderCollapse:'collapse', fontSize: 11, fontFamily:"'IBM Plex Mono', monospace"}}>
+                <thead>
+                  <tr style={{background:'#181C18'}}>
+                    <th style={{padding:8, textAlign:'left', color:'#A89968', letterSpacing:1, borderBottom:'1px solid #2A2F28', width:'24%'}}>ITEM</th>
+                    <th style={{padding:8, textAlign:'right', color:'#7AB8E0', letterSpacing:1, width:'12%'}}>CONAB R$/ha</th>
+                    <th style={{padding:8, textAlign:'right', color:'#C8E04A', letterSpacing:1, width:'16%'}}>★ SEU CUSTO</th>
+                    <th style={{padding:8, textAlign:'right', color:'#FF7F50', letterSpacing:1, width:'12%'}}>Δ vs CONAB</th>
+                    <th style={{padding:8, textAlign:'right', color:'#A89968', width:'8%'}}>%</th>
+                    <th style={{padding:8, textAlign:'left', color:'#A89968', width:'28%'}}>REFERÊNCIA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(CUSTOS_REF_CONAB)
+                    .filter(([k, v]) => v.tipo === custosTabAtiva)
+                    .map(([key, item]) => {
+                      const total = custosTabAtiva === 'variavel' ? custoVarHa : custoFixoBase;
+                      const pct = total > 0 ? (custosUsuario[key] / total * 100) : 0;
+                      const diff = custosUsuario[key] - item.ref;
+                      const diffPct = item.ref > 0 ? (diff / item.ref * 100) : 0;
+                      return (
+                        <tr key={key} style={{borderBottom:'1px solid #1F231D'}}>
+                          <td style={{padding:6, color:'#E8E2D0', fontWeight:600}}>{item.lbl}</td>
+                          <td style={{padding:6, textAlign:'right', color:'#7AB8E0'}}>{item.ref}</td>
+                          <td style={{padding:4, textAlign:'right'}}>
+                            <input
+                              type="number"
+                              value={custosUsuario[key]}
+                              step={item.ref >= 500 ? 25 : item.ref >= 100 ? 10 : 5}
+                              onChange={e => setCustoItem(key, e.target.value)}
+                              style={{
+                                width:'90%', padding:'4px 6px', textAlign:'right',
+                                background:'#0F1410', border:'1px solid '+(diff !== 0 ? '#E6B84A' : '#2A2F28'),
+                                color: diff !== 0 ? '#E6B84A' : '#C8E04A',
+                                fontFamily:"'IBM Plex Mono', monospace", fontSize:11, fontWeight: 600
+                              }}
+                            />
+                          </td>
+                          <td style={{padding:6, textAlign:'right', color: diff > 0 ? '#D9542B' : diff < 0 ? '#C8E04A' : '#6B7065', fontWeight: 600}}>
+                            {diff === 0 ? '—' : (diff > 0 ? '+' : '') + diff.toFixed(0)}
+                            {diff !== 0 && <span style={{fontSize:9, color:'#A89968', marginLeft:4}}>({diff > 0 ? '+' : ''}{diffPct.toFixed(0)}%)</span>}
+                          </td>
+                          <td style={{padding:6, textAlign:'right', color:'#A89968'}}>{pct.toFixed(1)}%</td>
+                          <td style={{padding:6, color:'#6B7065', fontSize: 10}}>{item.desc}</td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+                <tfoot>
+                  <tr style={{background:'#0A0F0B', borderTop: '2px solid '+(custosTabAtiva === 'variavel' ? '#C8E04A' : '#E6B84A')}}>
+                    <td style={{padding:8, color: custosTabAtiva === 'variavel' ? '#C8E04A' : '#E6B84A', letterSpacing:1, fontWeight:700}}>TOTAL {custosTabAtiva === 'variavel' ? 'VARIÁVEL' : 'FIXO BASE'}</td>
+                    <td style={{padding:8, textAlign:'right', color:'#7AB8E0', fontWeight:600}}>
+                      {Object.entries(CUSTOS_REF_CONAB)
+                        .filter(([k, v]) => v.tipo === custosTabAtiva)
+                        .reduce((s, [k, v]) => s + v.ref, 0)}
+                    </td>
+                    <td style={{padding:8, textAlign:'right', color: custosTabAtiva === 'variavel' ? '#C8E04A' : '#E6B84A', fontWeight:700, fontSize: 14}}>
+                      {(custosTabAtiva === 'variavel' ? custoVarHa : custoFixoBase).toFixed(0)}
+                    </td>
+                    {(() => {
+                      const refTotal = Object.entries(CUSTOS_REF_CONAB).filter(([k, v]) => v.tipo === custosTabAtiva).reduce((s, [k, v]) => s + v.ref, 0);
+                      const seuTotal = custosTabAtiva === 'variavel' ? custoVarHa : custoFixoBase;
+                      const diff = seuTotal - refTotal;
+                      return (
+                        <td style={{padding:8, textAlign:'right', color: diff > 0 ? '#D9542B' : diff < 0 ? '#C8E04A' : '#6B7065', fontWeight: 700}}>
+                          {diff === 0 ? '—' : (diff > 0 ? '+' : '') + diff.toFixed(0)}
+                        </td>
+                      );
+                    })()}
+                    <td style={{padding:8, textAlign:'right', color:'#A89968'}}>100%</td>
+                    <td style={{padding:8, color:'#A89968', fontSize: 10}}>R$/ha</td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
-            <div style={{fontSize: 10, color: '#A89968', marginTop: 4}}>
-              Custo fixo TOTAL: R$ {custoFixoBase} (base) + R$ {custoTerraHa.toFixed(0)} (terra) = <strong>R$ {custoFixoHa.toFixed(0)}/ha</strong>
-              {pctArrendada < 100 && <span style={{color: '#C8E04A'}}> · ★ Terra própria não desembolsada</span>}
+          )}
+
+          {/* Tab resumo: TODOS os custos juntos + terra calculada */}
+          {custosTabAtiva === 'resumo' && (
+            <div style={{padding: 14, background: '#0F1410', border: '1px solid #2A2F28', borderTop: 'none'}}>
+              {(() => {
+                const custoTerra = arrendamentoScHa * (pctArrendada / 100) * balcaoSoja;
+                const fixoTotal = custoFixoBase + custoTerra;
+                const totalGeral = custoVarHa + fixoTotal;
+                const custoPorSc = totalGeral / 50;
+                const breakdown = [
+                  { lbl: 'VARIÁVEL TOTAL', val: custoVarHa, cor: '#C8E04A', det: '14 itens (insumos + operações)' },
+                  { lbl: 'FIXO BASE', val: custoFixoBase, cor: '#E6B84A', det: '9 itens (depreciação + admin + juros)' },
+                  { lbl: '★ TERRA (calculado)', val: custoTerra, cor: '#FF7F50', det: `${arrendamentoScHa} sc/ha × ${pctArrendada}% × R$ ${balcaoSoja.toFixed(2)}/sc` },
+                ];
+                return (
+                  <div>
+                    <table style={{width:'100%', borderCollapse:'collapse', fontFamily:"'IBM Plex Mono', monospace", fontSize:12}}>
+                      <tbody>
+                        {breakdown.map((b, i) => (
+                          <tr key={i} style={{borderBottom:'1px solid #1F231D'}}>
+                            <td style={{padding:10, color: b.cor, letterSpacing:1, fontWeight:600}}>{b.lbl}</td>
+                            <td style={{padding:10, textAlign:'right', color: b.cor, fontSize: 18, fontWeight:700}}>R$ {b.val.toFixed(0)}/ha</td>
+                            <td style={{padding:10, textAlign:'right', color:'#A89968'}}>{(b.val/totalGeral*100).toFixed(1)}%</td>
+                            <td style={{padding:10, color:'#6B7065', fontSize:10}}>{b.det}</td>
+                          </tr>
+                        ))}
+                        <tr style={{background:'#1A211A', borderTop:'2px solid #C8E04A'}}>
+                          <td style={{padding:12, color:'#C8E04A', letterSpacing:1, fontWeight:700, fontSize:13}}>★ CUSTO TOTAL JC</td>
+                          <td style={{padding:12, textAlign:'right', color:'#C8E04A', fontSize: 24, fontWeight:700}}>R$ {totalGeral.toFixed(0)}/ha</td>
+                          <td style={{padding:12, textAlign:'right', color:'#A89968'}}>100%</td>
+                          <td style={{padding:12, color:'#A89968', fontSize:10}}>com terra</td>
+                        </tr>
+                        <tr style={{background:'#1A211A'}}>
+                          <td style={{padding:12, color:'#FF7F50', letterSpacing:1, fontWeight:700, fontSize:13}}>Custo R$/sc (a 50 sc/ha)</td>
+                          <td style={{padding:12, textAlign:'right', color:'#FF7F50', fontSize: 24, fontWeight:700}}>R$ {custoPorSc.toFixed(2)}/sc</td>
+                          <td style={{padding:12, color:'#A89968'}} colSpan={2}>vs Conab R$ ~95/sc · sua diferença R$ {(custoPorSc - 95).toFixed(2)}/sc</td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                    {/* Comparativo Conab */}
+                    <div style={{marginTop: 12, padding: 10, background: '#181C18', borderLeft: '3px solid #7AB8E0', fontSize: 11, color: '#A89968', lineHeight: 1.5}}>
+                      <strong style={{color: '#7AB8E0'}}>Comparativo com Conab RS Planalto 2026:</strong> custo total Conab nominal ~R$ 95/sc (com terra teórica). Sua configuração: R$ {custoPorSc.toFixed(2)}/sc. {custoPorSc > 100 ? <span style={{color:'#D9542B'}}>★ Acima do Conab — verifique se arrendamento real está sendo capturado.</span> : custoPorSc < 90 ? <span style={{color:'#C8E04A'}}>★ Abaixo do Conab — favorável, conferir se algum item está subestimado.</span> : <span>Dentro da faixa esperada.</span>}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
+          )}
+
+          {/* === GESTÃO DE CENÁRIOS === */}
+          <div style={{marginTop: 14, padding: 10, background: '#181C18', border: '1px solid #2A2F28'}}>
+            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 8}}>
+              <div style={{display: 'flex', alignItems: 'baseline', gap: 8}}>
+                <span style={{fontSize: 10, color: '#A89968', letterSpacing: 1, fontFamily: "'IBM Plex Mono', monospace"}}>CENÁRIO ATIVO:</span>
+                <span style={{fontSize: 14, color: cenarioAtivo ? '#C8E04A' : '#A89968', fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600}}>
+                  {cenarioAtivo ? '★ ' + cenarioAtivo.nome : '(não salvo)'}
+                </span>
+              </div>
+              <div style={{display: 'flex', gap: 4, flexWrap: 'wrap'}}>
+                <button onClick={() => setShowCenarioDialog(true)} style={{padding:'6px 10px', background:'#1A211A', border:'1px solid #C8E04A', color:'#C8E04A', fontFamily:"'IBM Plex Mono', monospace", fontSize:10, letterSpacing:1, cursor:'pointer'}}>💾 SALVAR COMO</button>
+                <button onClick={() => setShowHistorico(!showHistorico)} style={{padding:'6px 10px', background:'#181C18', border:'1px solid #9C7DBF', color:'#9C7DBF', fontFamily:"'IBM Plex Mono', monospace", fontSize:10, letterSpacing:1, cursor:'pointer'}}>📜 HISTÓRICO ({custosConfig.historicoVersoes.length})</button>
+                <button onClick={exportarJSON} style={{padding:'6px 10px', background:'#181C18', border:'1px solid #7AB8E0', color:'#7AB8E0', fontFamily:"'IBM Plex Mono', monospace", fontSize:10, letterSpacing:1, cursor:'pointer'}}>📤 EXPORT JSON</button>
+                <label style={{padding:'6px 10px', background:'#181C18', border:'1px solid #7AB8E0', color:'#7AB8E0', fontFamily:"'IBM Plex Mono', monospace", fontSize:10, letterSpacing:1, cursor:'pointer', display:'inline-block'}}>
+                  📥 IMPORT
+                  <input type="file" accept="application/json" onChange={importarJSON} style={{display:'none'}} />
+                </label>
+                <button onClick={resetCustosConab} style={{padding:'6px 10px', background:'#1A1410', border:'1px solid #D9542B', color:'#D9542B', fontFamily:"'IBM Plex Mono', monospace", fontSize:10, letterSpacing:1, cursor:'pointer'}}>↻ CONAB</button>
+              </div>
+            </div>
+
+            {/* Lista de cenários salvos */}
+            {custosConfig.cenarios.length > 0 && (
+              <div style={{marginTop: 8}}>
+                <div style={{fontSize: 10, color: '#A89968', letterSpacing: 1, marginBottom: 6, fontFamily: "'IBM Plex Mono', monospace"}}>▸ {custosConfig.cenarios.length} CENÁRIO(S) SALVO(S) · clique para carregar</div>
+                <div style={{display: 'flex', flexWrap: 'wrap', gap: 6}}>
+                  {custosConfig.cenarios.map(cen => {
+                    const total = Object.values(cen.custos).reduce((s, v) => s + v, 0);
+                    const isAtivo = cen.id === custosConfig.cenarioAtivoId;
+                    return (
+                      <div key={cen.id} style={{
+                        padding: '6px 10px', background: isAtivo ? '#1A211A' : '#0F1410',
+                        border: '1px solid ' + (isAtivo ? '#C8E04A' : '#2A2F28'),
+                        display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer'
+                      }} onClick={() => carregarCenario(cen.id)}>
+                        <span style={{fontSize: 11, color: isAtivo ? '#C8E04A' : '#E8E2D0', fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600}}>{isAtivo && '★ '}{cen.nome}</span>
+                        <span style={{fontSize: 9, color: '#A89968'}}>R$ {total.toFixed(0)}/ha</span>
+                        <span style={{fontSize: 8, color: '#6B7065'}}>{cen.atualizadoEm.slice(5, 10)}</span>
+                        <button onClick={(e) => { e.stopPropagation(); deletarCenario(cen.id); }} style={{background:'none', border:'none', color:'#D9542B', cursor:'pointer', fontSize:11, padding:0, marginLeft:4}}>✕</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Dialog de salvar */}
+            {showCenarioDialog && (
+              <div style={{marginTop: 8, padding: 10, background: '#0F1410', border: '1px solid #C8E04A'}}>
+                <div style={{fontSize: 10, color: '#C8E04A', letterSpacing: 1, marginBottom: 6, fontFamily: "'IBM Plex Mono', monospace"}}>NOME DO CENÁRIO (se já existir, sobrescreve)</div>
+                <div style={{display: 'flex', gap: 6, alignItems: 'center'}}>
+                  <input
+                    type="text" placeholder="Ex: Realista 25/26 · Otimista · Seca severa"
+                    value={novoCenarioNome}
+                    onChange={e => setNovoCenarioNome(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && salvarComoCenario()}
+                    autoFocus
+                    style={{flex: 1, padding: '8px 10px', background: '#0A0F0B', border: '1px solid #2A2F28', color: '#E8E2D0', fontFamily: "'IBM Plex Mono', monospace", fontSize: 12}}
+                  />
+                  <button onClick={salvarComoCenario} style={{padding: '8px 14px', background: '#1A211A', border: '1px solid #C8E04A', color: '#C8E04A', fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: 1, cursor: 'pointer'}}>✓ SALVAR</button>
+                  <button onClick={() => { setShowCenarioDialog(false); setNovoCenarioNome(''); }} style={{padding: '8px 14px', background: '#181C18', border: '1px solid #A89968', color: '#A89968', fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: 1, cursor: 'pointer'}}>✗ CANCELAR</button>
+                </div>
+              </div>
+            )}
+
+            {/* Histórico cronológico */}
+            {showHistorico && (
+              <div style={{marginTop: 8, padding: 10, background: '#0F1410', border: '1px solid #9C7DBF', maxHeight: 240, overflowY: 'auto'}}>
+                <div style={{fontSize: 10, color: '#9C7DBF', letterSpacing: 1, marginBottom: 8, fontFamily: "'IBM Plex Mono', monospace"}}>▸ HISTÓRICO DE VERSÕES (mais recente primeiro · máx 50)</div>
+                {custosConfig.historicoVersoes.length === 0 ? (
+                  <div style={{fontSize: 11, color: '#6B7065', fontStyle: 'italic'}}>Ainda não salvou nenhum cenário. Salve para começar o histórico.</div>
+                ) : (
+                  <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace"}}>
+                    <thead>
+                      <tr style={{borderBottom: '1px solid #2A2F28'}}>
+                        <th style={{padding: 4, textAlign: 'left', color: '#A89968'}}>DATA</th>
+                        <th style={{padding: 4, textAlign: 'left', color: '#A89968'}}>CENÁRIO</th>
+                        <th style={{padding: 4, textAlign: 'left', color: '#A89968'}}>AÇÃO</th>
+                        <th style={{padding: 4, textAlign: 'right', color: '#A89968'}}>TOTAL R$/ha</th>
+                        <th style={{padding: 4, textAlign: 'center', color: '#A89968'}}>RESTAURAR</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {custosConfig.historicoVersoes.map((h, i) => {
+                        const total = Object.values(h.custos).reduce((s, v) => s + v, 0);
+                        const data = new Date(h.timestamp);
+                        return (
+                          <tr key={i} style={{borderBottom: '1px solid #1F231D'}}>
+                            <td style={{padding: 4, color: '#A89968', fontSize: 10}}>{data.toLocaleString('pt-BR').slice(0, 16)}</td>
+                            <td style={{padding: 4, color: '#E8E2D0'}}>{h.cenarioNome}</td>
+                            <td style={{padding: 4, color: h.acao === 'criou' ? '#C8E04A' : '#7AB8E0'}}>{h.acao}</td>
+                            <td style={{padding: 4, textAlign: 'right', color: '#E6B84A'}}>{total.toFixed(0)}</td>
+                            <td style={{padding: 4, textAlign: 'center'}}>
+                              <button onClick={() => carregarVersaoHist(h.custos, h.cenarioNome)} style={{background: 'none', border: 'none', color: '#9C7DBF', cursor: 'pointer', fontSize: 12}}>↺</button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            )}
           </div>
-          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8}}>
-            <div style={S.inputBlock}>
-              <label style={S.inputLabel}>Produtividade (sc/ha)</label>
-              <input type="number" value={prodSoja} step="1" onChange={e => setProdSoja(parseFloat(e.target.value)||0)} />
-            </div>
-            <div style={S.inputBlock}>
-              <label style={S.inputLabel}>Frete R$/saca</label>
-              <input type="number" value={freteCIF} step="0.5" onChange={e => setFreteCIF(parseFloat(e.target.value)||0)} />
-            </div>
+          <div style={{fontSize: 10, color: '#6B7065', marginTop: 6, fontFamily: "'IBM Plex Mono', monospace"}}>
+            ★ Auto-save: cada edição grava no navegador (localStorage). Cenários nomeados + histórico das últimas 50 versões. Export/Import JSON para backup.
           </div>
-          <div style={S.inputBlock}>
-            <label style={S.inputLabel}>Fertilizante NPK (R$/ton)</label>
-            <input type="number" value={custoFert} step="50" onChange={e => setCustoFert(parseFloat(e.target.value)||0)} />
+
+          {/* Inputs auxiliares */}
+          <div style={{marginTop: 12, paddingTop: 12, borderTop: '1px solid #2A2F28'}}>
+            <div style={{fontSize: 11, color: '#A89968', marginBottom: 6, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 0.5}}>▸ PARÂMETROS DE PRODUÇÃO</div>
+            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8}}>
+              <div style={S.inputBlock}>
+                <label style={S.inputLabel}>Produtividade (sc/ha)</label>
+                <input type="number" value={prodSoja} step="1" onChange={e => setProdSoja(parseFloat(e.target.value)||0)} />
+              </div>
+              <div style={S.inputBlock}>
+                <label style={S.inputLabel}>Frete CIF R$/saca</label>
+                <input type="number" value={freteCIF} step="0.5" onChange={e => setFreteCIF(parseFloat(e.target.value)||0)} />
+              </div>
+              <div style={S.inputBlock}>
+                <label style={S.inputLabel}>NPK referência R$/ton</label>
+                <input type="number" value={custoFert} step="50" onChange={e => setCustoFert(parseFloat(e.target.value)||0)} />
+              </div>
+            </div>
           </div>
 
           {/* PE & MS — fundamentado em "margem de contribuição" do consultor */}
