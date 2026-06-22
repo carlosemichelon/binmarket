@@ -43,6 +43,8 @@ jobs:
             git add index.html
             DATA=$(date +'%Y-%m-%d %H:%M' --date='-3 hours')
             git commit -m "🤖 Atualização automática $DATA BRT"
+            # Sincroniza com remote antes de push (handle race conditions)
+            git pull --rebase origin main || git rebase --abort
             git push
             echo "✓ Painel atualizado e publicado"
           fi
