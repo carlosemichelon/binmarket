@@ -484,7 +484,11 @@ def update_conab_custos(html: str) -> tuple[str, bool, str]:
     return html, False, f"{len(excels)} arquivo(s) Conab encontrado(s) — parse manual via build_db.py"
 
 
+# ===========================================================================
+# MAIN
+# ===========================================================================
 
+def main() -> int:
     if not INDEX.exists():
         log(f"index.html não encontrado em {INDEX}", ok=False)
         return 1
