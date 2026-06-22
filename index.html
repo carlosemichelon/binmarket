@@ -611,9 +611,9 @@ const PRODUTIVIDADE_JC = {
   2021: { kgHa:3555, scHa:59.3, status:'boa',       obs:'★ SIDRA · safra 20/21 · RECORDE RS' },
   2022: { kgHa:1350, scHa:22.5, status:'quebrasev', obs:'★ SIDRA · safra 21/22 · PIOR La Niña' },
   2023: { kgHa:1724, scHa:28.7, status:'quebra',    obs:'★ SIDRA · safra 22/23 · La Niña 2º ano' },
-  2024: { kgHa:2903, scHa:48.4, status:'normal',    obs:'★ SIDRA · safra 23/24 · recuperação' },
-  2025: { kgHa:3200, scHa:53.3, status:'boa',       obs:'estim Emater · +13% vs 23/24' },
-  2026: { kgHa:3000, scHa:50.0, status:'normal',    obs:'estim inicial · La Niña neutra' },
+  2024: { kgHa:3000, scHa:50.0, status:'normal',    obs:'★ estimativa pessoal · safra 23/24' },
+  2025: { kgHa:2100, scHa:35.0, status:'quebra',    obs:'★ estimativa pessoal · safra 24/25 quebra' },
+  2026: { kgHa:3600, scHa:60.0, status:'boa',       obs:'★ estimativa pessoal · safra 25/26 expectativa' },
 };
 
 // Histórico SIDRA 2000-2009 para análise probabilística (anos extras vs ciclo 2010+)
@@ -1745,6 +1745,164 @@ function RentabilidadeBloco({ data, resumo }) {
 // ============================================================
 // BLOCO TRIBUTAÇÃO RURAL · calculadoras de IR/ITR/Funrural/ICMS para produtor RS
 // ============================================================
+// ============================================================
+// BLOCO ATUALIZAÇÃO · checklist com idade dos dados + links oficiais
+// ============================================================
+function AtualizacaoBloco() {
+  // Estado de fontes: data da última atualização CONHECIDA (atualizar via commit ou GitHub Actions)
+  const HOJE = new Date();
+  const fontes = [
+    // === DIÁRIO ===
+    { freq:'diário', nome:'CEPEA Paranaguá soja', ultima:'2026-06-17', limite:7,
+      onde:'HISTORICO_CEPEA_RAW · linha ~110',
+      url:'https://www.cepea.esalq.usp.br/br/indicador/series/soja.aspx',
+      auto:'PARCIAL · GH Actions processa .xls em data/cepea/' },
+    { freq:'diário', nome:'USD/BRL · BCB SGS', ultima:'2026-06-21', limite:7,
+      onde:'state default `dolar` no PainelSoja',
+      url:'https://www.bcb.gov.br/estabilidadefinanceira/historicocotacoes',
+      auto:'AUTOMÁTICO · BCB SGS série 1' },
+    { freq:'diário', nome:'CBOT futuros soja', ultima:'2026-06-20', limite:7,
+      onde:'state `cbotSoja` · curva no módulo 03',
+      url:'https://www.barchart.com/futures/quotes/ZS*0/futures-prices',
+      auto:'MANUAL · sem API gratuita CME' },
+    { freq:'semanal', nome:'Prêmio Paranaguá', ultima:'2026-06-16', limite:14,
+      onde:'state `premio` no PainelSoja',
+      url:'https://www.safras.com.br/',
+      auto:'MANUAL · pago' },
+
+    // === MENSAL ===
+    { freq:'mensal', nome:'WASDE USDA', ultima:'2026-06-12', limite:35,
+      onde:'USDA_HISTORICO · linha ~225',
+      url:'https://www.usda.gov/oce/commodity/wasde',
+      auto:'MANUAL · PDF mensal · ~10 do mês' },
+    { freq:'mensal', nome:'Conab BR', ultima:'2026-06-11', limite:35,
+      onde:'CONAB_HISTORICO · linha ~280',
+      url:'https://www.conab.gov.br/info-agro/safras/graos',
+      auto:'MANUAL · PDF mensal' },
+    { freq:'mensal', nome:'ANEC embarques', ultima:'2026-05-30', limite:35,
+      onde:'ANEC_EXPORT_PADRAO · linha ~545',
+      url:'https://www.anec.com.br/',
+      auto:'MANUAL · estatísticas mensais' },
+    { freq:'mensal', nome:'CDI / IPCA / Selic', ultima:'2026-05-31', limite:35,
+      onde:'MACRO_ANUAL · linha ~470',
+      url:'https://www3.bcb.gov.br/sgspub/',
+      auto:'AUTOMÁTICO · BCB SGS série 12/433/4189' },
+
+    // === ANUAL ===
+    { freq:'anual', nome:'SIDRA · PRODUTIVIDADE_JC', ultima:'2024-09-15', limite:400,
+      onde:'PRODUTIVIDADE_JC · linha ~591',
+      url:'https://sidra.ibge.gov.br/tabela/1612',
+      auto:'AUTOMÁTICO · API SIDRA t/1612/n6/4311205' },
+    { freq:'anual', nome:'Conab custos RS Planalto', ultima:'2026-01-20', limite:400,
+      onde:'MACRO_ANUAL[ano].custo · linha ~470',
+      url:'https://www.conab.gov.br/info-agro/custos-de-producao',
+      auto:'MANUAL · Excel anual' },
+    { freq:'anual', nome:'Emater RS · safra', ultima:'2025-12-15', limite:400,
+      onde:'PRODUTIVIDADE_JC 2025-26 estimativas',
+      url:'https://www.agricultura.rs.gov.br/inicial',
+      auto:'MANUAL · radiografia anual' },
+  ];
+
+  // Calcula idade + status
+  const enriched = fontes.map(f => {
+    const ultDate = new Date(f.ultima);
+    const dias = Math.floor((HOJE - ultDate) / (1000*60*60*24));
+    const status = dias < f.limite * 0.6 ? 'ok' :
+                   dias < f.limite ? 'avisa' : 'atrasada';
+    return { ...f, dias, status };
+  });
+
+  const atrasadas = enriched.filter(f => f.status === 'atrasada').length;
+  const avisos = enriched.filter(f => f.status === 'avisa').length;
+  const okCount = enriched.filter(f => f.status === 'ok').length;
+
+  return (
+    <div>
+      {/* Resumo */}
+      <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 14}}>
+        <div style={{padding: 12, background: '#1A211A', borderLeft: '3px solid #C8E04A'}}>
+          <div style={{fontSize: 10, color: '#C8E04A', letterSpacing: 1}}>✓ ATUALIZADOS</div>
+          <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 28, color: '#C8E04A', fontWeight: 700}}>{okCount}</div>
+          <div style={{fontSize: 10, color: '#A89968'}}>de {enriched.length} fontes</div>
+        </div>
+        <div style={{padding: 12, background: '#211A11', borderLeft: '3px solid #E6B84A'}}>
+          <div style={{fontSize: 10, color: '#E6B84A', letterSpacing: 1}}>⚠ AVISO</div>
+          <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 28, color: '#E6B84A', fontWeight: 700}}>{avisos}</div>
+          <div style={{fontSize: 10, color: '#A89968'}}>próximas do limite</div>
+        </div>
+        <div style={{padding: 12, background: '#211010', borderLeft: '3px solid #D9542B'}}>
+          <div style={{fontSize: 10, color: '#D9542B', letterSpacing: 1}}>✗ ATRASADAS</div>
+          <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 28, color: '#D9542B', fontWeight: 700}}>{atrasadas}</div>
+          <div style={{fontSize: 10, color: '#A89968'}}>precisam atualizar</div>
+        </div>
+      </div>
+
+      {/* Tabela por frequência */}
+      {['diário', 'mensal', 'anual'].map(freq => {
+        const grupo = enriched.filter(f => f.freq === freq || (freq === 'diário' && f.freq === 'semanal'));
+        if (grupo.length === 0) return null;
+        const titulo = freq === 'diário' ? '↻ DIÁRIO / SEMANAL'
+                     : freq === 'mensal' ? '↻ MENSAL'
+                     : '↻ ANUAL';
+        return (
+          <div key={freq} style={{marginBottom: 16}}>
+            <div style={{fontSize: 11, color: '#9C7DBF', marginBottom: 6, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 1, fontWeight: 600}}>{titulo}</div>
+            <div style={{overflowX: 'auto', border: '1px solid #2A2F28'}}>
+              <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace"}}>
+                <thead>
+                  <tr style={{background: '#181C18'}}>
+                    <th style={{padding: 6, textAlign: 'left', color: '#A89968', letterSpacing: 1, borderBottom: '1px solid #2A2F28'}}>STATUS</th>
+                    <th style={{padding: 6, textAlign: 'left', color: '#A89968'}}>DADO</th>
+                    <th style={{padding: 6, textAlign: 'right', color: '#A89968'}}>ÚLTIMA</th>
+                    <th style={{padding: 6, textAlign: 'right', color: '#A89968'}}>IDADE</th>
+                    <th style={{padding: 6, textAlign: 'left', color: '#A89968'}}>AUTOMAÇÃO</th>
+                    <th style={{padding: 6, textAlign: 'left', color: '#A89968'}}>FONTE OFICIAL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {grupo.map((f, i) => {
+                    const corStatus = f.status === 'ok' ? '#C8E04A' : f.status === 'avisa' ? '#E6B84A' : '#D9542B';
+                    const iconeStatus = f.status === 'ok' ? '✓' : f.status === 'avisa' ? '⚠' : '✗';
+                    return (
+                      <tr key={i} style={{borderBottom: '1px solid #1F231D'}}>
+                        <td style={{padding: 6, color: corStatus, fontSize: 14, fontWeight: 700}}>{iconeStatus}</td>
+                        <td style={{padding: 6, color: '#E8E2D0'}}>
+                          <div style={{fontWeight: 600}}>{f.nome}</div>
+                          <div style={{fontSize: 9, color: '#6B7065'}}>{f.onde}</div>
+                        </td>
+                        <td style={{padding: 6, textAlign: 'right', color: '#A89968'}}>{f.ultima}</td>
+                        <td style={{padding: 6, textAlign: 'right', color: corStatus, fontWeight: 600}}>{f.dias}d</td>
+                        <td style={{padding: 6, color: f.auto.startsWith('AUTOMÁTICO') ? '#C8E04A' : f.auto.startsWith('PARCIAL') ? '#E6B84A' : '#A89968', fontSize: 10}}>{f.auto}</td>
+                        <td style={{padding: 6}}>
+                          <a href={f.url} target="_blank" rel="noopener noreferrer" style={{color: '#7AB8E0', textDecoration: 'none', fontSize: 10}}>→ abrir</a>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Como atualizar */}
+      <div style={{padding: 12, background: '#0F1410', borderLeft: '3px solid #C8E04A', fontSize: 11, color: '#A89968', lineHeight: 1.6}}>
+        <strong style={{color: '#E8E2D0'}}>Como atualizar (3 caminhos):</strong>
+        <div style={{marginTop: 6}}>
+          <strong style={{color: '#C8E04A'}}>1. Automático (GitHub Actions):</strong> roda diariamente 12:00 UTC. Você não faz nada — ele puxa BCB (USD, CDI, IPCA), processa CEPEA se você anexar .xls em <code style={{color:'#7AB8E0'}}>data/cepea/</code>, e busca SIDRA JC anual. Veja Actions → "Atualizar dados".
+        </div>
+        <div style={{marginTop: 6}}>
+          <strong style={{color: '#E6B84A'}}>2. Manual rápido (sliders):</strong> os módulos 01 e 02 têm sliders que você pode mexer para simular cenários sem editar código (preço, dólar, prêmio, custos). Mudanças não persistem mas servem para "e se?".
+        </div>
+        <div style={{marginTop: 6}}>
+          <strong style={{color: '#9C7DBF'}}>3. Manual edição código:</strong> clique no link "→ abrir" da fonte, copia o número novo, abre <code style={{color:'#7AB8E0'}}>index.html</code> num editor, busca pela constante na linha indicada, edita, commit no GitHub. Painel atualiza automático via GitHub Pages.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TributacaoBloco() {
   // === Inputs comuns ===
   const [receitaBruta, setReceitaBruta] = useState(1500000);  // R$/ano receita bruta venda soja
@@ -4881,6 +5039,15 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
             Análise probabilística baseada em 25 anos de dados SIDRA reais (2000-2024). Compara: <strong>(A)</strong> plantar só área própria · <strong>(B)</strong> própria + arrendar área adicional · <strong>(C)</strong> não plantar, capital em CDI. Calcula esperança matemática, probabilidade de margem positiva e Value at Risk.
           </div>
           <DecisaoEstrategicaBloco />
+        </section>
+
+        {/* 16 — ATUALIZAÇÃO DE DADOS */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+          <div style={{...S.cardLabel, color: '#7AB8E0'}}>16 — ↻ Atualização de dados · checklist + links oficiais</div>
+          <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
+            Status de frescor de cada fonte usada no painel. Verde = recente · Amarelo = revisar · Vermelho = desatualizado. Inclui automação por GitHub Actions, link direto para fonte oficial e onde editar no código se for manual.
+          </div>
+          <AtualizacaoBloco />
         </section>
 
 
