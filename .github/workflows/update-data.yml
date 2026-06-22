@@ -1,0 +1,48 @@
+name: Atualizar dados
+
+on:
+  schedule:
+    # Diário às 12:00 UTC (09:00 BRT) — após CEPEA publicar
+    - cron: '0 12 * * *'
+  workflow_dispatch:  # permite acionar manualmente pela aba Actions
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar dependências
+        run: pip install -r scripts/requirements.txt
+
+      - name: Instalar LibreOffice (para converter .xls CEPEA)
+        run: sudo apt-get update && sudo apt-get install -y libreoffice-calc --no-install-recommends
+
+      - name: Executar atualizador
+        run: python scripts/update_data.py
+        env:
+          TZ: America/Sao_Paulo
+
+      - name: Commit das alterações
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet index.html; then
+            echo "Nenhuma alteração no index.html"
+          else
+            git add index.html
+            DATA=$(date +'%Y-%m-%d %H:%M' --date='-3 hours')
+            git commit -m "🤖 Atualização automática $DATA BRT"
+            git push
+            echo "✓ Painel atualizado e publicado"
+          fi
