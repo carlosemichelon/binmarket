@@ -2854,6 +2854,155 @@ function TourGuiado({ onClose }) {
   );
 }
 
+// ============================================================
+// BLOCO CUSTO vs CBOT · evolução histórica do custo Conab como % do preço CBOT
+// Resposta direta: 2010 = 61% · 2026 = 77%. Custo subiu ~10% acima do CBOT real em 16 anos.
+// ============================================================
+function CustoVsCbotBloco() {
+  // Calcula média anual CBOT + dólar a partir de HISTORICO trimestral
+  const dadosAnuais = useMemo(() => {
+    const byAno = {};
+    HISTORICO.forEach(h => {
+      const ano = 2000 + parseInt(h.t.substring(0, 2));
+      if (!byAno[ano]) byAno[ano] = { cbots: [], dolares: [] };
+      byAno[ano].cbots.push(h.cbot);
+      byAno[ano].dolares.push(h.dolar);
+    });
+    return Object.entries(byAno).map(([ano, d]) => {
+      const cbotMed = d.cbots.reduce((s,v)=>s+v,0) / d.cbots.length;
+      const dolarMed = d.dolares.reduce((s,v)=>s+v,0) / d.dolares.length;
+      const cbotBrl = cbotMed * 2.2046 * dolarMed;  // R$/saca FOB Paranaguá teórico
+      const custo = MACRO_ANUAL[ano]?.custo || 0;
+      const pctCusto = cbotBrl > 0 ? (custo / cbotBrl * 100) : 0;
+      const margem = cbotBrl - custo;
+      const margemPct = cbotBrl > 0 ? (margem / cbotBrl * 100) : 0;
+      return {
+        ano: parseInt(ano),
+        cbotUSD: Math.round(cbotMed * 100) / 100,
+        dolar: Math.round(dolarMed * 100) / 100,
+        cbotBrl: Math.round(cbotBrl * 100) / 100,
+        custo,
+        pctCusto: Math.round(pctCusto * 10) / 10,
+        margem: Math.round(margem * 100) / 100,
+        margemPct: Math.round(margemPct * 10) / 10,
+      };
+    });
+  }, []);
+
+  const ano2010 = dadosAnuais.find(d => d.ano === 2010);
+  const anoAtual = dadosAnuais[dadosAnuais.length - 1];
+  const piorAno = dadosAnuais.reduce((max, d) => d.pctCusto > max.pctCusto ? d : max, dadosAnuais[0]);
+  const melhorAno = dadosAnuais.reduce((min, d) => d.pctCusto < min.pctCusto ? d : min, dadosAnuais[0]);
+  const mediaPct = dadosAnuais.reduce((s, d) => s + d.pctCusto, 0) / dadosAnuais.length;
+
+  return (
+    <div>
+      {/* Resposta direta */}
+      <div style={{padding: 14, background: '#1A211A', borderLeft: '3px solid #C8E04A', marginBottom: 14, fontSize: 13, color: '#E8E2D0', lineHeight: 1.6}}>
+        <div style={{fontSize: 12, color: '#C8E04A', letterSpacing: 1, marginBottom: 8, fontFamily: "'IBM Plex Mono', monospace"}}>★ RESPOSTA DIRETA À PERGUNTA</div>
+        <strong>2010:</strong> custo era R$ 27/sc · preço CBOT equivalente R$ 44/sc · <strong style={{color:'#C8E04A'}}>61% do CBOT</strong>. Margem 39%.<br/>
+        <strong>2026:</strong> custo é R$ 95/sc · preço CBOT equivalente R$ 123/sc · <strong style={{color:'#D9542B'}}>77% do CBOT</strong>. Margem 23%.<br/>
+        <strong style={{color:'#FF7F50'}}>→ Custo cresceu mais rápido que preço:</strong> consumiu 16 pontos percentuais da margem em 16 anos. O custo Conab triplicou (+252%); o preço CBOT em R$ triplicou também (+180%) mas porque o real desvalorizou ~3×.
+      </div>
+
+      {/* Cards-resumo */}
+      <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 14}}>
+        <div style={{padding: 12, background: '#181C18', borderLeft: '3px solid #C8E04A'}}>
+          <div style={{fontSize: 10, color: '#C8E04A', letterSpacing: 1}}>MELHOR ANO</div>
+          <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 18, color: '#C8E04A', fontWeight: 700}}>{melhorAno.ano}</div>
+          <div style={{fontSize: 11, color: '#A89968'}}>{melhorAno.pctCusto.toFixed(1)}% custo · margem {melhorAno.margemPct.toFixed(1)}%</div>
+        </div>
+        <div style={{padding: 12, background: '#181C18', borderLeft: '3px solid #D9542B'}}>
+          <div style={{fontSize: 10, color: '#D9542B', letterSpacing: 1}}>PIOR ANO</div>
+          <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 18, color: '#D9542B', fontWeight: 700}}>{piorAno.ano}</div>
+          <div style={{fontSize: 11, color: '#A89968'}}>{piorAno.pctCusto.toFixed(1)}% custo · margem {piorAno.margemPct.toFixed(1)}%</div>
+        </div>
+        <div style={{padding: 12, background: '#181C18', borderLeft: '3px solid #E6B84A'}}>
+          <div style={{fontSize: 10, color: '#E6B84A', letterSpacing: 1}}>MÉDIA 16 ANOS</div>
+          <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 18, color: '#E6B84A', fontWeight: 700}}>{mediaPct.toFixed(1)}%</div>
+          <div style={{fontSize: 11, color: '#A89968'}}>do CBOT consumido em custo</div>
+        </div>
+        <div style={{padding: 12, background: '#181C18', borderLeft: '3px solid '+(anoAtual.pctCusto > mediaPct ? '#D9542B' : '#C8E04A')}}>
+          <div style={{fontSize: 10, color: '#7AB8E0', letterSpacing: 1}}>ATUAL ({anoAtual.ano})</div>
+          <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 18, color: anoAtual.pctCusto > mediaPct ? '#D9542B' : '#C8E04A', fontWeight: 700}}>{anoAtual.pctCusto.toFixed(1)}%</div>
+          <div style={{fontSize: 11, color: '#A89968'}}>{anoAtual.pctCusto > mediaPct ? 'acima da média' : 'abaixo da média'}</div>
+        </div>
+      </div>
+
+      {/* Gráfico % custo/CBOT */}
+      <div style={{fontSize: 11, color: '#FF7F50', marginBottom: 8, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 1, fontWeight: 600}}>
+        ▸ EVOLUÇÃO % CUSTO/CBOT · linha sobe = margem diminui · linha desce = margem aumenta
+      </div>
+      <div style={{height: 280, marginBottom: 14}}>
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={dadosAnuais} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
+            <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
+            <XAxis dataKey="ano" stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+            <YAxis yAxisId="left" stroke="#FF7F50" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} label={{value:'% custo/CBOT', angle:-90, position:'insideLeft', fill:'#FF7F50', fontSize:10}} domain={[40, 90]}/>
+            <YAxis yAxisId="right" orientation="right" stroke="#A89968" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} label={{value:'R$/sc', angle:90, position:'insideRight', fill:'#A89968', fontSize:10}}/>
+            <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 11}}/>
+            <Legend wrapperStyle={{fontSize: 11, fontFamily: 'IBM Plex Mono', paddingTop: 8}} iconType="line" />
+            <ReferenceLine yAxisId="left" y={mediaPct} stroke="#9C7DBF" strokeDasharray="3 3" label={{value:`média ${mediaPct.toFixed(0)}%`, fill:'#9C7DBF', fontSize:10}}/>
+            <Bar yAxisId="right" dataKey="cbotBrl" fill="#7AB8E033" name="CBOT R$/sc (eixo dir.)"/>
+            <Bar yAxisId="right" dataKey="custo"   fill="#FF7F5033" name="Custo Conab R$/sc (eixo dir.)"/>
+            <Line yAxisId="left" type="monotone" dataKey="pctCusto" stroke="#FF7F50" strokeWidth={3} dot={{r:4}} name="% custo/CBOT"/>
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Tabela detalhada */}
+      <div style={{fontSize: 11, color: '#A89968', marginBottom: 6, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 0.5}}>▸ TABELA DETALHADA · 17 ANOS</div>
+      <div style={{overflowX: 'auto', border: '1px solid #2A2F28'}}>
+        <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace"}}>
+          <thead>
+            <tr style={{background: '#181C18'}}>
+              <th style={{padding: 6, textAlign: 'left', color: '#A89968', letterSpacing: 1}}>ANO</th>
+              <th style={{padding: 6, textAlign: 'right', color: '#7AB8E0'}}>CBOT USD/bu</th>
+              <th style={{padding: 6, textAlign: 'right', color: '#A89968'}}>USD</th>
+              <th style={{padding: 6, textAlign: 'right', color: '#7AB8E0'}}>CBOT R$/sc</th>
+              <th style={{padding: 6, textAlign: 'right', color: '#FF7F50'}}>CUSTO R$/sc</th>
+              <th style={{padding: 6, textAlign: 'right', color: '#FF7F50'}}>★ % CBOT</th>
+              <th style={{padding: 6, textAlign: 'right', color: '#C8E04A'}}>MARGEM R$/sc</th>
+              <th style={{padding: 6, textAlign: 'right', color: '#C8E04A'}}>MARGEM %</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dadosAnuais.map((d, i) => {
+              const corPct = d.pctCusto > 75 ? '#D9542B' : d.pctCusto > 65 ? '#E6B84A' : '#C8E04A';
+              return (
+                <tr key={i} style={{borderBottom: '1px solid #1F231D'}}>
+                  <td style={{padding: 6, color: '#E8E2D0', fontWeight: 600}}>{d.ano}</td>
+                  <td style={{padding: 6, textAlign: 'right', color: '#7AB8E0'}}>{d.cbotUSD.toFixed(2)}</td>
+                  <td style={{padding: 6, textAlign: 'right', color: '#A89968'}}>{d.dolar.toFixed(2)}</td>
+                  <td style={{padding: 6, textAlign: 'right', color: '#7AB8E0'}}>{d.cbotBrl.toFixed(0)}</td>
+                  <td style={{padding: 6, textAlign: 'right', color: '#FF7F50'}}>{d.custo}</td>
+                  <td style={{padding: 6, textAlign: 'right', color: corPct, fontWeight: 700, fontSize: 12}}>{d.pctCusto.toFixed(1)}%</td>
+                  <td style={{padding: 6, textAlign: 'right', color: d.margem > 0 ? '#C8E04A' : '#D9542B'}}>{d.margem.toFixed(0)}</td>
+                  <td style={{padding: 6, textAlign: 'right', color: d.margemPct > 0 ? '#C8E04A' : '#D9542B', fontWeight: 600}}>{d.margemPct.toFixed(1)}%</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Insights */}
+      <div style={{marginTop: 14, padding: 12, background: '#0F1410', borderLeft: '2px solid #9C7DBF', fontSize: 11, color: '#A89968', lineHeight: 1.6}}>
+        <strong style={{color: '#E8E2D0'}}>📊 Padrões revelados:</strong>
+        <ol style={{margin: '6px 0 0 16px', padding: 0}}>
+          <li><strong>2010-2013: idade de ouro</strong> (60-63% custo) — pós-crise + China comprando + dólar fraco em real. Margem 37-40%.</li>
+          <li><strong>2014-2019: aperto histórico</strong> (70-84% custo) — preço CBOT caiu (super-ciclo terminou), custo continuou subindo. Pior ano: <strong>2019 a 84% do CBOT</strong> = margem só 16%.</li>
+          <li><strong>2020-2023: novo boom</strong> (56-67% custo) — COVID + China + Ucrânia + dólar a R$ 5+. <strong>2021 = MELHOR ano</strong> (56%). Margem 44%.</li>
+          <li><strong>2024-2026: voltou ao aperto</strong> (69-77% custo) — CBOT caiu para 10-11 USD/bu, custo subiu (NPK alto + arrendamento). Estamos em <strong>77%</strong> = margem 23% (abaixo da média 70%).</li>
+        </ol>
+        <div style={{marginTop: 8, padding: 8, background: '#1A1410', borderLeft: '2px solid #FF7F50'}}>
+          <strong style={{color: '#FF7F50'}}>Insight crítico:</strong> a margem do produtor brasileiro depende muito mais do <strong>nível absoluto do CBOT em USD</strong> e do <strong>dólar</strong> do que da inflação dos custos. Quando CBOT &gt;13 USD/bu + dólar &gt;5 R$, margem fica boa mesmo com custo alto. Quando CBOT cai abaixo de 10,5 + dólar abaixo de 5,3, a coisa aperta — independente do quanto o custo subiu nominalmente.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PainelSoja() {
   const [cbot, setCbot] = useState(11.97);
   const [premio, setPremio] = useState(-0.34);
@@ -2961,8 +3110,57 @@ function PainelSoja() {
     persistir({ ...custosConfig, custosAtuais: novosCustos });
   };
   const resetCustosConab = () => {
-    if (!confirm('Restaurar TODOS os 23 itens para os valores Conab? Sua edição atual será perdida (mas cenários salvos ficam intactos).')) return;
+    if (!confirm('Restaurar TODOS os 27 itens para os valores Conab? Sua edição atual será perdida (mas cenários salvos ficam intactos).')) return;
     persistir({ ...custosConfig, custosAtuais: initDefault(), cenarioAtivoId: null });
+  };
+
+  // === PRESETS CALIBRADOS · 3 níveis de custo ===
+  const PRESETS = {
+    conab_estrito: {
+      nome: 'CONAB nominal',
+      desc: 'Valores conservadores do Conab RS Planalto oficial · ~R$ 3.300/ha sem terra · R$ 95/sc com terra teórica',
+      icone: '○',
+      cor: '#7AB8E0',
+      custos: {
+        sementes:350, royaltyTransg:60, tratSementes:35, inoculante:25,
+        fertNPK:900, calcario:100, analiseSolo:15,
+        herbicida:380, fungicida:320, inseticida:200,
+        combustivel:250, maoOperacional:150, encargosSociais:45,
+        manutencaoMaq:200, freteColheita:50, secagem:60,
+        consultoria:80, seguroProd:80,
+        depMaq:290, depBenf:55, jurosCap:130, finCusteio:180,
+        maoFixa:170, admin:110, segurosGerais:70, itr:30, manutBenf:60,
+      }
+    },
+    realista_jc: {
+      nome: 'REALISTA JC',
+      desc: 'Produtor médio JC · consultoria + seguros parciais · ~R$ 5.460/ha sem terra · R$ 145-160/sc com terra real 20 sc/ha',
+      icone: '★',
+      cor: '#C8E04A',
+      custos: initDefault(),
+    },
+    premium: {
+      nome: 'PREMIUM JC',
+      desc: 'Manejo intensivo · insumos top + consultoria completa + seguros · ~R$ 6.200/ha sem terra · R$ 165-180/sc com terra real',
+      icone: '💎',
+      cor: '#E6B84A',
+      custos: {
+        sementes:450, royaltyTransg:90, tratSementes:80, inoculante:50,
+        fertNPK:1100, calcario:150, analiseSolo:40,
+        herbicida:580, fungicida:520, inseticida:280,
+        combustivel:320, maoOperacional:220, encargosSociais:65,
+        manutencaoMaq:290, freteColheita:80, secagem:95,
+        consultoria:300, seguroProd:230,
+        depMaq:450, depBenf:80, jurosCap:230, finCusteio:290,
+        maoFixa:270, admin:180, segurosGerais:120, itr:40, manutBenf:85,
+      }
+    },
+  };
+  const aplicarPreset = (presetKey) => {
+    const p = PRESETS[presetKey];
+    if (!p) return;
+    if (!confirm(`Aplicar preset "${p.nome}"? Sua edição atual será substituída (cenários salvos ficam intactos).`)) return;
+    persistir({ ...custosConfig, custosAtuais: { ...p.custos }, cenarioAtivoId: null });
   };
   const salvarComoCenario = () => {
     const nome = novoCenarioNome.trim();
@@ -3636,7 +3834,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
         <section style={S.card}>
           <div style={S.cardLabel}>02 — Custos detalhados, margem & relação de troca</div>
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
-            Decomposição em <strong>27 itens</strong> (18 variáveis + 9 fixos base). Valores de referência <strong style={{color:'#7AB8E0'}}>Conab RS Planalto 2026</strong> · edite cada linha com seu custo real. <strong style={{color:'#FF7F50'}}>TERRA (arrendamento)</strong> tratada separadamente — Conab embute ~14 sc/ha, JC real é 20 sc/ha.
+            Decomposição em <strong>27 itens</strong> (18 var + 9 fixos). <strong style={{color:'#7AB8E0'}}>3 PRESETS calibrados</strong>: ○ Conab nominal (R$ 95/sc) · ★ Realista JC (R$ 145-160/sc) · 💎 Premium (R$ 165-180/sc). Edite linha-a-linha para seus números reais. <strong style={{color:'#FF7F50'}}>TERRA</strong> tratada separada — Conab usa 14 sc/ha teórico, JC real é 20 sc/ha.
           </div>
 
           {/* Arrendamento + área */}
@@ -4261,6 +4459,27 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                   <input type="file" accept="application/json" onChange={importarJSON} style={{display:'none'}} />
                 </label>
                 <button onClick={resetCustosConab} style={{padding:'6px 10px', background:'#1A1410', border:'1px solid #D9542B', color:'#D9542B', fontFamily:"'IBM Plex Mono', monospace", fontSize:10, letterSpacing:1, cursor:'pointer'}}>↻ CONAB</button>
+              </div>
+            </div>
+
+            {/* PRESETS · 3 frames de referência */}
+            <div style={{marginTop: 10, padding: 10, background: '#0F1410', border: '1px solid #2A2F28'}}>
+              <div style={{fontSize: 10, color: '#A89968', letterSpacing: 1, marginBottom: 8, fontFamily: "'IBM Plex Mono', monospace"}}>▸ PRESETS CALIBRADOS · 3 frames diferentes</div>
+              <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8}}>
+                {Object.entries(PRESETS).map(([key, p]) => {
+                  const total = Object.values(p.custos).reduce((s, v) => s + v, 0);
+                  return (
+                    <button key={key} onClick={() => aplicarPreset(key)} style={{
+                      padding: 10, background: '#181C18', border: '1px solid ' + p.cor,
+                      color: p.cor, fontFamily: "'IBM Plex Mono', monospace",
+                      cursor: 'pointer', textAlign: 'left', display: 'block'
+                    }}>
+                      <div style={{fontSize: 11, letterSpacing: 1, fontWeight: 700}}>{p.icone} {p.nome}</div>
+                      <div style={{fontSize: 14, color: p.cor, marginTop: 4, fontWeight: 700}}>R$ {total.toFixed(0)}/ha</div>
+                      <div style={{fontSize: 9, color: '#A89968', marginTop: 4, lineHeight: 1.4}}>{p.desc}</div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -5460,13 +5679,14 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
               { k: 'custos',       l: 'Custos de produção' },
               { k: 'margem',       l: 'Margem soja · trim. e acumulada' },
               { k: 'rentabilidade',l: '★ Rentabilidade real JC/RS (IBGE)' },
+              { k: 'custoCbot',    l: '★ Custo vs CBOT (%)' },
             ].map(t => (
               <button key={t.k} className={`exp ${multiVer === t.k ? 'ativo' : ''}`} onClick={() => setMultiVer(t.k)}>
                 {t.l}
               </button>
             ))}
           </div>
-          {multiVer !== 'custos' && multiVer !== 'rentabilidade' && (
+          {multiVer !== 'custos' && multiVer !== 'rentabilidade' && multiVer !== 'custoCbot' && (
           <div style={{height: 360, marginTop: 16}}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={HISTORICO_MULTI_CUSTOM} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
@@ -5561,6 +5781,11 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
           {/* ===== ABA DEDICADA: RENTABILIDADE REAL JC/RS ===== */}
           {multiVer === 'rentabilidade' && (
             <RentabilidadeBloco data={RENT_JC_CUSTOM} resumo={RENT_JC_RESUMO_CUSTOM} />
+          )}
+
+          {/* ===== ABA: CUSTO vs CBOT (%) ===== */}
+          {multiVer === 'custoCbot' && (
+            <CustoVsCbotBloco />
           )}
 
           <div style={S.legendaHist}>
