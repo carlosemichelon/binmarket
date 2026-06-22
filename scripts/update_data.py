@@ -485,6 +485,198 @@ def update_conab_custos(html: str) -> tuple[str, bool, str]:
 
 
 # ===========================================================================
+# FONTE 7 · NOTÍCIAS AGRÍCOLAS · CEPEA Paranaguá + CBOT (scraping)
+# Site: noticiasagricolas.com.br/cotacoes/soja/soja-indicador-cepea-esalq-porto-paranagua
+# Republica dados CEPEA + CME oficiais. Não bloqueia robôs com User-Agent comum.
+# ===========================================================================
+
+NA_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                  "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Cache-Control": "max-age=0",
+    "Sec-Ch-Ua": '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    "Sec-Ch-Ua-Mobile": "?0",
+    "Sec-Ch-Ua-Platform": '"Windows"',
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "Upgrade-Insecure-Requests": "1",
+    "Referer": "https://www.google.com/",
+}
+NA_CEPEA_URL = "https://www.noticiasagricolas.com.br/cotacoes/soja/soja-indicador-cepea-esalq-porto-paranagua"
+
+
+def fetch_noticias_agricolas_cepea() -> dict:
+    """Busca último valor CEPEA Paranaguá + N cotações anteriores."""
+    try:
+        r = requests.get(NA_CEPEA_URL, headers=NA_HEADERS, timeout=30)
+        r.raise_for_status()
+        html_page = r.text
+    except Exception as exc:
+        log(f"Notícias Agrícolas falhou: {exc}", ok=False)
+        return {}
+
+    # Pattern: linhas de tabela com data | valor | variação
+    # No HTML aparece <td>DD/MM/YYYY</td><td>NNN,NN</td><td>...,NN</td>
+    pattern = re.compile(
+        r"<td[^>]*>\s*(\d{2}/\d{2}/\d{4})\s*</td>\s*"
+        r"<td[^>]*>\s*([\d.,]+)\s*</td>\s*"
+        r"<td[^>]*>\s*([+\-]?[\d.,]+)\s*</td>",
+        re.IGNORECASE,
+    )
+    matches = pattern.findall(html_page)
+    if not matches:
+        return {}
+
+    # Converte valor de "132,84" para 132.84
+    serie = []
+    for data_str, valor_str, var_str in matches:
+        try:
+            valor = float(valor_str.replace(".", "").replace(",", "."))
+            var = float(var_str.replace(",", ".").replace("+", ""))
+            serie.append({"data": data_str, "valor": valor, "var": var})
+        except ValueError:
+            continue
+
+    if not serie:
+        return {}
+
+    # Busca USD atual no header da página (R$ X,XX -X,XX%Dólar)
+    usd_match = re.search(r"R\$\s*([\d,]+)\s*[\-+][\d,]+%\s*Dólar", html_page)
+    dolar = None
+    if usd_match:
+        try:
+            dolar = float(usd_match.group(1).replace(",", "."))
+        except ValueError:
+            pass
+
+    return {
+        "ultima": serie[0],
+        "serie": serie[:20],  # últimos 20 dias úteis
+        "dolar": dolar,
+    }
+
+
+def update_cepea_from_noticias(html: str) -> tuple[str, bool, str]:
+    """Atualiza linha "★ Última cotação CEPEA" + "dados CEPEA DD/MM/YYYY"."""
+    data = fetch_noticias_agricolas_cepea()
+    if not data or not data.get("ultima"):
+        return html, False, "scraping NA não retornou dados"
+
+    ultima = data["ultima"]
+    data_str = ultima["data"]
+    valor = ultima["valor"]
+    dolar = data.get("dolar") or 5.10
+
+    # Padrão 1: "dados CEPEA DD/MM/YYYY"
+    pat1 = re.compile(r"(dados CEPEA )(\d{2}/\d{2}/\d{4})")
+    if pat1.search(html):
+        html = pat1.sub(rf"\g<1>{data_str}", html)
+
+    # Padrão 2: linha completa com saca + data + dólar
+    pat2 = re.compile(
+        r"(★ Última cotação CEPEA: <strong>R\$ )([\d,]+)(/saca</strong> em <strong>)"
+        r"(\d{2}/\d{2}/\d{4})(</strong> · Dólar implícito R\$ )([\d,]+)"
+    )
+    if pat2.search(html):
+        valor_fmt = f"{valor:.2f}".replace(".", ",")
+        dolar_fmt = f"{dolar:.2f}".replace(".", ",")
+        html = pat2.sub(rf"\g<1>{valor_fmt}\g<3>{data_str}\g<5>{dolar_fmt}", html)
+
+    return html, True, f"CEPEA {data_str} = R$ {valor:.2f} · dólar R$ {dolar:.2f}"
+
+
+def update_cbot_from_noticias(html: str) -> tuple[str, bool, str]:
+    """Atualiza CBOT JUL/NOV se possível (apenas state default no PainelSoja)."""
+    try:
+        r = requests.get(NA_CEPEA_URL, headers=NA_HEADERS, timeout=30)
+        r.raise_for_status()
+        page = r.text
+    except Exception as exc:
+        return html, False, f"CBOT NA fetch falhou: {exc}"
+
+    # Padrão CBOT: JUL 2026 → 1.125,75 ou NOV 2026 → 1.144,75
+    # No HTML: <td>JUL 2026</td><td>1.125,75</td>
+    pat = re.compile(
+        r"(JUL|AUG|SEP|NOV)\s+2026[^<]*</a></td>\s*<td[^>]*>\s*([\d.,]+)</td>",
+        re.IGNORECASE,
+    )
+    matches = pat.findall(page)
+    if not matches:
+        return html, False, "CBOT não encontrado"
+
+    cbot = {}
+    for mes, val in matches:
+        try:
+            cbot[mes.upper()] = float(val.replace(".", "").replace(",", "."))
+        except ValueError:
+            continue
+
+    if not cbot:
+        return html, False, "CBOT parse falhou"
+
+    # Pega NOV (new crop) ou JUL como fallback
+    cbot_val = cbot.get("NOV") or cbot.get("JUL")
+    if not cbot_val:
+        return html, False, "CBOT NOV/JUL ausente"
+
+    # Converte de cents/bushel (1125,75) para cents (1125.75)
+    cbot_cents = cbot_val
+    # Atualiza state default no PainelSoja
+    pat_state = re.compile(r"(useState\()(\d{3,4}(?:\.\d+)?)(\);\s*//\s*CBOT NOV)")
+    if pat_state.search(html):
+        html = pat_state.sub(rf"\g<1>{cbot_cents:.2f}\g<3>", html)
+        return html, True, f"CBOT NOV = {cbot_cents:.2f} cents/bu"
+    return html, False, f"CBOT lido ({cbot_cents:.2f}) mas state não encontrado"
+
+
+# ===========================================================================
+# FONTE 8 · YAHOO FINANCE · CBOT futuros soja (backup confiável)
+# Símbolo ZS=F (Soybean Futures front-month)
+# API: query1.finance.yahoo.com/v8/finance/chart/ZS=F
+# ===========================================================================
+
+YAHOO_URL = "https://query1.finance.yahoo.com/v8/finance/chart/ZS=F"
+
+
+def fetch_cbot_yahoo() -> float | None:
+    """Busca preço atual CBOT soja em cents/bushel via Yahoo Finance."""
+    try:
+        r = requests.get(YAHOO_URL,
+                         headers={"User-Agent": NA_HEADERS["User-Agent"]},
+                         timeout=15)
+        r.raise_for_status()
+        data = r.json()
+    except Exception as exc:
+        log(f"Yahoo Finance CBOT falhou: {exc}", ok=False)
+        return None
+    try:
+        # Yahoo retorna em cents (ex: 1125.75)
+        result = data["chart"]["result"][0]["meta"]
+        price = float(result.get("regularMarketPrice") or result.get("previousClose"))
+        return price
+    except (KeyError, ValueError, TypeError):
+        return None
+
+
+def update_cbot_yahoo(html: str) -> tuple[str, bool, str]:
+    """Atualiza state CBOT no painel via Yahoo Finance."""
+    cbot = fetch_cbot_yahoo()
+    if not cbot:
+        return html, False, "Yahoo CBOT vazio"
+    # Procura state default CBOT no PainelSoja (formato: useState(NNNN.NN); // CBOT)
+    pat = re.compile(r"(useState\()(\d{3,4}(?:\.\d+)?)(\);\s*//\s*CBOT)")
+    if pat.search(html):
+        html = pat.sub(rf"\g<1>{cbot:.2f}\g<3>", html)
+        return html, True, f"CBOT Yahoo ZS=F = {cbot:.2f} cents/bu"
+    return html, False, f"CBOT Yahoo lido ({cbot:.2f}) mas state não encontrado"
+
+
+# ===========================================================================
 # MAIN
 # ===========================================================================
 
@@ -528,7 +720,26 @@ def main() -> int:
     _, _, info = todo_usda(html)
     print(f"  · USDA: {info}")
 
-    # 7) Timestamp
+    # 7) NOTÍCIAS AGRÍCOLAS — CEPEA + CBOT (scraping)
+    html, ok, info = update_cepea_from_noticias(html)
+    if ok:
+        sources_updated.append(f"CEPEA NA: {info}")
+    else:
+        print(f"  · CEPEA NA: {info}")
+
+    html, ok, info = update_cbot_from_noticias(html)
+    if ok:
+        sources_updated.append(f"CBOT NA: {info}")
+    else:
+        print(f"  · CBOT NA: {info}")
+        # Tenta Yahoo Finance como backup
+        html, ok2, info2 = update_cbot_yahoo(html)
+        if ok2:
+            sources_updated.append(f"CBOT Yahoo: {info2}")
+        else:
+            print(f"  · CBOT Yahoo: {info2}")
+
+    # Timestamp final
     html = update_timestamp(html)
 
     # Grava se mudou
