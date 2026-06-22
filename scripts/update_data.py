@@ -68,7 +68,11 @@ def fetch_bcb_sgs(series_id: int, start_year: int = 2010) -> pd.DataFrame:
         f"https://api.bcb.gov.br/dados/serie/bcdata.sgs.{series_id}/dados"
         f"?formato=json&dataInicial=01/01/{start_year}"
     )
-    headers = {"User-Agent": "PainelSoja/1.0 (github-actions)"}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; PainelSoja/1.0)",
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "pt-BR,pt;q=0.9",
+    }
     r = requests.get(url, timeout=30, headers=headers)
     r.raise_for_status()
     data = r.json()
@@ -514,22 +518,41 @@ def fetch_noticias_agricolas_cepea() -> dict:
     """Busca último valor CEPEA Paranaguá + N cotações anteriores."""
     try:
         r = requests.get(NA_CEPEA_URL, headers=NA_HEADERS, timeout=30)
-        r.raise_for_status()
+        log(f"Notícias Agrícolas HTTP {r.status_code} · {len(r.text)} bytes")
+        if r.status_code != 200:
+            return {}
         html_page = r.text
     except Exception as exc:
         log(f"Notícias Agrícolas falhou: {exc}", ok=False)
         return {}
 
-    # Pattern: linhas de tabela com data | valor | variação
-    # No HTML aparece <td>DD/MM/YYYY</td><td>NNN,NN</td><td>...,NN</td>
-    pattern = re.compile(
-        r"<td[^>]*>\s*(\d{2}/\d{2}/\d{4})\s*</td>\s*"
-        r"<td[^>]*>\s*([\d.,]+)\s*</td>\s*"
-        r"<td[^>]*>\s*([+\-]?[\d.,]+)\s*</td>",
-        re.IGNORECASE,
-    )
-    matches = pattern.findall(html_page)
+    # Tenta vários padrões de tabela CEPEA
+    # 1) Tabela markdown-like (tr/td separados)
+    patterns = [
+        # <td>DD/MM/YYYY</td><td>NNN,NN</td><td>+/-N,NN</td>
+        re.compile(
+            r"<td[^>]*>\s*(\d{2}/\d{2}/\d{4})\s*</td>\s*"
+            r"<td[^>]*>\s*([\d.,]+)\s*</td>\s*"
+            r"<td[^>]*>\s*([+\-]?[\d.,]+)\s*</td>",
+            re.IGNORECASE | re.DOTALL,
+        ),
+        # Markdown table | DD/MM/YYYY | NNN,NN | +/-N,NN |
+        re.compile(
+            r"\|\s*(\d{2}/\d{2}/\d{4})\s*\|\s*([\d.,]+)\s*\|\s*([+\-]?[\d.,]+)\s*\|",
+        ),
+    ]
+    matches = []
+    for pat in patterns:
+        matches = pat.findall(html_page)
+        if matches:
+            log(f"NA: padrão funcionou — {len(matches)} matches")
+            break
+
     if not matches:
+        log("NA: nenhum padrão de tabela funcionou — site mudou estrutura?", ok=False)
+        # Salva primeiros 500 chars do HTML para debug
+        sample = html_page[:500].replace("\n", " ")
+        log(f"NA sample: {sample[:200]}", ok=False)
         return {}
 
     # Converte valor de "132,84" para 132.84
@@ -545,7 +568,7 @@ def fetch_noticias_agricolas_cepea() -> dict:
     if not serie:
         return {}
 
-    # Busca USD atual no header da página (R$ X,XX -X,XX%Dólar)
+    # Busca USD atual no header da página
     usd_match = re.search(r"R\$\s*([\d,]+)\s*[\-+][\d,]+%\s*Dólar", html_page)
     dolar = None
     if usd_match:
@@ -556,7 +579,7 @@ def fetch_noticias_agricolas_cepea() -> dict:
 
     return {
         "ultima": serie[0],
-        "serie": serie[:20],  # últimos 20 dias úteis
+        "serie": serie[:20],
         "dolar": dolar,
     }
 
@@ -664,16 +687,19 @@ def fetch_cbot_yahoo() -> float | None:
 
 
 def update_cbot_yahoo(html: str) -> tuple[str, bool, str]:
-    """Atualiza state CBOT no painel via Yahoo Finance."""
-    cbot = fetch_cbot_yahoo()
-    if not cbot:
+    """Atualiza state CBOT no painel via Yahoo Finance.
+    Yahoo retorna cents/bushel (ex: 1147.75). O painel usa USD/bu (ex: 11.48)."""
+    cents = fetch_cbot_yahoo()
+    if not cents:
         return html, False, "Yahoo CBOT vazio"
-    # Procura state default CBOT no PainelSoja (formato: useState(NNNN.NN); // CBOT)
-    pat = re.compile(r"(useState\()(\d{3,4}(?:\.\d+)?)(\);\s*//\s*CBOT)")
-    if pat.search(html):
-        html = pat.sub(rf"\g<1>{cbot:.2f}\g<3>", html)
-        return html, True, f"CBOT Yahoo ZS=F = {cbot:.2f} cents/bu"
-    return html, False, f"CBOT Yahoo lido ({cbot:.2f}) mas state não encontrado"
+    # Converte cents → USD/bu (÷100)
+    usd_bu = round(cents / 100, 2)
+    # State no painel: const [cbot, setCbot] = useState(11.97);
+    pat = re.compile(r"(const \[cbot, setCbot\] = useState\()[\d.]+(\);)")
+    new_html, n = pat.subn(rf"\g<1>{usd_bu}\g<2>", html, count=1)
+    if n > 0:
+        return new_html, True, f"CBOT Yahoo ZS=F = {cents:.2f}¢/bu = {usd_bu} USD/bu"
+    return html, False, f"CBOT Yahoo lido ({cents:.2f}¢) mas state não encontrado"
 
 
 # ===========================================================================
