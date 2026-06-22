@@ -2864,22 +2864,30 @@ function PainelSoja() {
   const [pctArrendada, setPctArrendada] = useState(100);        // % área arrendada (0-100)
   // CUSTOS DETALHADOS · valores de referência Conab RS Planalto 2026
   // Cada item editável individualmente; somas alimentam custoFixoBase e custoVarHa
+  // ESTRUTURA:
+  // - 14 itens variáveis + 4 novos (tratamento sementes, royalty, encargos, análise solo) = 18 var
+  // - 9 itens fixos base (sem terra) = 9 fixos
+  // - TERRA: linha calculada à parte (não no objeto), aparece read-only no resumo
   const CUSTOS_REF_CONAB = {
-    // === VARIÁVEIS (custo por hectare) ===
+    // === VARIÁVEIS DETALHADAS (18 itens) ===
     sementes:       { lbl:'Sementes soja',         tipo:'variavel', ref:380,  desc:'60 kg/ha × R$ 6,30/kg' },
-    fertNPK:        { lbl:'Fertilizante NPK base', tipo:'variavel', ref:950,  desc:'300 kg/ha × R$ 3,17/kg' },
-    calcario:       { lbl:'Calcário (amortizado)', tipo:'variavel', ref:120,  desc:'1 ton/2 anos · R$ 240/ton' },
-    inoculante:     { lbl:'Inoculante + nutrição', tipo:'variavel', ref:35,   desc:'aplicação na semente' },
-    herbicida:      { lbl:'Herbicidas',             tipo:'variavel', ref:480,  desc:'pré-emerg + pós-emerg' },
-    fungicida:      { lbl:'Fungicidas',             tipo:'variavel', ref:410,  desc:'2-3 aplicações ferrugem' },
-    inseticida:     { lbl:'Inseticidas',            tipo:'variavel', ref:230,  desc:'percevejo + lagartas' },
-    combustivel:    { lbl:'Combustível operações',  tipo:'variavel', ref:280,  desc:'plantio+tratos+colheita' },
-    maoOperacional: { lbl:'Mão-obra operacional',   tipo:'variavel', ref:180,  desc:'tratorista, auxiliares' },
-    manutencaoMaq:  { lbl:'Manutenção máquinas',    tipo:'variavel', ref:245,  desc:'peças, óleo, filtros' },
-    freteColheita:  { lbl:'Frete colheita interno', tipo:'variavel', ref:65,   desc:'lavoura → armazém' },
-    secagem:        { lbl:'Secagem + limpeza',      tipo:'variavel', ref:75,   desc:'beneficiamento pós-colheita' },
-    consultoria:    { lbl:'Consultoria técnica',    tipo:'variavel', ref:200,  desc:'eng. agrônomo · acompanhamento' },
-    seguroProd:     { lbl:'Seguro produção',        tipo:'variavel', ref:175,  desc:'Proagro Mais ~3-5% garantia' },
+    royaltyTransg:  { lbl:'Royalty / tecnologia',   tipo:'variavel', ref:70,   desc:'soja transgênica RR/Bt' },
+    tratSementes:   { lbl:'Tratamento de sementes', tipo:'variavel', ref:55,   desc:'TSI fungicida+inseticida' },
+    inoculante:     { lbl:'Inoculante + nutrição',  tipo:'variavel', ref:35,   desc:'aplicação na semente' },
+    fertNPK:        { lbl:'Fertilizante NPK base',  tipo:'variavel', ref:950,  desc:'300 kg/ha × R$ 3,17/kg' },
+    calcario:       { lbl:'Calcário (amortizado)',  tipo:'variavel', ref:120,  desc:'1 ton/2 anos · R$ 240/ton' },
+    analiseSolo:    { lbl:'Análise de solo',        tipo:'variavel', ref:25,   desc:'amostragem bianual amortizada' },
+    herbicida:      { lbl:'Herbicidas',              tipo:'variavel', ref:480,  desc:'pré-emerg + pós-emerg' },
+    fungicida:      { lbl:'Fungicidas',              tipo:'variavel', ref:410,  desc:'2-3 aplicações ferrugem' },
+    inseticida:     { lbl:'Inseticidas',             tipo:'variavel', ref:230,  desc:'percevejo + lagartas' },
+    combustivel:    { lbl:'Combustível operações',   tipo:'variavel', ref:280,  desc:'plantio+tratos+colheita' },
+    maoOperacional: { lbl:'Mão-obra operacional',    tipo:'variavel', ref:180,  desc:'tratorista, auxiliares' },
+    encargosSociais:{ lbl:'Encargos sociais',        tipo:'variavel', ref:55,   desc:'INSS+FGTS sobre mão-obra' },
+    manutencaoMaq:  { lbl:'Manutenção máquinas',     tipo:'variavel', ref:245,  desc:'peças, óleo, filtros' },
+    freteColheita:  { lbl:'Frete colheita interno',  tipo:'variavel', ref:65,   desc:'lavoura → armazém' },
+    secagem:        { lbl:'Secagem + limpeza',       tipo:'variavel', ref:75,   desc:'beneficiamento pós-colheita' },
+    consultoria:    { lbl:'Consultoria técnica',     tipo:'variavel', ref:200,  desc:'eng. agrônomo · acompanhamento' },
+    seguroProd:     { lbl:'Seguro produção',         tipo:'variavel', ref:175,  desc:'Proagro Mais ~3-5% garantia' },
     // === FIXOS BASE (terra calculada à parte via arrendamento) ===
     depMaq:         { lbl:'Depreciação maquinário', tipo:'fixo',     ref:380,  desc:'colheitadeira+trator/vida útil' },
     depBenf:        { lbl:'Depreciação benfeitorias',tipo:'fixo',    ref:65,   desc:'armazém, oficina, cercas' },
@@ -3628,7 +3636,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
         <section style={S.card}>
           <div style={S.cardLabel}>02 — Custos detalhados, margem & relação de troca</div>
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
-            Decomposição em <strong>23 itens</strong>. Valores de referência <strong style={{color:'#7AB8E0'}}>Conab RS Planalto 2026</strong> · edite cada linha com seu custo real. <strong style={{color:'#FF7F50'}}>Terra</strong> calculada separadamente via arrendamento.
+            Decomposição em <strong>27 itens</strong> (18 variáveis + 9 fixos base). Valores de referência <strong style={{color:'#7AB8E0'}}>Conab RS Planalto 2026</strong> · edite cada linha com seu custo real. <strong style={{color:'#FF7F50'}}>TERRA (arrendamento)</strong> tratada separadamente — Conab embute ~14 sc/ha, JC real é 20 sc/ha.
           </div>
 
           {/* Arrendamento + área */}
@@ -3676,6 +3684,49 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
               fontSize:11, letterSpacing:1, cursor:'pointer', fontWeight: 600
             }}>🔄 IMPACTO DE MUDANÇAS</button>
           </div>
+
+          {/* Box explicativo sobre Conab vs meus itens */}
+          {(custosTabAtiva === 'variavel' || custosTabAtiva === 'fixo') && (
+            <details style={{marginBottom: 8, marginTop: 4, padding: 8, background: '#181C18', border: '1px solid #2A2F28'}}>
+              <summary style={{cursor: 'pointer', fontSize: 11, color: '#7AB8E0', fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 0.5}}>
+                ▸ COMO MEUS 27 ITENS SE RELACIONAM COM AS 10 CATEGORIAS CONAB (transparência metodológica)
+              </summary>
+              <div style={{marginTop: 10, fontSize: 11, color: '#A89968', lineHeight: 1.6}}>
+                <strong style={{color:'#E8E2D0'}}>Conab publica em ~10 categorias agregadas</strong>, não 27 linhas. Eu decompus para facilitar a edição linha-a-linha.
+                <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", marginTop: 8}}>
+                  <thead>
+                    <tr style={{borderBottom: '1px solid #2A2F28'}}>
+                      <th style={{padding: 4, textAlign: 'left', color: '#7AB8E0'}}>CATEGORIA CONAB</th>
+                      <th style={{padding: 4, textAlign: 'left', color: '#A89968'}}>MEUS ITENS CORRESPONDENTES</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { conab: 'Sementes (+ tratamento)',          meus: 'sementes + royalty + tratSementes + inoculante' },
+                      { conab: 'Fertilizantes + corretivos',         meus: 'fertNPK + calcário + análise solo' },
+                      { conab: 'Defensivos agrupados',                meus: 'herbicida + fungicida + inseticida' },
+                      { conab: 'Operações (mão-obra + combustível)',  meus: 'combustível + maoOperacional + encargosSociais + manutençãoMaq' },
+                      { conab: 'Despesas pós-colheita',               meus: 'freteColheita + secagem' },
+                      { conab: 'Despesas administrativas',            meus: 'consultoria + admin' },
+                      { conab: 'Seguros',                              meus: 'seguroProd + segurosGerais' },
+                      { conab: 'Encargos financeiros',                meus: 'jurosCap + finCusteio' },
+                      { conab: 'Depreciações',                        meus: 'depMaq + depBenf + manutBenf' },
+                      { conab: 'Encargos territoriais',               meus: 'ITR + taxas' },
+                      { conab: '★ Renda da terra (~14 sc/ha equiv.)', meus: '★ TERRA (separado, JC=20 sc/ha)' },
+                    ].map((r, i) => (
+                      <tr key={i} style={{borderBottom: '1px solid #1F231D'}}>
+                        <td style={{padding: 4, color: '#7AB8E0'}}>{r.conab}</td>
+                        <td style={{padding: 4, color: '#E8E2D0'}}>{r.meus}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div style={{marginTop: 8, padding: 8, background: '#1A1410', borderLeft: '2px solid #FF7F50'}}>
+                  <strong style={{color: '#FF7F50'}}>Por que TERRA fica separada:</strong> Conab usa renda da terra teórica média RS (~14 sc/ha). Para JC com terra valorizada (20 sc/ha real) e estruturas variáveis (% própria vs arrendada), tratar separadamente permite simular cenários reais. <strong>Conab nominal R$ ~95/sc inclui terra teórica; seu total real JC pode chegar a R$ 130-160/sc.</strong>
+                </div>
+              </div>
+            </details>
+          )}
 
           {/* Tabela de custos */}
           {custosTabAtiva !== 'resumo' && (
@@ -3751,6 +3802,37 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                     <td style={{padding:8, textAlign:'right', color:'#A89968'}}>100%</td>
                     <td style={{padding:8, color:'#A89968', fontSize: 10}}>R$/ha</td>
                   </tr>
+                  {/* Linha TERRA quando estiver na aba FIXOS */}
+                  {custosTabAtiva === 'fixo' && (() => {
+                    const custoTerra = arrendamentoScHa * (pctArrendada/100) * balcaoSoja;
+                    const terraConabRef = 14 * balcaoSoja / 50 * 50;  // ~14 sc/ha × preço
+                    return (
+                      <>
+                        <tr style={{background:'#1A1410', borderTop: '1px solid #FF7F50'}}>
+                          <td style={{padding:8, color:'#FF7F50', letterSpacing:1, fontWeight:700}}>★ TERRA (arrendamento)</td>
+                          <td style={{padding:8, textAlign:'right', color:'#7AB8E0'}}>~{(14 * balcaoSoja).toFixed(0)}</td>
+                          <td style={{padding:8, textAlign:'right', color:'#FF7F50', fontWeight:700, fontSize:13}}>
+                            {custoTerra.toFixed(0)}
+                          </td>
+                          <td style={{padding:8, textAlign:'right', color: custoTerra > 14*balcaoSoja ? '#D9542B' : '#C8E04A', fontWeight:600}}>
+                            {(custoTerra - 14*balcaoSoja).toFixed(0)}
+                          </td>
+                          <td style={{padding:8, textAlign:'right', color:'#A89968'}}>—</td>
+                          <td style={{padding:8, color:'#A89968', fontSize:10}}>calc: {arrendamentoScHa} sc/ha × {pctArrendada}% × R$ {balcaoSoja.toFixed(2)}</td>
+                        </tr>
+                        <tr style={{background:'#1A211A', borderTop: '2px solid #E6B84A'}}>
+                          <td style={{padding:8, color:'#E6B84A', letterSpacing:1, fontWeight:700}}>FIXO TOTAL (base + terra)</td>
+                          <td style={{padding:8, textAlign:'right', color:'#7AB8E0', fontWeight:600}}>~{(1430 + 14*balcaoSoja).toFixed(0)}</td>
+                          <td style={{padding:8, textAlign:'right', color:'#E6B84A', fontWeight:700, fontSize:14}}>
+                            {(custoFixoBase + custoTerra).toFixed(0)}
+                          </td>
+                          <td style={{padding:8, textAlign:'right', color:'#A89968'}}>—</td>
+                          <td style={{padding:8, textAlign:'right', color:'#A89968'}}>—</td>
+                          <td style={{padding:8, color:'#A89968', fontSize:10}}>R$/ha</td>
+                        </tr>
+                      </>
+                    );
+                  })()}
                 </tfoot>
               </table>
             </div>
