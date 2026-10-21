@@ -1,0 +1,258 @@
+#!/usr/bin/env python3
+"""Coleta automática de preços CEPEA, safra Conab e PSD USDA.
+
+Cada fonte é independente; se falhar preserva o último arquivo íntegro e
+registra o erro no manifesto. Nunca escreve preço estimado como cotação.
+"""
+from __future__ import annotations
+
+import csv
+from datetime import datetime, date, timedelta
+from email.utils import parsedate_to_datetime
+from io import StringIO, TextIOWrapper
+import json
+from pathlib import Path
+import re
+import tempfile
+from zoneinfo import ZoneInfo
+from zipfile import ZipFile, BadZipFile
+
+import requests
+from bs4 import BeautifulSoup
+
+ROOT = Path(__file__).resolve().parent.parent
+DIR = ROOT / 'data' / 'fontes'
+STATUS = DIR / 'mercado.json'
+CEPEA = DIR / 'cepea_soja.csv'
+USDA = DIR / 'usda_soja.csv'
+CONAB = DIR / 'conab_soja.xls'
+CEPEA_URL = 'https://www.cepea.esalq.usp.br/br/indicador/soja.aspx'
+CEPEA_BACKUP_URL = 'https://www.cepea.org.br/br/indicador/soja.aspx'
+CONAB_URL = ('https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/'
+             'safras/series-historicas/graos/soja/sojaseriehist.xls/@@download/file')
+USDA_URL = 'https://apps.fas.usda.gov/psdonline/downloads/psd_alldata_csv.zip'
+HEADERS = {'User-Agent':'Mozilla/5.0 (compatible; BinMarket-public-data/2.0; GitHub Actions)',
+           'Accept-Language':'pt-BR,pt;q=0.9'}
+
+
+def now_br() -> datetime:
+    return datetime.now(ZoneInfo('America/Sao_Paulo'))
+
+
+def read_json(path: Path) -> dict:
+    try:
+        return json.loads(path.read_text(encoding='utf-8'))
+    except (FileNotFoundError, ValueError):
+        return {}
+
+
+def atomic_write(path: Path, content: bytes) -> bool:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists() and path.read_bytes() == content:
+        return False
+    tmp = path.with_suffix(path.suffix + '.tmp')
+    tmp.write_bytes(content)
+    tmp.replace(path)
+    return True
+
+
+def br_number(x: str) -> float:
+    x = re.sub(r'[^\d,.-]', '', str(x)).strip()
+    if ',' in x:
+        x = x.replace('.', '').replace(',', '.')
+    return float(x)
+
+
+def validate_day(value: str, today: date | None = None) -> str:
+    value = str(value).strip()
+    day = datetime.strptime(value, '%d/%m/%Y').date()
+    today = today or now_br().date()
+    if day < date(2000, 1, 1) or day > today + timedelta(days=1):
+        raise ValueError('Data fora da faixa permitida: ' + value)
+    return day.isoformat()
+
+
+def parse_cepea(html: str, today: date | None = None) -> list[dict]:
+    """Seleciona a tabela de Paranaguá; não confunde com o indicador Paraná."""
+    soup = BeautifulSoup(html, 'html.parser')
+    target = None
+    for table in soup.find_all('table'):
+        # O primeiro quadro diário de soja no indicador oficial é Paranaguá.
+        nearby = table.find_previous(string=re.compile(r'PARANAGU[ÁA]', re.I))
+        if not nearby:
+            continue
+        preceding = str(nearby).upper()
+        if 'PARANAGU' not in preceding and 'PARANAGUÁ' not in preceding:
+            continue
+        candidate = []
+        for tr in table.find_all('tr'):
+            cells = [v.get_text(' ', strip=True) for v in tr.find_all(['th', 'td'])]
+            if len(cells) < 2:
+                continue
+            if not re.fullmatch(r'\d{2}/\d{2}/\d{4}', cells[0]):
+                continue
+            try:
+                day = validate_day(cells[0], today)
+                price = br_number(cells[1])
+                if not 35 <= price <= 400:
+                    continue
+                usd = br_number(cells[4]) if len(cells) > 4 and cells[4].strip() else None
+                if usd is not None and not 5 <= usd <= 90:
+                    usd = None
+                candidate.append({'data':day,'brl_saca60':round(price,2),'usd_saca60':round(usd,2) if usd else None})
+            except (ValueError, IndexError, OverflowError):
+                pass
+        if candidate:
+            target = candidate
+            break
+    if not target:
+        raise ValueError('Não foi possível reconhecer a tabela CEPEA Paranaguá com datas e preços válidos')
+    out = {r['data']:r for r in target}
+    return [out[d] for d in sorted(out)]
+
+
+def load_cepea(path: Path) -> dict[str, dict]:
+    if not path.exists():
+        return {}
+    with path.open(encoding='utf-8', newline='') as f:
+        return {r['data']:r for r in csv.DictReader(f, delimiter=';') if r.get('data')}
+
+
+def save_cepea(records: list[dict]) -> dict:
+    prev = load_cepea(CEPEA)
+    for record in records:
+        prev[record['data']] = {
+            'data':record['data'],
+            'brl_saca60':f"{record['brl_saca60']:.2f}",
+            'usd_saca60':f"{record['usd_saca60']:.2f}" if record['usd_saca60'] is not None else ''
+        }
+    s = StringIO()
+    w = csv.DictWriter(s, delimiter=';', fieldnames=['data','brl_saca60','usd_saca60'], lineterminator='\n')
+    w.writeheader()
+    for k in sorted(prev):
+        w.writerow(prev[k])
+    atomic_write(CEPEA, s.getvalue().encode('utf-8'))
+    last = prev[max(prev)]
+    return {'data_referencia':last['data'],'valor':float(last['brl_saca60']),
+            'unidade':'R$/saca de 60 kg','observacoes':len(prev)}
+
+
+def fetch_cepea(session: requests.Session) -> dict:
+    err = None
+    for url in (CEPEA_URL, CEPEA_BACKUP_URL):
+        try:
+            r = session.get(url, headers=HEADERS, timeout=40)
+            r.raise_for_status()
+            rows = parse_cepea(r.text)
+            summary = save_cepea(rows)
+            return {'status':'ok','url':url, **summary}
+        except (requests.RequestException, ValueError) as exc:
+            err = str(exc)
+    raise RuntimeError(err or 'CEPEA indisponível')
+
+
+def parse_usda_rows(reader) -> list[dict]:
+    """Apenas séries oficiais de soja para Brasil/EUA e atributos selecionados.
+
+    Unidade preservada como publicada no USDA (normalmente 1000 toneladas).
+    """
+    attrs = {'Production','Domestic Consumption','Ending Stocks','Exports','Imports'}
+    output = {}
+    for item in reader:
+        commodity = str(item.get('Commodity_Code','')).lstrip('0')
+        if commodity != '2222000':
+            continue
+        country = str(item.get('Country_Code','')).upper()
+        attr = str(item.get('Attribute_Description',''))
+        if country not in {'BR','US'} or attr not in attrs:
+            continue
+        try:
+            year = int(item['Market_Year'])
+            value = float(str(item['Value']).replace(',',''))
+        except (ValueError, KeyError, TypeError):
+            continue
+        if 2010 <= year <= now_br().year+2 and 0 <= value <= 900000:
+            key = (str(year),country,attr)
+            output[key] = {'ano_safra':year,'pais':country,'indicador':attr,
+                           'valor_mil_ton':value}
+    result = sorted(output.values(), key=lambda x:(x['ano_safra'],x['pais'],x['indicador']))
+    if not any(i['ano_safra'] >= now_br().year-2 for i in result) or len(result) < 50:
+        raise ValueError('USDA não apresentou histórico coerente de soja para BR/US')
+    return result
+
+
+def fetch_usda(session: requests.Session) -> dict:
+    # Abre ZIP em arquivo temporário para não descompactar ~200 MB em memória.
+    with tempfile.TemporaryFile() as f:
+        with session.get(USDA_URL, headers=HEADERS, stream=True, timeout=120) as r:
+            r.raise_for_status()
+            size = 0
+            for part in r.iter_content(chunk_size=262144):
+                size += len(part)
+                if size > 60_000_000:
+                    raise ValueError('ZIP USDA excede o limite de segurança de 60 MB')
+                f.write(part)
+        f.seek(0)
+        with ZipFile(f) as z:
+            members = [n for n in z.namelist() if n.lower().endswith('.csv') and 'psd' in n.lower()]
+            if not members:
+                raise ValueError('ZIP USDA sem CSV PSD')
+            with z.open(members[0]) as data:
+                reader = csv.DictReader(TextIOWrapper(data, encoding='utf-8-sig', newline=''))
+                rows = parse_usda_rows(reader)
+    s = StringIO()
+    w = csv.DictWriter(s, fieldnames=['ano_safra','pais','indicador','valor_mil_ton'], delimiter=';', lineterminator='\n')
+    w.writeheader(); w.writerows(rows)
+    atomic_write(USDA, s.getvalue().encode('utf-8'))
+    return {'status':'ok','url':USDA_URL,'data_referencia':str(max(x['ano_safra'] for x in rows)),
+            'observacoes':len(rows),'unidade':'mil toneladas (USDA PSD)'}
+
+
+def fetch_conab(session:requests.Session) -> dict:
+    r = session.get(CONAB_URL, headers=HEADERS, timeout=90)
+    r.raise_for_status()
+    content = r.content
+    if len(content) < 10000 or not (content[:8] == b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1' or content[:2] == b'PK'):
+        raise ValueError('Conab não retornou planilha Excel válida')
+    # É um download automatizado da série oficial, NÃO dados de custos ou oferta/demanda.
+    atomic_write(CONAB, content)
+    modified = r.headers.get('Last-Modified')
+    try:
+        reference = parsedate_to_datetime(modified).date().isoformat() if modified else None
+    except (ValueError, TypeError):
+        reference = None
+    return {'status':'ok','url':CONAB_URL,'data_referencia':reference,
+            'observacoes':None, 'unidade':'planilha oficial de safra; ainda não integrada aos gráficos'}
+
+
+def run() -> dict:
+    DIR.mkdir(parents=True, exist_ok=True)
+    status = read_json(STATUS)
+    sources = status.get('fontes') or {}
+    checked = now_br().isoformat(timespec='seconds')
+    with requests.Session() as session:
+        for key, func in [('cepea_soja',fetch_cepea),('conab_safra',fetch_conab),('usda_psd',fetch_usda)]:
+            before = sources.get(key) or {}
+            try:
+                fresh = func(session)
+                sources[key] = {**fresh, 'verificado_em':checked, 'erro':None}
+                print(f'{key}: sucesso, referência {fresh.get("data_referencia")}',flush=True)
+            except Exception as exc:
+                # Não modifica a data de referência nem os últimos arquivos íntegros.
+                sources[key] = {**before, 'status':'falha', 'verificado_em':checked,
+                                'erro':str(exc)[:300], 'url': before.get('url') or
+                                {'cepea_soja':CEPEA_URL,'conab_safra':CONAB_URL,'usda_psd':USDA_URL}[key]}
+                print(f'{key}: falha: {exc}',flush=True)
+    output = {'versao':1,'verificado_em':checked,'fontes':sources,
+              'aviso':'Verificação automática não implica cotação nova. Custos, prêmios locais e séries estimadas do simulador não são preços coletados automaticamente.'}
+    atomic_write(STATUS, (json.dumps(output,ensure_ascii=False,indent=2,sort_keys=True)+'\n').encode())
+    return output
+
+
+if __name__ == '__main__':
+    result = run()
+    # GitHub Actions marca falha se fontes críticas inoperantes, mas mantém dados publicados.
+    missing = [k for k,v in result['fontes'].items() if v.get('status')!='ok']
+    if missing:
+        print('Fontes com falha: '+', '.join(missing),flush=True)
+        raise SystemExit(1)

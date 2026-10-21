@@ -1,0 +1,58 @@
+name: Atualizar fontes públicas soja
+
+on:
+  schedule:
+    # 11h10 e 20h10 horário de Brasília, diariamente
+    - cron: '10 14 * * *'
+    - cron: '10 23 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/update_market_sources.py'
+      - 'tests/test_market_sources.py'
+      - '.github/workflows/update-market-sources.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mercado-fontes-main
+  cancel-in-progress: false
+
+jobs:
+  fontes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Instalar dependências
+        run: python -m pip install 'requests==2.32.3' 'beautifulsoup4==4.12.3'
+      - name: Validar coletores sem internet
+        run: python -m unittest discover -s tests -p 'test_market_sources.py' -v
+      - name: Consultar CEPEA, Conab e USDA
+        id: coleta
+        continue-on-error: true
+        run: python scripts/update_market_sources.py
+      - name: Publicar somente dados válidos e registro de falhas
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/fontes/mercado.json data/fontes/cepea_soja.csv data/fontes/usda_soja.csv data/fontes/conab_soja.xls 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo 'Sem dados novos.'
+            exit 0
+          fi
+          git commit -m '🤖 Sincronizar CEPEA, Conab e USDA'
+          git pull --rebase origin main
+          git push origin HEAD:main
+      - name: Sinalizar fontes inacessíveis
+        if: steps.coleta.outcome == 'failure'
+        run: |
+          echo 'Uma ou mais fontes falharam. Consulte data/fontes/mercado.json.'
+          exit 1

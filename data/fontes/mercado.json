@@ -1,0 +1,10 @@
+{
+  "versao": 1,
+  "verificado_em": null,
+  "fontes": {
+    "cepea_soja": {"status":"pendente", "data_referencia":null, "url":"https://www.cepea.org.br/br/indicador/soja.aspx"},
+    "conab_safra": {"status":"pendente", "data_referencia":null, "url":"https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/series-historicas/graos/soja/sojaseriehist.xls/@@download/file"},
+    "usda_psd": {"status":"pendente", "data_referencia":null, "url":"https://apps.fas.usda.gov/psdonline/downloads/psd_alldata_csv.zip"}
+  },
+  "aviso":"As premissas e estimativas do simulador não são cotações automáticas."
+}
