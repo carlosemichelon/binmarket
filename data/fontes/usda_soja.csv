@@ -1,0 +1,171 @@
+ano_safra;pais;indicador;valor_mil_ton
+2010;BR;Domestic Consumption;38730.0
+2010;BR;Ending Stocks;27456.0
+2010;BR;Exports;29951.0
+2010;BR;Imports;37.0
+2010;BR;Production;75300.0
+2010;US;Domestic Consumption;48351.0
+2010;US;Ending Stocks;5852.0
+2010;US;Exports;40959.0
+2010;US;Imports;393.0
+2010;US;Production;90663.0
+2011;BR;Domestic Consumption;40483.0
+2011;BR;Ending Stocks;17344.0
+2011;BR;Exports;36257.0
+2011;BR;Imports;128.0
+2011;BR;Production;66500.0
+2011;US;Domestic Consumption;48786.0
+2011;US;Ending Stocks;4610.0
+2011;US;Exports;37186.0
+2011;US;Imports;439.0
+2011;US;Production;84291.0
+2012;BR;Domestic Consumption;37610.0
+2012;BR;Ending Stocks;20225.0
+2012;BR;Exports;41904.0
+2012;BR;Imports;395.0
+2012;BR;Production;82000.0
+2012;US;Domestic Consumption;48550.0
+2012;US;Ending Stocks;3825.0
+2012;US;Exports;36129.0
+2012;US;Imports;1103.0
+2012;US;Production;82791.0
+2013;BR;Domestic Consumption;39411.0
+2013;BR;Ending Stocks;20790.0
+2013;BR;Exports;46829.0
+2013;BR;Imports;605.0
+2013;BR;Production;86200.0
+2013;US;Domestic Consumption;50043.0
+2013;US;Ending Stocks;2504.0
+2013;US;Exports;44594.0
+2013;US;Imports;1953.0
+2013;US;Production;91363.0
+2014;BR;Domestic Consumption;43085.0
+2014;BR;Ending Stocks;24498.0
+2014;BR;Exports;50612.0
+2014;BR;Imports;305.0
+2014;BR;Production;97100.0
+2014;US;Domestic Consumption;54989.0
+2014;US;Ending Stocks;5188.0
+2014;US;Exports;50136.0
+2014;US;Imports;904.0
+2014;US;Production;106905.0
+2015;BR;Domestic Consumption;42422.0
+2015;BR;Ending Stocks;23803.0
+2015;BR;Exports;54383.0
+2015;BR;Imports;410.0
+2015;BR;Production;95700.0
+2015;US;Domestic Consumption;54475.0
+2015;US;Ending Stocks;5354.0
+2015;US;Exports;52869.0
+2015;US;Imports;641.0
+2015;US;Production;106869.0
+2016;BR;Domestic Consumption;43186.0
+2016;BR;Ending Stocks;32632.0
+2016;BR;Exports;63137.0
+2016;BR;Imports;252.0
+2016;BR;Production;114900.0
+2016;US;Domestic Consumption;55719.0
+2016;US;Ending Stocks;8208.0
+2016;US;Exports;58964.0
+2016;US;Imports;606.0
+2016;US;Production;116931.0
+2017;BR;Domestic Consumption;47040.0
+2017;BR;Ending Stocks;33031.0
+2017;BR;Exports;76136.0
+2017;BR;Imports;175.0
+2017;BR;Production;123400.0
+2017;US;Domestic Consumption;58873.0
+2017;US;Ending Stocks;11923.0
+2017;US;Exports;58071.0
+2017;US;Imports;594.0
+2017;US;Production;120065.0
+2018;BR;Domestic Consumption;45427.0
+2018;BR;Ending Stocks;33357.0
+2018;BR;Exports;74887.0
+2018;BR;Imports;140.0
+2018;BR;Production;120500.0
+2018;US;Domestic Consumption;59924.0
+2018;US;Ending Stocks;25176.0
+2018;US;Exports;47721.0
+2018;US;Imports;383.0
+2018;US;Production;120515.0
+2019;BR;Domestic Consumption;49842.0
+2019;BR;Ending Stocks;20429.0
+2019;BR;Exports;92135.0
+2019;BR;Imports;549.0
+2019;BR;Production;128500.0
+2019;US;Domestic Consumption;61782.0
+2019;US;Ending Stocks;14657.0
+2019;US;Exports;45800.0
+2019;US;Imports;419.0
+2019;US;Production;96644.0
+2020;BR;Domestic Consumption;49875.0
+2020;BR;Ending Stocks;29419.0
+2020;BR;Exports;81650.0
+2020;BR;Imports;1015.0
+2020;BR;Production;139500.0
+2020;US;Domestic Consumption;61287.0
+2020;US;Ending Stocks;6994.0
+2020;US;Exports;61664.0
+2020;US;Imports;539.0
+2020;US;Production;114749.0
+2021;BR;Domestic Consumption;54017.0
+2021;BR;Ending Stocks;27378.0
+2021;BR;Exports;79063.0
+2021;BR;Imports;539.0
+2021;BR;Production;130500.0
+2021;US;Domestic Consumption;62893.0
+2021;US;Ending Stocks;7468.0
+2021;US;Exports;58570.0
+2021;US;Imports;433.0
+2021;US;Production;121504.0
+2022;BR;Domestic Consumption;57209.0
+2022;BR;Ending Stocks;36819.0
+2022;BR;Exports;95504.0
+2022;BR;Imports;154.0
+2022;BR;Production;162000.0
+2022;US;Domestic Consumption;63302.0
+2022;US;Ending Stocks;7190.0
+2022;US;Exports;53864.0
+2022;US;Imports;667.0
+2022;US;Production;116221.0
+2023;BR;Domestic Consumption;58255.0
+2023;BR;Ending Stocks;29761.0
+2023;BR;Exports;104170.0
+2023;BR;Imports;867.0
+2023;BR;Production;154500.0
+2023;US;Domestic Consumption;65361.0
+2023;US;Ending Stocks;9319.0
+2023;US;Exports;46350.0
+2023;US;Imports;567.0
+2023;US;Production;113273.0
+2024;BR;Domestic Consumption;62162.0
+2024;BR;Ending Stocks;37688.0
+2024;BR;Exports;103142.0
+2024;BR;Imports;731.0
+2024;BR;Production;172500.0
+2024;US;Domestic Consumption;68837.0
+2024;US;Ending Stocks;8840.0
+2024;US;Exports;51495.0
+2024;US;Imports;806.0
+2024;US;Production;119047.0
+2025;BR;Domestic Consumption;66900.0
+2025;BR;Ending Stocks;37881.0
+2025;BR;Exports;114460.0
+2025;BR;Imports;1053.0
+2025;BR;Production;180500.0
+2025;US;Domestic Consumption;75592.0
+2025;US;Ending Stocks;8577.0
+2025;US;Exports;41243.0
+2025;US;Imports;606.0
+2025;US;Production;115966.0
+2026;BR;Domestic Consumption;69600.0
+2026;BR;Ending Stocks;37281.0
+2026;BR;Exports;118000.0
+2026;BR;Imports;1000.0
+2026;BR;Production;186000.0
+2026;US;Domestic Consumption;78702.0
+2026;US;Ending Stocks;8572.0
+2026;US;Exports;46130.0
+2026;US;Imports;680.0
+2026;US;Production;124147.0

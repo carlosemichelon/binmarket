@@ -1,10 +1,32 @@
 {
-  "versao": 1,
-  "verificado_em": null,
+  "aviso": "Verificação automática não implica cotação nova. Custos, prêmios locais e séries estimadas do simulador não são preços coletados automaticamente.",
   "fontes": {
-    "cepea_soja": {"status":"pendente", "data_referencia":null, "url":"https://www.cepea.org.br/br/indicador/soja.aspx"},
-    "conab_safra": {"status":"pendente", "data_referencia":null, "url":"https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/series-historicas/graos/soja/sojaseriehist.xls/@@download/file"},
-    "usda_psd": {"status":"pendente", "data_referencia":null, "url":"https://apps.fas.usda.gov/psdonline/downloads/psd_alldata_csv.zip"}
+    "cepea_soja": {
+      "data_referencia": null,
+      "erro": "403 Client Error: Forbidden for url: https://www.cepea.org.br/br/indicador/soja.aspx",
+      "status": "falha",
+      "url": "https://www.cepea.org.br/br/indicador/soja.aspx",
+      "verificado_em": "2026-10-21T20:50:47-03:00"
+    },
+    "conab_safra": {
+      "data_referencia": null,
+      "erro": null,
+      "observacoes": null,
+      "status": "ok",
+      "unidade": "planilha oficial de safra; ainda não integrada aos gráficos",
+      "url": "https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/series-historicas/graos/soja/sojaseriehist.xls/@@download/file",
+      "verificado_em": "2026-10-21T20:50:47-03:00"
+    },
+    "usda_psd": {
+      "data_referencia": "2026",
+      "erro": null,
+      "observacoes": 170,
+      "status": "ok",
+      "unidade": "mil toneladas (USDA PSD)",
+      "url": "https://apps.fas.usda.gov/psdonline/downloads/psd_alldata_csv.zip",
+      "verificado_em": "2026-10-21T20:50:47-03:00"
+    }
   },
-  "aviso":"As premissas e estimativas do simulador não são cotações automáticas."
+  "verificado_em": "2026-10-21T20:50:47-03:00",
+  "versao": 1
 }
