@@ -310,7 +310,7 @@ def fetch_conab(session:requests.Session) -> dict:
         try:
             production = parse_conab_producao(book)
             output = StringIO()
-            writer = csv.DictWriter(output,fieldnames=['safra','producao_mil_ton'],delimiter=';',lineterminator='\\n')
+            writer = csv.DictWriter(output,fieldnames=['safra','producao_mil_ton'],delimiter=';',lineterminator='\n')
             writer.writeheader()
             writer.writerows(production)
             atomic_write(DIR/'conab_producao.csv',output.getvalue().encode('utf-8'))
