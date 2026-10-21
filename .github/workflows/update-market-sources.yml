@@ -43,7 +43,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/fontes/mercado.json data/fontes/cepea_soja.csv data/fontes/usda_soja.csv data/fontes/conab_soja.xls 2>/dev/null || true
+          git add -A data/fontes
           if git diff --cached --quiet; then
             echo 'Sem dados novos.'
             exit 0
