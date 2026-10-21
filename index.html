@@ -56,8 +56,28 @@
     .preco-valor { font-size: 26px !important; }
   }
 </style>
+
+<style id="binmarket-tabs-css">
+  #binmarket-market-nav{background:#131b16;border-bottom:1px solid #334037;font-family:'IBM Plex Sans',sans-serif;}
+  #binmarket-market-nav .nav-inner{max-width:1220px;min-height:58px;margin:0 auto;padding:0 28px;display:flex;align-items:center;gap:28px;}
+  #binmarket-market-nav .nav-title{color:#e8e2d0;font-size:13px;font-weight:700;letter-spacing:1.2px;text-decoration:none;white-space:nowrap;}
+  #binmarket-market-nav .nav-title b{background:#79a94d;color:#0f1410;display:inline-block;padding:4px 8px;margin-right:8px;}
+  #binmarket-market-nav .nav-tabs{align-self:stretch;display:flex;align-items:stretch;gap:6px;}
+  #binmarket-market-nav .nav-tabs a{display:flex;align-items:center;padding:0 17px;text-decoration:none;font-size:12px;font-weight:600;color:#acb7aa;border-bottom:3px solid transparent;}
+  #binmarket-market-nav .nav-tabs a.current{color:#a5d57e;border-bottom-color:#a5d57e;}
+  #binmarket-market-nav .nav-tabs a:hover{color:#f1f5e9;}
+  #binmarket-market-nav .nav-place{margin-left:auto;color:#8ea08c;font:10px 'IBM Plex Mono',monospace;}
+  @media(max-width:700px){#binmarket-market-nav .nav-inner{padding:7px 13px;gap:8px;flex-wrap:wrap;}#binmarket-market-nav .nav-title{width:100%;}#binmarket-market-nav .nav-tabs{width:100%;}#binmarket-market-nav .nav-tabs a{padding:9px 13px;flex:1;justify-content:center;}#binmarket-market-nav .nav-place{display:none;}}
+</style>
 </head>
 <body>
+
+<header id="binmarket-market-nav" aria-label="Navegação entre mercados"><div class="nav-inner">
+  <a class="nav-title" href="index.html"><b>B</b>BINMARKET</a>
+  <nav class="nav-tabs" aria-label="Mercados"><a class="current" aria-current="page" href="index.html">🌾 Soja</a><a href="bovinos.html">🐂 Gado de corte</a></nav>
+  <span class="nav-place">JÚLIO DE CASTILHOS · RS</span>
+</div></header>
+
 <div id="root"></div>
 <div id="erro" style="display:none; padding:20px; color:#D9542B; font-family:monospace; background:#0F1410;"></div>
 <script>
