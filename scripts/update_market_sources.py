@@ -254,8 +254,11 @@ def fetch_usda(session: requests.Session) -> dict:
     w = csv.DictWriter(s, fieldnames=['ano_safra','pais','indicador','valor_mil_ton'], delimiter=';', lineterminator='\n')
     w.writeheader(); w.writerows(rows)
     atomic_write(USDA, s.getvalue().encode('utf-8'))
-    return {'status':'ok','url':USDA_URL,'data_referencia':str(max(x['ano_safra'] for x in rows)),
-            'observacoes':len(rows),'unidade':'mil toneladas (USDA PSD)'}
+    last_year = max(x['ano_safra'] for x in rows)
+    prod = {x['pais']: x['valor_mil_ton'] for x in rows if x['ano_safra']==last_year and x['indicador']=='Production'}
+    return {'status':'ok','url':USDA_URL,'data_referencia':str(last_year),
+            'observacoes':len(rows),'unidade':'mil toneladas (USDA PSD)',
+            'producao_br_mil_ton':prod.get('BR'),'producao_eua_mil_ton':prod.get('US')}
 
 
 def parse_conab_producao(book) -> list[dict]:
@@ -295,6 +298,7 @@ def fetch_conab(session:requests.Session) -> dict:
         raise ValueError('Conab não retornou planilha Excel válida')
     # É um download automatizado da série oficial, NÃO dados de custos ou oferta/demanda.
     atomic_write(CONAB, content)
+    conab_snapshot = {}
     # Registro auditável da estrutura da planilha; sem inferir valores antes de validar as células.
     try:
         import xlrd
@@ -314,6 +318,7 @@ def fetch_conab(session:requests.Session) -> dict:
             writer.writeheader()
             writer.writerows(production)
             atomic_write(DIR/'conab_producao.csv',output.getvalue().encode('utf-8'))
+            conab_snapshot = {'ultima_safra':production[-1]['safra'],'producao_mil_ton':production[-1]['producao_mil_ton'],'observacoes':len(production)}
             print(f'Conab: {len(production)} safras nacionais extraídas; última {production[-1]["safra"]}',flush=True)
         except ValueError as exc:
             print(f'Conab: extração nacional pendente: {exc}',flush=True)
@@ -325,7 +330,7 @@ def fetch_conab(session:requests.Session) -> dict:
     except (ValueError, TypeError):
         reference = None
     return {'status':'ok','url':CONAB_URL,'data_referencia':reference,
-            'observacoes':None, 'unidade':'planilha oficial de safra; ainda não integrada aos gráficos'}
+            'observacoes':None, 'unidade':'produção nacional em mil toneladas; demais séries do simulador não atualizadas', **conab_snapshot}
 
 
 def run() -> dict:
