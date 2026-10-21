@@ -258,6 +258,35 @@ def fetch_usda(session: requests.Session) -> dict:
             'observacoes':len(rows),'unidade':'mil toneladas (USDA PSD)'}
 
 
+def parse_conab_producao(book) -> list[dict]:
+    """Produção nacional de soja, por safra, na planilha oficial Conab.
+    Não usa linhas de regiões/estados no lugar da soma Brasil.
+    """
+    sheet = next((sh for sh in book.sheets() if 'produção' in sh.name.lower() or 'producao' in sh.name.lower()), None)
+    if sheet is None:
+        raise ValueError('Aba Produção não localizada')
+    header_row = next((i for i in range(min(sheet.nrows, 15))
+                       if 'REGIÃO/UF' in str(sheet.cell_value(i,0)).upper()), None)
+    if header_row is None:
+        raise ValueError('Cabeçalho REGIÃO/UF não localizado')
+    brasil_row = next((i for i in range(header_row+1, sheet.nrows)
+                      if str(sheet.cell_value(i,0)).strip().upper() in ('BRASIL','TOTAL BRASIL')),None)
+    if brasil_row is None:
+        raise ValueError('Linha BRASIL não localizada')
+    data = []
+    for col in range(1,sheet.ncols):
+        season = str(sheet.cell_value(header_row,col)).strip()
+        if not re.fullmatch(r'20\d\d/\d\d', season):
+            continue
+        raw = sheet.cell_value(brasil_row,col)
+        if not isinstance(raw,(float,int)) or not 10000 < raw < 250000:
+            continue
+        data.append({'safra':season, 'producao_mil_ton':round(float(raw),1)})
+    if len(data)<5:
+        raise ValueError('Dados nacionais de produção insuficientes')
+    return data
+
+
 def fetch_conab(session:requests.Session) -> dict:
     r = session.get(CONAB_URL, headers=HEADERS, timeout=90)
     r.raise_for_status()
@@ -278,6 +307,16 @@ def fetch_conab(session:requests.Session) -> dict:
                 preview.append(cells)
             schema.append({'sheet':sheet.name,'rows':sheet.nrows,'columns':sheet.ncols,'preview':preview})
         atomic_write(DIR/'conab_estrutura.json', (json.dumps(schema,ensure_ascii=False,indent=2)+'\n').encode('utf-8'))
+        try:
+            production = parse_conab_producao(book)
+            output = StringIO()
+            writer = csv.DictWriter(output,fieldnames=['safra','producao_mil_ton'],delimiter=';',lineterminator='\\n')
+            writer.writeheader()
+            writer.writerows(production)
+            atomic_write(DIR/'conab_producao.csv',output.getvalue().encode('utf-8'))
+            print(f'Conab: {len(production)} safras nacionais extraídas; última {production[-1]["safra"]}',flush=True)
+        except ValueError as exc:
+            print(f'Conab: extração nacional pendente: {exc}',flush=True)
     except Exception as exc:
         print(f'Conab: estrutura do Excel indisponível: {exc}',flush=True)
     modified = r.headers.get('Last-Modified')
