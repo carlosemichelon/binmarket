@@ -266,6 +266,20 @@ def fetch_conab(session:requests.Session) -> dict:
         raise ValueError('Conab não retornou planilha Excel válida')
     # É um download automatizado da série oficial, NÃO dados de custos ou oferta/demanda.
     atomic_write(CONAB, content)
+    # Registro auditável da estrutura da planilha; sem inferir valores antes de validar as células.
+    try:
+        import xlrd
+        book = xlrd.open_workbook(file_contents=content)
+        schema = []
+        for sheet in book.sheets():
+            preview = []
+            for row_ix in range(min(sheet.nrows, 14)):
+                cells = [str(sheet.cell_value(row_ix, col_ix))[:90] for col_ix in range(min(sheet.ncols, 10))]
+                preview.append(cells)
+            schema.append({'sheet':sheet.name,'rows':sheet.nrows,'columns':sheet.ncols,'preview':preview})
+        atomic_write(DIR/'conab_estrutura.json', (json.dumps(schema,ensure_ascii=False,indent=2)+'\\n').encode('utf-8'))
+    except Exception as exc:
+        print(f'Conab: estrutura do Excel indisponível: {exc}',flush=True)
     modified = r.headers.get('Last-Modified')
     try:
         reference = parsedate_to_datetime(modified).date().isoformat() if modified else None
