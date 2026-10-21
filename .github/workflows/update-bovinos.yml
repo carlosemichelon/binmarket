@@ -1,0 +1,55 @@
+name: Atualizar gado NESPro
+
+on:
+  # Horários em UTC: 08h15 e 19h35 em Brasília (UTC-3).
+  schedule:
+    - cron: '15 11 * * *'
+    - cron: '35 22 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/update_bovinos.py'
+      - 'tests/test_bovinos.py'
+      - '.github/workflows/update-bovinos.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coleta-bovinos-main
+  cancel-in-progress: false
+
+jobs:
+  nespro:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Configurar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Instalar leitor e navegador de contingência
+        run: |
+          python -m pip install 'requests==2.32.3' 'beautifulsoup4==4.12.3' 'playwright==1.55.0'
+          python -m playwright install --with-deps chromium
+      - name: Testar leitor NESPro
+        run: python -m unittest discover -s tests -p 'test_bovinos.py' -v
+      - name: Consultar NESPro e atualizar CSV
+        run: python scripts/update_bovinos.py
+      - name: Publicar apenas dados verificados
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/bovinos/historico.csv data/bovinos/atualizacao.json
+          if git diff --cached --quiet; then
+            echo 'Sem novos dados ou nova data de verificação.'
+            exit 0
+          fi
+          git commit -m '🤖 Atualização automática NESPro / gado de corte'
+          git pull --rebase origin main
+          git push origin HEAD:main

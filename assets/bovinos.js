@@ -1,6 +1,6 @@
 /* BinMarket · Gado de corte RS
    Cotação inicial: NESPro/UFRGS, painel consultado em 21/10/2026, última semana: 14/10/2026.
-   Amostra parcial de 8 semanas; campos sem histórico permanecem null. Sem API/live scraping.
+   Base inicial de 8 semanas. Atualizador GitHub Actions publica CSV com novas coletas NESPro.
    Este módulo não interfere no React do painel de soja. */
 (() => {
   'use strict';
@@ -71,8 +71,9 @@
     const dates=new Map();for(const r of result){const old=dates.get(r.data)||{data:r.data};dates.set(r.data,{...old,...r});}
     return Array.from(dates.values()).sort((a,b)=>a.data.localeCompare(b.data));
   };
+  let officialRows=cloneBase();
   let rows=cloneBase();
-  try{const saved=localStorage.getItem(STORAGE_KEY);if(saved){const parsed=cleanRows(JSON.parse(saved));if(parsed.length)rows=parsed;}}catch(e){/* armazenamento opcional */}
+  try{const saved=localStorage.getItem(STORAGE_KEY);if(saved){const parsed=cleanRows(JSON.parse(saved));if(parsed.length)rows=cleanRows([...rows,...parsed]);}}catch(e){/* armazenamento opcional */}
   let months=3;
   const num=(s,fallback)=>{const e=$(s);const n=Number(e?.value);return Number.isFinite(n)?n:fallback;};
   const last=()=>rows[rows.length-1]||{};
@@ -97,6 +98,9 @@
     $('#dataWarningDate').textContent=datePt(d);
     $('#sourceDate').textContent=d?`${d.slice(8,10)} / ${d.slice(5,7)} / ${d.slice(0,4)}`:'Sem dados';
     $('#seedNote').textContent=`Base carregada · ${rows.length} datas · campos ausentes preservados`;
+    const age=d?Math.floor((Date.now()-Date.parse(d+'T12:00:00Z'))/86400000):null;
+    const warning=$('#freshnessStatus');
+    if(warning)warning.textContent=age===null?'Data não disponível':age>14?`ATENÇÃO: última coleta tem aproximadamente ${age} dias; confira a fonte.`:age>=0?`Coleta publicada há ${age} dia(s).`:'Coleta registrada.';
     const getMove=(key)=>deltaFor(key).n;
     const boi=getMove('pv_macho'),vaca=getMove('pv_femea'),terneiro=getMove('terneiro'),novilho=getMove('novilho');
     const br=(n,label)=>Number.isFinite(n)?`${label} ${n>0?'+':''}${fixed(n,1)}%`:`${label} sem comparação`; 
@@ -275,8 +279,25 @@
       }catch(error){setStatus(error?.message||'Erro ao importar CSV.',true);}finally{e.target.value='';}
     });
     $('#exportCsv').addEventListener('click',csvExport);
-    $('#resetData').addEventListener('click',()=>{if(!confirm('Restaurar as 8 semanas originais e descartar apenas as importações salvas neste navegador?'))return;rows=cloneBase();try{localStorage.removeItem(STORAGE_KEY);}catch(e){}renderAll();setQuotePrices();setStatus('Amostra NESPro original restaurada (8 semanas).');});
+    $('#resetData').addEventListener('click',()=>{if(!confirm('Descartar importações locais e restaurar a base oficial publicada no GitHub?'))return;rows=officialRows.map(r=>({...r}));try{localStorage.removeItem(STORAGE_KEY);}catch(e){}renderAll();setQuotePrices();setStatus('Base oficial restaurada.');});
     renderAll();setQuotePrices();
+    refreshOfficialCsv();
+  }
+  async function refreshOfficialCsv(){
+    const status=$('#remoteUpdateStatus');
+    try{
+      // Sem cache: o CSV novo sempre prevalece sobre preços importados anteriormente.
+      const r=await fetch('data/bovinos/historico.csv', {cache:'no-store'});
+      if(!r.ok)throw new Error(`HTTP ${r.status}`);
+      const parsed=parseCsv(await r.text());
+      officialRows=mergeRecords(cloneBase(),parsed.records);
+      rows=mergeRecords(rows,officialRows);
+      renderAll();setQuotePrices();
+      if(status)status.textContent=`Arquivo do GitHub carregado · ${officialRows.length} datas · última coleta ${datePt(officialRows[officialRows.length-1].data)}.`;
+    }catch(e){
+      if(status)status.textContent=`Não foi possível sincronizar com o GitHub (${e?.message||'erro de rede'}). Exibindo dados salvos disponíveis.`;
+      console.warn('Sincronização do gado indisponível:',e);
+    }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
 })();
