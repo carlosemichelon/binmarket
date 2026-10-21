@@ -19,7 +19,8 @@
       if (!Number.isFinite(year)) return ['atencao','Sem safra identificada'];
       return year < new Date().getFullYear()-2?['atencao','Safra antiga']:['ok','Coleta concluída'];
     }
-    if (key==='conab_safra' && !str) return ['atencao','Arquivo recebido; data não identificada'];
+    if (key==='conab_safra' && rec.ultima_safra) return ['ok','Planilha e produção processadas'];
+    if (key==='conab_safra' && !str) return ['atencao','Arquivo recebido; produção não extraída'];
     const today=new Date(),ref=new Date(`${str}T12:00:00Z`);
     if (!Number.isFinite(ref.getTime())) return ['atencao','Data de referência não disponível'];
     const age=(today-ref)/86400000;
@@ -42,8 +43,16 @@
       const info=item?.data_referencia || item?.ultima_coleta;
       const uri=item?.url || item?.fonte || '';
       const link=(typeof uri==='string'&&/^https:\/\//.test(uri))?` <a href="${escapeHtml(uri)}" target="_blank" rel="noopener noreferrer">Fonte</a>`:'';
-      const when=key==='usda_psd'&&info?'Safra '+info:fmtDate(info);
-      return `<div class="bm-row"><strong>${escapeHtml(labels[key]||key)}</strong><span class="bm-status ${kind}">${escapeHtml(label)}</span><br/><small>Referência: ${escapeHtml(when)} · ${link}</small>${item?.erro?`<br/><small>Erro: ${escapeHtml(String(item.erro).slice(0,140))}</small>`:''}</div>`;
+      const when=key==='usda_psd'&&info?'Safra '+info:key==='conab_safra'&&item?.ultima_safra?'Safra '+item.ultima_safra:fmtDate(info);
+      const money=n=>Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+      const fmtMt=n=>(Number(n)/1000).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
+      const extras=[];
+      if(key==='cepea_soja' && Number.isFinite(Number(item?.valor)))extras.push('Cotação: R$ '+money(item.valor)+'/saca de 60 kg');
+      if(key==='conab_safra' && Number.isFinite(Number(item?.producao_mil_ton)) && item?.producao_mil_ton!=null)extras.push('Brasil: '+fmtMt(item.producao_mil_ton)+' milhões t produzidas');
+      if(key==='usda_psd' && item?.producao_br_mil_ton!=null)extras.push('Brasil: '+fmtMt(item.producao_br_mil_ton)+' milhões t');
+      if(key==='usda_psd' && item?.producao_eua_mil_ton!=null)extras.push('EUA: '+fmtMt(item.producao_eua_mil_ton)+' milhões t');
+      const detail=extras.length?'<br/><small>'+escapeHtml(extras.join(' · '))+'</small>':'';
+      return `<div class="bm-row"><strong>${escapeHtml(labels[key]||key)}</strong><span class="bm-status ${kind}">${escapeHtml(label)}</span><br/><small>Referência: ${escapeHtml(when)} · ${link}</small>${detail}${item?.erro?`<br/><small>Erro: ${escapeHtml(String(item.erro).slice(0,140))}</small>`:''}</div>`;
     }).join('')+`<small>Última verificação registrada: ${escapeHtml(checked?checked.replace('T',' ').slice(0,16):'não disponível')}.</small>`;
     box.querySelector('.bm-dot').className='bm-dot '+(anyFail?'falha':allOk?'ok':'');
   };
