@@ -35,6 +35,20 @@ class CollectorsTest(unittest.TestCase):
             got=u.parse_usda_rows(r)
         self.assertEqual(len(got),108)
         self.assertTrue(all(item['pais'] in ('BR','US') for item in got))
+    def test_conab_brasil_production(self):
+        class Sheet:
+            name='Produção'
+            grid=[['REGIÃO/UF', *[f'{year}/{str(year+1)[-2:]}' for year in range(2010,2026)]],
+                  ['RS', *([50000]*16)],
+                  ['BRASIL', *([150000]*16)]]
+            nrows=len(grid)
+            ncols=len(grid[0])
+            def cell_value(self,row,col):return self.grid[row][col]
+        class Book:
+            def sheets(self):return [Sheet()]
+        data=u.parse_conab_producao(Book())
+        self.assertEqual(len(data),16)
+        self.assertEqual(data[0]['producao_mil_ton'],150000)
     def test_valid_date(self):
         self.assertEqual(u.validate_day('14/10/2026',today=date(2026,10,21)),'2026-10-14')
         with self.assertRaises(ValueError): u.validate_day('01/02/2099',today=date(2026,10,21))
