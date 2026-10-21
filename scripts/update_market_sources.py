@@ -31,6 +31,7 @@ CEPEA_BACKUP_URL = 'https://www.cepea.org.br/br/indicador/soja.aspx'
 CONAB_URL = ('https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/'
              'safras/series-historicas/graos/soja/sojaseriehist.xls/@@download/file')
 USDA_URL = 'https://apps.fas.usda.gov/psdonline/downloads/psd_alldata_csv.zip'
+CEPEA_THIRD_URL = 'https://cultivee.com.br/cotacoes'
 HEADERS = {'User-Agent':'Mozilla/5.0 (compatible; BinMarket-public-data/2.0; GitHub Actions)',
            'Accept-Language':'pt-BR,pt;q=0.9'}
 
@@ -137,6 +138,29 @@ def save_cepea(records: list[dict]) -> dict:
             'unidade':'R$/saca de 60 kg','observacoes':len(prev)}
 
 
+def parse_cepea_secondary(html: str, today: date | None = None) -> list[dict]:
+    """Fonte secundária: lê somente valor e data explícita de apuração.
+
+    Não confunde preços de outras praças ou data da consulta com apuração.
+    """
+    text = BeautifulSoup(html, 'html.parser').get_text(' ', strip=True)
+    match_day = re.search(r'apura(?:ç|c)[aã]o\s+de\s+(\d{1,2})\s+de\s+([a-zç]+)\s+de\s+(\d{4})', text, re.I)
+    match_price = re.search(r'Soja\s+Paranagu[áa].{0,100}?R\$\s*([\d.,]+)', text, re.I)
+    months = {'janeiro':1,'fevereiro':2,'marco':3,'março':3,'abril':4,'maio':5,'junho':6,
+              'julho':7,'agosto':8,'setembro':9,'outubro':10,'novembro':11,'dezembro':12}
+    if not match_day or not match_price:
+        raise ValueError('Tabela secundária CEPEA sem data explícita e preço de Paranaguá')
+    dd, mm, yy = match_day.groups()
+    month = months.get(mm.lower())
+    if not month:
+        raise ValueError('Mês secundário desconhecido')
+    day = validate_day(f'{int(dd):02d}/{month:02d}/{yy}',today)
+    price = br_number(match_price.group(1))
+    if not 35 <= price <= 400:
+        raise ValueError('Preço secundário fora da faixa de validação')
+    return [{'data':day,'brl_saca60':round(price,2),'usd_saca60':None}]
+
+
 def fetch_cepea(session: requests.Session) -> dict:
     err = None
     for url in (CEPEA_URL, CEPEA_BACKUP_URL):
@@ -148,6 +172,32 @@ def fetch_cepea(session: requests.Session) -> dict:
             return {'status':'ok','url':url, **summary}
         except (requests.RequestException, ValueError) as exc:
             err = str(exc)
+    # Fonte secundária já usada pelo painel principal; preserva proveniência.
+    # Não substitui dado oficial de USD por valor inferido de câmbio.
+    try:
+        from update_data import fetch_noticias_agricolas_cepea, NA_CEPEA_URL
+        backup = fetch_noticias_agricolas_cepea()
+        parsed = []
+        for row in backup.get('serie', []):
+            day = validate_day(row['data'])
+            price = float(row['valor'])
+            if 35 <= price <= 400:
+                parsed.append({'data':day,'brl_saca60':price,'usd_saca60':None})
+        if parsed:
+            summary = save_cepea(parsed)
+            return {'status':'ok','url':NA_CEPEA_URL, **summary,
+                    'observacao':'Fonte secundária: Notícias Agrícolas (indicador CEPEA)'}
+    except Exception as exc:
+        err = f'{err}; fallback: {exc}'
+    # Terceira opção quando tanto o site oficial quanto o republicador estão bloqueados.
+    try:
+        r = session.get(CEPEA_THIRD_URL,headers=HEADERS,timeout=35)
+        r.raise_for_status()
+        summary = save_cepea(parse_cepea_secondary(r.text))
+        return {'status':'ok','url':CEPEA_THIRD_URL,**summary,
+                'observacao':'Fonte secundária republicada (Cultivee/CEPEA); somente BRL'}
+    except (requests.RequestException, ValueError) as exc:
+        err = f'{err}; fonte secundária: {exc}'
     raise RuntimeError(err or 'CEPEA indisponível')
 
 
