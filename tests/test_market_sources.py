@@ -19,6 +19,11 @@ class CollectorsTest(unittest.TestCase):
         self.assertEqual(len(records),1)
         self.assertEqual(records[0]['brl_saca60'],159.43)
         self.assertEqual(records[0]['usd_saca60'],29.2)
+    def test_secondary_requires_explicit_date(self):
+        html='<p>Indicadores CEPEA/ESALQ, apuração de 20 de outubro de 2026, atualizado às 05:15.</p><table><tr><td>Soja Paranaguá</td><td>R$ 153,40</td><td>por sc de 60kg</td></tr></table>'
+        rec=u.parse_cepea_secondary(html,today=date(2026,10,21))
+        self.assertEqual(rec[0]['data'],'2026-10-20')
+        self.assertEqual(rec[0]['brl_saca60'],153.40)
     def test_cepea_rejects_future(self):
         html='<h2>Paranaguá</h2><table><tr><td>24/10/2026</td><td>159,43</td></tr></table>'
         with self.assertRaises(ValueError): u.parse_cepea(html, today=date(2026,10,21))
