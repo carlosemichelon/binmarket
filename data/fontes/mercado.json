@@ -10,7 +10,7 @@
       "unidade": "R$/saca de 60 kg",
       "url": "https://cultivee.com.br/cotacoes",
       "valor": 153.4,
-      "verificado_em": "2026-10-21T20:54:22-03:00"
+      "verificado_em": "2026-10-21T20:55:20-03:00"
     },
     "conab_safra": {
       "data_referencia": null,
@@ -19,7 +19,7 @@
       "status": "ok",
       "unidade": "planilha oficial de safra; ainda não integrada aos gráficos",
       "url": "https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/series-historicas/graos/soja/sojaseriehist.xls/@@download/file",
-      "verificado_em": "2026-10-21T20:54:22-03:00"
+      "verificado_em": "2026-10-21T20:55:20-03:00"
     },
     "usda_psd": {
       "data_referencia": "2026",
@@ -28,9 +28,9 @@
       "status": "ok",
       "unidade": "mil toneladas (USDA PSD)",
       "url": "https://apps.fas.usda.gov/psdonline/downloads/psd_alldata_csv.zip",
-      "verificado_em": "2026-10-21T20:54:22-03:00"
+      "verificado_em": "2026-10-21T20:55:20-03:00"
     }
   },
-  "verificado_em": "2026-10-21T20:54:22-03:00",
+  "verificado_em": "2026-10-21T20:55:20-03:00",
   "versao": 1
 }
