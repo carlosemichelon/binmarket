@@ -277,7 +277,7 @@ def fetch_conab(session:requests.Session) -> dict:
                 cells = [str(sheet.cell_value(row_ix, col_ix))[:90] for col_ix in range(min(sheet.ncols, 10))]
                 preview.append(cells)
             schema.append({'sheet':sheet.name,'rows':sheet.nrows,'columns':sheet.ncols,'preview':preview})
-        atomic_write(DIR/'conab_estrutura.json', (json.dumps(schema,ensure_ascii=False,indent=2)+'\\n').encode('utf-8'))
+        atomic_write(DIR/'conab_estrutura.json', (json.dumps(schema,ensure_ascii=False,indent=2)+'\n').encode('utf-8'))
     except Exception as exc:
         print(f'Conab: estrutura do Excel indisponível: {exc}',flush=True)
     modified = r.headers.get('Last-Modified')
