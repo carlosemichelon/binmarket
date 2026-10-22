@@ -5,6 +5,11 @@ on:
     # Diário às 12:00 UTC (09:00 BRT) — após CEPEA publicar
     - cron: '0 12 * * *'
   workflow_dispatch:  # permite acionar manualmente pela aba Actions
+  push:
+    paths:
+      - 'scripts/update_data.py'
+      - 'tests/test_update_data.py'
+      - '.github/workflows/update-data.yml'
 
 jobs:
   atualizar:
@@ -24,6 +29,9 @@ jobs:
 
       - name: Instalar dependências
         run: pip install -r scripts/requirements.txt
+
+      - name: Testar atualização BCB sem rede
+        run: python -m unittest discover -s tests -p 'test_update_data.py' -v
 
       - name: Instalar LibreOffice (para converter .xls CEPEA)
         run: sudo apt-get update && sudo apt-get install -y libreoffice-calc --no-install-recommends
