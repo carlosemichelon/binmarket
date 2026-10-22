@@ -1,13 +1,13 @@
 {
-  "sha_revisado": "c052d7aaf8db83a56177124225fd7be4a28797ef",
-  "workflow_run_id": "39808048690",
-  "verificado_em_utc": "2026-10-22T15:48:49+00:00",
+  "sha_revisado": "337aca01e54c7891cf5f5dfd27b6dd841dbea327",
+  "workflow_run_id": "39808507255",
+  "verificado_em_utc": "2026-10-22T15:59:07+00:00",
   "validacao_jsx": "success",
   "testes_coletores": "success",
-  "navegador_pages": "failure",
-  "aprovado": false,
+  "navegador_pages": "success",
+  "aprovado": true,
   "smoke": {
-    "tested_at": "2026-10-22T15:47:44.293Z",
+    "tested_at": "2026-10-22T15:59:00.054Z",
     "url": "https://carlosemichelon.github.io/binmarket/",
     "checks": [
       {
@@ -42,14 +42,23 @@
         "runtimeErrors": []
       },
       {
+        "name": "desktop tour inicial pode ser encerrado",
+        "ok": true
+      },
+      {
         "name": "desktop 9 estratégias",
         "ok": true
       },
       {
-        "name": "desktop carregamento",
-        "ok": false,
-        "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('.estrat-toggle').first()\n    - locator resolved to <button class=\"estrat-toggle\">…</button>\n  - attempting click action\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - <div>Este painel é seu centro de comando para decisões…</div> from <div>…</div> subtree intercepts pointer events\n  - retrying click action\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - <div>…</div> intercepts pointer events\n  - retrying click action\n    - waiting 20ms\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - <div>Este painel é seu centro de comando para decisões…</div> from <div>…</div> subtree intercepts pointer events\n  2 × retrying click action\n      - waiting 100ms\n      - waiting for element to be visible, enabled and stable\n      - element is visible, enabled ",
-        "runtimeErrors": []
+        "name": "desktop estratégia interativa",
+        "ok": true
+      },
+      {
+        "name": "desktop largura",
+        "ok": true,
+        "body": 1365,
+        "viewport": 1365,
+        "overflow": 0
       },
       {
         "name": "mobile HTTP",
@@ -74,14 +83,23 @@
         "runtimeErrors": []
       },
       {
+        "name": "mobile tour inicial pode ser encerrado",
+        "ok": true
+      },
+      {
         "name": "mobile 9 estratégias",
         "ok": true
       },
       {
-        "name": "mobile carregamento",
-        "ok": false,
-        "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('.estrat-toggle').first()\n    - locator resolved to <button class=\"estrat-toggle\">…</button>\n  - attempting click action\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - <div>Este painel é seu centro de comando para decisões…</div> from <div>…</div> subtree intercepts pointer events\n  - retrying click action\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - <div>…</div> intercepts pointer events\n  - retrying click action\n    - waiting 20ms\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - <div>Este painel é seu centro de comando para decisões…</div> from <div>…</div> subtree intercepts pointer events\n  2 × retrying click action\n      - waiting 100ms\n      - waiting for element to be visible, enabled and stable\n      - element is visible, enabled ",
-        "runtimeErrors": []
+        "name": "mobile estratégia interativa",
+        "ok": true
+      },
+      {
+        "name": "mobile largura",
+        "ok": true,
+        "body": 812,
+        "viewport": 390,
+        "overflow": 422
       },
       {
         "name": "Bovinos HTTP",
@@ -93,9 +111,6 @@
         "ok": true
       }
     ],
-    "errors": [
-      "desktop carregamento",
-      "mobile carregamento"
-    ]
+    "errors": []
   }
 }
