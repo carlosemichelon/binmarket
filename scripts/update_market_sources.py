@@ -445,9 +445,31 @@ def parse_milho(html:str, today:date|None=None) -> dict:
     return {'data':day,'brl_saca60':round(value,2)}
 
 def fetch_milho(session:requests.Session) -> dict:
-    r=session.get(MILHO_URL,headers=HEADERS,timeout=35)
-    r.raise_for_status()
-    found=parse_milho(r.text)
+    # Prefer indicador Esalq/B3. Se a pagina nao fornecer HTML estatico,
+    # usar a fonte secundaria com apuracao datada.
+    error=None
+    source=MILHO_URL
+    try:
+        r=session.get(MILHO_URL,headers=HEADERS,timeout=35)
+        r.raise_for_status()
+        found=parse_milho(r.text)
+    except (requests.RequestException,ValueError) as exc:
+        error=str(exc)
+        source=CEPEA_THIRD_URL
+        r=session.get(CEPEA_THIRD_URL,headers=HEADERS,timeout=35)
+        r.raise_for_status()
+        plain=BeautifulSoup(r.text,"html.parser").get_text(" ",strip=True)
+        m=re.search(r'apura(?:ç|c)[aã]o\s+de\s+(\d{1,2})\s+de\s+([a-zç]+)\s+de\s+(\d{4})',plain,re.I)
+        price_match=re.search(r'\bMilho\b.{0,70}?R\$\s*([\d.,]+)',plain,re.I)
+        months={'janeiro':1,'fevereiro':2,'março':3,'marco':3,'abril':4,'maio':5,'junho':6,
+                'julho':7,'agosto':8,'setembro':9,'outubro':10,'novembro':11,'dezembro':12}
+        if not m or not price_match or m.group(2).lower() not in months:
+            raise ValueError('Milho: principal e fonte alternativa indisponiveis: '+str(error))
+        d,mo,yr=m.groups()
+        day=validate_day(f'{int(d):02d}/{months[mo.lower()]:02d}/{yr}')
+        value=br_number(price_match.group(1))
+        if not 20<=value<=250:raise ValueError('Milho fora da faixa')
+        found={'data':day,'brl_saca60':round(value,2)}
     old=load_cepea(MILHO_CSV)
     old[found['data']]={'data':found['data'],'brl_saca60':f"{found['brl_saca60']:.2f}"}
     out=StringIO()
@@ -456,9 +478,10 @@ def fetch_milho(session:requests.Session) -> dict:
     for key in sorted(old):writer.writerow(old[key])
     atomic_write(MILHO_CSV,out.getvalue().encode('utf-8'))
     last=old[max(old)]
-    return {'status':'ok','url':MILHO_URL,'data_referencia':max(old),
+    return {'status':'ok','url':source,'data_referencia':max(old),
             'valor':float(last['brl_saca60']),'unidade':'R$/saca de 60 kg',
-            'observacoes':len(old)}
+            'observacoes':len(old),
+            'observacao':'Fonte secundaria datada' if error else 'Indicador Esalq/B3'}
 
 
 def run() -> dict:
