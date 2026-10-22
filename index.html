@@ -92,7 +92,7 @@
 </script>
 
 <script type="text/babel" data-presets="react-classic">
-const { useState, useMemo } = React;
+const { useState, useMemo, useEffect } = React;
 const {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, BarChart, Bar, Cell, Legend,
@@ -3036,6 +3036,29 @@ function PainelSoja() {
   const [premio, setPremio] = useState(-0.34);
   const [dolar, setDolar] = useState(5.01);
   const [freteCIF, setFreteCIF] = useState(10);
+  const [fontePrecos, setFontePrecos] = useState({ fontes: {}, carregado: false, erro: null });
+  // Valores de fontes publicados pelo GitHub Actions; atualiza ao abrir e de 10 em 10 minutos.
+  useEffect(() => {
+    let alive = true;
+    const carregar = async () => {
+      try {
+        const response = await fetch('data/fontes/mercado.json', {cache: 'no-store'});
+        if (!response.ok) throw new Error('HTTP '+response.status);
+        const remote = await response.json();
+        if (!alive || !remote || typeof remote.fontes !== 'object') return;
+        setFontePrecos({fontes: remote.fontes, carregado: true, erro: null});
+        const local = remote.fontes.cotrijuc_soja;
+        if (local && Number.isFinite(Number(local.valor)) && Number(local.valor)>35 && Number(local.valor)<400)
+          setBalcaoSoja(Number(local.valor));
+      } catch (error) {
+        if (alive) setFontePrecos(old => ({...old, carregado: true, erro: String(error)}));
+      }
+    };
+    carregar();
+    const timer = setInterval(carregar, 10*60*1000);
+    return () => {alive=false; clearInterval(timer);};
+  }, []);
+
   // ARRENDAMENTO (terra) — separado dos custos detalhados
   const [arrendamentoScHa, setArrendamentoScHa] = useState(20); // sc/ha JC=20
   const [pctArrendada, setPctArrendada] = useState(100);        // % área arrendada (0-100)
@@ -3457,8 +3480,20 @@ function PainelSoja() {
                           crushChinaUSD > 0 ? 'critico' : 'negativo';
 
   // Cálculos
-  const sacaFOB = (cbot + premio) * BU_PER_SACA * dolar;
-  const sacaCIF = sacaFOB - freteCIF; // preço líquido em Júlio de Castilhos
+  // Referencias de fonte e modelo separados: nao chamar indice CEPEA de preco local.
+  const cepeaFonte = fontePrecos.fontes.cepea_soja || {};
+  const cotrijucFonte = fontePrecos.fontes.cotrijuc_soja || {};
+  const cepeaPreco = Number(cepeaFonte.valor);
+  const cotrijucPreco = Number(cotrijucFonte.valor);
+  const cepeaValido = Number.isFinite(cepeaPreco) && cepeaPreco>=35 && cepeaPreco<=400 && /^\\d{4}-\\d{2}-\\d{2}$/.test(cepeaFonte.data_referencia||'');
+  const localValido = Number.isFinite(cotrijucPreco) && cotrijucPreco>=35 && cotrijucPreco<=400 && /^\\d{4}-\\d{2}-\\d{2}$/.test(cotrijucFonte.data_referencia||'');
+  const dataPt = d => /^\\d{4}-\\d{2}-\\d{2}$/.test(d||'') ? d.split('-').reverse().join('/') : 'sem data';
+  const diasAntigos = d => d ? Math.floor((Date.now()-new Date(d+'T12:00:00-03:00').getTime())/86400000) : 999;
+  const localDesatualizado = localValido && (cotrijucFonte.status!=='ok'||diasAntigos(cotrijucFonte.data_referencia)>5);
+  const referenciaCotacao = localValido ? 'Cotrijuc (balcao)' : cepeaValido ? 'Proxy CEPEA menos frete' : 'Modelo CBOT + premio - frete';
+  const dataCotacao = localValido ? cotrijucFonte.data_referencia : cepeaValido ? cepeaFonte.data_referencia : null;
+  const sacaFOB = (cbot + premio) * BU_PER_SACA * dolar; // preco TEORICO do modelo, nao CEPEA
+  const sacaCIF = localValido ? cotrijucPreco : cepeaValido ? cepeaPreco - freteCIF : sacaFOB - freteCIF; // local real quando Cotrijuc disponivel, senao PROXY estimado
   const margemAbs = sacaCIF - custoSaca;
   const margemPct = (margemAbs / custoSaca) * 100;
   const trocaFert = custoFert / sacaCIF;
@@ -3610,8 +3645,8 @@ ${relatorio.data}
 ═══════════════════════════════════════════
 SNAPSHOT DE PREÇOS SOJA
 ═══════════════════════════════════════════
-CEPEA Paranaguá FOB ........ R$ ${sacaFOB.toFixed(2)}
-CIF Júlio de Castilhos ..... R$ ${sacaCIF.toFixed(2)} (frete R$ ${freteCIF})
+CEPEA Paranaguá ............ ${cepeaValido ? 'R$ '+cepeaPreco.toFixed(2) : 'n/d'} (${dataPt(cepeaFonte.data_referencia)})
+Preco de referencia JC ..... R$ ${sacaCIF.toFixed(2)} (${referenciaCotacao}; ${dataPt(dataCotacao)})
 Balcão Cotrijuc ............ R$ ${balcaoSoja.toFixed(2)} (${spreadBalcaoSoja >= 0 ? '+' : ''}R$ ${spreadBalcaoSoja.toFixed(2)} · ${spreadBalcaoSojaPct.toFixed(1)}% vs CIF)
 
 CBOT ....................... ${cbot.toFixed(2)} USD/bu (${niveis.cbot.toUpperCase()})
@@ -3689,18 +3724,18 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
       <header style={S.header}>
         <div>
-          <div style={S.eyebrow}>Painel · Soja · Júlio de Castilhos / RS · <span style={{color: '#C8E04A'}}>dados CEPEA 21/10/2026</span></div>
+          <div style={S.eyebrow}>Painel · Soja · Júlio de Castilhos / RS · <span style={{color: '#C8E04A'}}>fontes automáticas · {fontePrecos.erro ? 'falha de sincronização' : fontePrecos.carregado ? 'sincronizado' : 'carregando'}</span></div>
           <h1 className="h1" style={S.h1}>Margem da saca <span style={S.h1accent}>no campo</span></h1>
           <div style={S.subhead}>Soja CEPEA Paranaguá · Balcão Cotrijuc · Porto Rio Grande</div>
-          <div style={{...S.subhead, color: '#C8E04A', marginTop: 4}}>★ Última cotação CEPEA: <strong>R$ 132,26/saca</strong> em <strong>16/06/2026</strong> · Dólar implícito R$ 5,09</div>
+          <div style={{...S.subhead, color: '#C8E04A', marginTop: 4}}>★ CEPEA Paranaguá: <strong>{cepeaValido ? 'R$ '+cepeaPreco.toFixed(2)+'/saca' : 'aguardando coleta'}</strong> · {dataPt(cepeaFonte.data_referencia)} · {cepeaFonte.status==='falha' ? 'coleta com falha; último preço conhecido' : 'referência portuária, não é preço de balcão'}</div>
         </div>
         <div style={S.precoBig}>
-          <div style={S.precoLabel}>Saca 60kg (CIF JC)</div>
+          <div style={S.precoLabel}>Saca 60 kg · {referenciaCotacao}{!localValido ? ' (estimativa)' : ''}</div>
           <div className="preco-valor" style={S.precoValor}>R$ {sacaCIF.toFixed(2)}</div>
           <div style={{...S.precoMargem, color: margemAbs > 0 ? '#C8E04A' : '#D9542B'}}>
             {margemAbs > 0 ? '+' : ''}R$ {margemAbs.toFixed(2)} ({margemPct.toFixed(1)}%) vs custo
           </div>
-          <div style={S.precoSub}>FOB Rio Grande: R$ {sacaFOB.toFixed(2)} · frete R$ {freteCIF}</div>
+          <div style={S.precoSub}>{dataCotacao ? 'Cotação de '+dataPt(dataCotacao) : 'Sem cotação oficial sincronizada'} {localDesatualizado ? ' · ATENÇÃO: cotação antiga/falha' : ''} · Modelo CBOT/prêmio: R$ {sacaFOB.toFixed(2)} (teórico){!localValido ? ' · frete estimado R$ '+freteCIF : ''}</div>
         </div>
       </header>
 
@@ -6224,17 +6259,17 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
             <div style={{...S.sinteseLabel, color: '#A89968', marginBottom: 10}}>SNAPSHOT SOJA · {new Date().toLocaleDateString('pt-BR')}</div>
             <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10}}>
               <div style={{...S.simCell, borderColor: '#C8E04A'}}>
-                <div style={S.simCellLabel}>★ CEPEA Paranaguá FOB</div>
-                <div style={{...S.simCellValor, color: '#C8E04A'}}>R$ {sacaFOB.toFixed(2)}</div>
-                <div style={S.simCellDelta}>benchmark nacional</div>
+                <div style={S.simCellLabel}>★ CEPEA Paranaguá (cotação)</div>
+                <div style={{...S.simCellValor, color: '#C8E04A'}}>{cepeaValido ? 'R$ '+cepeaPreco.toFixed(2) : 'sem coleta'}</div>
+                <div style={S.simCellDelta}>indicador portuário · {dataPt(cepeaFonte.data_referencia)}</div>
               </div>
               <div style={S.simCell}>
-                <div style={S.simCellLabel}>CIF Júlio de Castilhos</div>
+                <div style={S.simCellLabel}>Preço referência JC · {referenciaCotacao}</div>
                 <div style={S.simCellValor}>R$ {sacaCIF.toFixed(2)}</div>
-                <div style={S.simCellDelta}>menos frete R$ {freteCIF}/saca</div>
+                <div style={S.simCellDelta}>{dataCotacao ? 'Cotação '+dataPt(dataCotacao) : 'modelo estimado'} {localDesatualizado ? '· ATENÇÃO: antigo' : ''}</div>
               </div>
               <div style={{...S.simCell, borderColor: '#E6B84A'}}>
-                <div style={S.simCellLabel}>BALCÃO Cotrijuc</div>
+                <div style={S.simCellLabel}>BALCÃO Cotrijuc {localValido ? '· fonte' : '· valor de cenário'}</div>
                 <div style={{...S.simCellValor, color: '#E6B84A'}}>R$ {balcaoSoja.toFixed(2)}</div>
                 <div style={S.simCellDelta}>
                   spread <span style={{color: spreadBalcaoSoja >= 0 ? '#C8E04A' : '#D9542B'}}>
