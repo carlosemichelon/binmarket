@@ -38,7 +38,7 @@
   const card=box.querySelector('.bm-card'),btn=box.querySelector('.bm-trigger');
   const toggle=()=>{card.hidden=!card.hidden;btn.setAttribute('aria-expanded',String(!card.hidden));};
   btn.addEventListener('click',toggle);box.querySelector('.bm-close').addEventListener('click',toggle);
-  const render=(items,checked)=>{
+  const render=(items,checked,audit)=>{
     let allOk=true, anyFail=false;
     box.querySelector('.bm-rows').innerHTML=Object.entries(items).map(([key,item])=>{
       const [kind,label]=state(key,item);
@@ -57,14 +57,40 @@
       const detail=extras.length?'<br/><small>'+escapeHtml(extras.join(' · '))+'</small>':'';
       return `<div class="bm-row"><strong>${escapeHtml(labels[key]||key)}</strong><span class="bm-status ${kind}">${escapeHtml(label)}</span><br/><small>Referência: ${escapeHtml(when)} · ${link}</small>${detail}${item?.erro?`<br/><small>Erro: ${escapeHtml(String(item.erro).slice(0,140))}</small>`:''}</div>`;
     }).join('')+`<small>Última verificação registrada: ${escapeHtml(checked?checked.replace('T',' ').slice(0,16):'não disponível')}.</small>`;
-    box.querySelector('.bm-dot').className='bm-dot '+(anyFail?'falha':allOk?'ok':'');
+    const pending=Object.entries(audit?.series_nao_integralmente_automaticas||{});
+    const summary=audit?.resumo;
+    if(summary){
+      const note=document.createElement('div');
+      note.className='bm-row';
+      note.innerHTML='<strong>Cobertura efetiva do site</strong><small>'+
+          escapeHtml(String(summary.fontes_com_dados_recentes))+' de '+escapeHtml(String(summary.fontes_automaticas_monitoradas))+
+          ' fontes recentes; '+escapeHtml(String(summary.modulos_sem_automacao_completa))+
+          ' grupos ainda contêm premissas ou séries históricas não integradas.</small>';
+      const details=document.createElement('details');
+      const title=document.createElement('summary');
+      title.textContent='Ver grupos que ainda não são automáticos';
+      details.appendChild(title);
+      for(const [key,reason] of pending){
+        const p=document.createElement('p');
+        p.style.fontSize='11px';
+        p.style.margin='8px 0';
+        p.textContent=key.replaceAll('_',' ')+' — '+reason;
+        details.appendChild(p);
+      }
+      note.appendChild(details);
+      box.querySelector('.bm-rows').prepend(note);
+    }
+    // Nao usar verde para afirmar que TODO o painel esta automatizado.
+    box.querySelector('.bm-dot').className='bm-dot '+(anyFail?'falha':allOk&&summary?.cobertura_integral?'ok':'');
   };
   Promise.allSettled([
     fetch('data/fontes/mercado.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json();}),
-    fetch('data/bovinos/atualizacao.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json();})
-  ]).then(([market,gado])=>{
+    fetch('data/bovinos/atualizacao.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json();}),
+    fetch('data/fontes/auditoria.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json();})
+  ]).then(([market,gado,auditoria])=>{
     const m=market.status==='fulfilled'?market.value:{};
     const g=gado.status==='fulfilled'?gado.value:{};
-    render({...m.fontes,nespro_gado:{status:g.ultima_coleta?'ok':'pendente', data_referencia:g.ultima_coleta,url:g.fonte||'https://bovinos-indices.nesproufrgs.com/',erro:g.erro}},m.verificado_em);
-  }).catch(()=>render({fontes:{status:'falha',erro:'Falha ao ler manifesto de dados'}},null));
+    const a=auditoria.status==='fulfilled'?auditoria.value:null;
+    render({...m.fontes,nespro_gado:{status:g.ultima_coleta?'ok':'pendente', data_referencia:g.ultima_coleta,url:g.fonte||'https://bovinos-indices.nesproufrgs.com/',erro:g.erro}},m.verificado_em,a);
+  }).catch(()=>render({fontes:{status:'falha',erro:'Falha ao ler manifesto de dados'}},null,null));
 })();
