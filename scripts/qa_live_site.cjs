@@ -38,6 +38,16 @@ async function checkBrowser(browser,label,viewport) {
     record(label+' 17 módulos',await page.locator('section[id^="modulo-"]').count()===17);
     record(label+' prêmio Paranaguá separado',await page.getByText('Prêmios observados por vencimento',{exact:false}).count()>0);
     record(label+' sem erro de carregamento', !(await page.locator('#erro').isVisible()),{runtimeErrors});
+    // Primeiro acesso exibe intencionalmente um tour modal (zIndex 9999).
+    // O teste deve encerrá-lo como um usuário antes de interagir com o painel.
+    const skipTour=page.getByRole('button',{name:/PULAR TOUR/});
+    if(await skipTour.isVisible()){
+      await skipTour.click();
+      await skipTour.waitFor({state:'detached',timeout:12000});
+      record(label+' tour inicial pode ser encerrado',true);
+    }else{
+      record(label+' tour inicial já concluído',true);
+    }
     const buttons=page.locator('.estrat-toggle');
     record(label+' 9 estratégias',await buttons.count()===9);
     if(await buttons.count()===9){
