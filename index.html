@@ -3038,6 +3038,35 @@ function PainelSoja() {
   const [freteCIF, setFreteCIF] = useState(10);
   const [fontePrecos, setFontePrecos] = useState({ fontes: {}, carregado: false, erro: null });
   const [conabSerieAuto, setConabSerieAuto] = useState(null);
+
+  const [usdaBrasilAuto, setUsdaBrasilAuto] = useState(null);
+  // Serie PSD USDA em anos de comercializacao da fonte; nao misturar periodos da Conab.
+  useEffect(() => {
+    let alive=true;
+    const carregar=async () => {
+      try {
+        const response=await fetch('data/fontes/usda_soja.csv',{cache:'no-store'});
+        if(!response.ok)throw new Error('USDA HTTP '+response.status);
+        const table=new Map();
+        const fields={'Production':'producao','Domestic Consumption':'consumo',
+                      'Ending Stocks':'estoques','Exports':'exportacoes'};
+        for(const line of (await response.text()).trim().split(/\r?\n/).slice(1)){
+          const [rawAno,pais,campo,rawVal]=line.split(';');
+          const year=Number(rawAno),v=Number(rawVal);
+          if(year<2010||year>new Date().getFullYear()+2||!Number.isFinite(v)||v<0||!['BR','US'].includes(pais))continue;
+          const r=table.get(year)||{ano:String(year)};
+          const name=fields[campo];
+          if(name)r[name+(pais==='BR'?'BR':'EUA')]=Math.round(v/100)/10;
+          table.set(year,r);
+        }
+        if(alive&&table.size>=12)setUsdaBrasilAuto([...table.values()].sort((a,b)=>Number(a.ano)-Number(b.ano)));
+      }catch(e){console.warn('USDA: serie nao sincronizada',e);}
+    };
+    carregar();
+    const timer=setInterval(carregar,10*60*1000);
+    return ()=>{alive=false;clearInterval(timer);};
+  }, []);
+
   // Produção Conab (mil t) atualiza diretamente o gráfico a cada visita.
   useEffect(() => {
     let alive = true;
@@ -5589,6 +5618,25 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+              <div style={{marginTop: 22, color: '#C8E04A', fontSize: 12, fontWeight: 600}}>Séries USDA PSD · Brasil e EUA (atualização automática)</div>
+              {usdaBrasilAuto ? (
+                <div style={{height: 285, marginTop: 10}}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={usdaBrasilAuto} margin={{top:12,right:25,bottom:10,left:2}}>
+                      <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28"/>
+                      <XAxis dataKey="ano" stroke="#6B7065" style={{fontSize:10}}/>
+                      <YAxis stroke="#6B7065" style={{fontSize:10}}/>
+                      <Tooltip contentStyle={{background:'#0F1410',color:'#E8E2D0',border:'1px solid #2A2F28'}}/>
+                      <Legend/>
+                      <Line type="monotone" dataKey="producaoBR" stroke="#C8E04A" dot={false} name="Produção BR · Mt"/>
+                      <Line type="monotone" dataKey="producaoEUA" stroke="#7AB8E0" dot={false} name="Produção EUA · Mt"/>
+                      <Line type="monotone" dataKey="exportacoesBR" stroke="#E6B84A" dot={false} name="Exportações BR · Mt"/>
+                      <Line type="monotone" dataKey="estoquesBR" stroke="#D9542B" dot={false} name="Estoque final BR · Mt"/>
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : <div style={{color:'#A89968',fontSize:12,marginTop:8}}>USDA ainda não carregou; não confundir série estática da Conab com atualização USDA.</div>}
+              <div style={{fontSize:10,color:'#6B7065',marginBottom:12}}>Fonte: USDA PSD. Ano de mercado USDA, diferente da safra brasileira Conab. Valores em milhões de toneladas.</div>
               <div style={S.legendaHist}>
                 <strong>Produção Conab (fonte automática):</strong> {conabSerieAuto ? (conabSerieAuto[conabSerieAuto.length-1].producao.toFixed(1)+' Mt na safra '+conabSerieAuto[conabSerieAuto.length-1].safra) : 'carregando série publicada'}. Exportação, esmagamento e estoques nesta série permanecem referências históricas, não valores automaticamente verificados.
                 Em 17/18 ultrapassamos os EUA pela primeira vez na produção mundial; hoje Brasil sozinho responde por ~40% da oferta global.<br/><br/>
