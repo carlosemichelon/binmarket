@@ -1,8 +1,8 @@
 {
-  "gerado_em": "2026-10-22T14:34:25+00:00",
+  "gerado_em": "2026-10-22T14:34:56+00:00",
   "resumo": {
-    "fontes_automaticas_monitoradas": 7,
-    "fontes_com_dados_recentes": 7,
+    "fontes_automaticas_monitoradas": 8,
+    "fontes_com_dados_recentes": 8,
     "modulos_sem_automacao_completa": 9,
     "cobertura_integral": false
   },
@@ -61,6 +61,15 @@
       "periodicidade_tolerancia_dias": 95,
       "observacao": "Somente producao nacional, nao custos individuais"
     },
+    "premio_soja_paranagua": {
+      "tipo": "fonte_automatica",
+      "situacao": "atualizado",
+      "data_referencia": "2026-10-21",
+      "dias_desde_referencia": 1,
+      "fonte": "https://www.noticiasagricolas.com.br/cotacoes/soja/premio-soja-paranagua-pr",
+      "periodicidade_tolerancia_dias": 5,
+      "observacao": "Benchmark Paranagua, fonte secundaria por vencimento. Nao representa premio Rio Grande"
+    },
     "nespro_gado": {
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
@@ -77,7 +86,7 @@
     "historico_milho_trimestral": "Serie trimestral antiga separada da cotacao diaria automatica",
     "historico_multicommodities": "Comparacoes anuais incluem varias series compiladas",
     "preco_local_frete": "Frete local varia por propriedade, prazo e transportador; premissa de simulacao",
-    "premio_portuario": "Premio base local nao e cotacao diaria contratada; premissa de simulacao",
+    "premio_portuario_rio_grande": "Prêmio Paranagua agora coletado isoladamente; premio Rio Grande continua hipotese manual sem cotacao automatica verificada",
     "custos_agricolas": "Custos de sementes, defensivos, terra e maquinas sao cenarios personalizaveis",
     "outros_precos_mercado": "Ouro, cobre, ureia, Hilux e demais comparacoes anuais sao series historicas de referencia",
     "ovinos_e_varejo_nespro": "Nao integrados ao painel de gado de corte"
