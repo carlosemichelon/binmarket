@@ -3,5 +3,10 @@
   "ultima_coleta": "2026-10-14",
   "checado_em": "2026-10-21",
   "quantidade_datas": 8,
-  "observacao": "Coletas semanais; última checagem não implica preço novo."
+  "observacao": "Coletas semanais; última checagem não implica preço novo.",
+  "historico_exportacao": {
+    "resultado": "falha",
+    "erro": "Timeout 25000ms exceeded while waiting for event \"download\"\n=========================== logs ===========================\nwaiting for event \"download\"\n==================================================",
+    "checado_em": "2026-10-21T21:47:08-03:00"
+  }
 }
