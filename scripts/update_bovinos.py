@@ -263,9 +263,25 @@ def download_full_history() -> dict:
         try:
             page=browser.new_page(accept_downloads=True,locale="pt-BR",timezone_id="America/Sao_Paulo")
             page.goto(SOURCE,wait_until="domcontentloaded",timeout=60000)
-            with page.expect_download(timeout=25000) as event:
-                page.get_by_role("button",name=re.compile("Baixar base de dados",re.I)).first.click()
-            download=event.value
+            initial=page.get_by_role("button",name=re.compile("Baixar base de dados",re.I)).first
+            try:
+                with page.expect_download(timeout=20000) as event:
+                    initial.click()
+                download=event.value
+            except Exception as first_error:
+                # Alguns sites abrem um menu "Gado"/"CSV"/"Excel" antes do download.
+                options=page.locator('button,[role="menuitem"],a').all_text_contents()
+                requested=None
+                for label in ('Gado Gordo', 'Gado e Reposicao', 'Bovinos', 'CSV', 'Excel', 'XLSX', 'Baixar'):
+                    matches=page.get_by_text(label,exact=False)
+                    if matches.count() and matches.first.is_visible():
+                        requested=matches.first
+                        break
+                if requested is None:
+                    raise RuntimeError(f"Botao nao iniciou download; opcoes visiveis: {options[:25]}") from first_error
+                with page.expect_download(timeout=40000) as event:
+                    requested.click()
+                download=event.value
             return decode_export(Path(download.path()).read_bytes(),download.suggested_filename)
         finally:browser.close()
 
