@@ -1046,7 +1046,7 @@ const ESTRATEGIAS_CLASSICAS = [
   },
   {
     nome: 'Hedge com futuros de soja B3 (SFI/SJC)',
-    sinonimos: 'Vende futuro de soja na bolsa brasileira',
+    sinonimos: 'Vende futuro de soja com cotação em US$/saca',
     descricao: 'Vende futuro financeiro de soja na B3. SFI/SJC são referenciados em US$/saca; sozinho não fixa preço local em reais.',
     quando: 'Produtor com volume grande, acesso a corretora, e que quer fixar preço em R$ direto sem amarrar venda física.',
     risco: 'Exige depósito de margem (R$ por contrato). Chamadas de margem se mercado subir. Liquidez da B3 é menor que CME.',
@@ -1074,6 +1074,19 @@ const EXAME_ESTRATEGIAS = [
   {pro:"Pode reduzir desembolso com a venda da put inferior.",contra:"Abaixo da put vendida deixa de existir piso de preço integral.",alta:"Call vendida limita o resultado em altas expressivas.",baixa:"Proteção da put comprada se limita ao intervalo entre strikes."},
   {pro:"Hedge financeiro sem vincular a entrega ao comprador físico.",contra:"Ajustes, margens, base local e conversão cambial são riscos.",alta:"Futuro vendido sofre ajuste negativo; físico pode valorizar.",baixa:"Futuro vendido tende a ganhar; preço físico pode cair."},
   {pro:"Permite tentar aproveitar um prêmio sazonal após a colheita.",contra:"Armazenagem, perdas, juros do capital e risco de queda.",alta:"Só melhora se alta de preço superar custos totais do carrego.",baixa:"Se preço cair, vender antes teria evitado custos e a perda."}
+];
+
+// Análise de cenários condicional; exemplos didáticos, não sinais de negociação.
+const EXPLICA_ESTRATEGIAS = [
+{p:"Vendas em parcelas reduzem a dependência de acertar o melhor dia e podem assegurar gradualmente a margem por saca.",c:"Em uma alta persistente, a média fica abaixo do topo. Se o mercado cair antes dos gatilhos, parte da produção permanece exposta.",a:"Com preço em alta, camadas iniciais ficam abaixo do preço final, mas as camadas restantes podem aproveitar a valorização.",b:"Com preço em queda, parcelas já vendidas ajudam a preservar receita, enquanto o saldo aberto sofre a queda.",v:"Fixar percentuais pelo volume de produção conservador, definir preço líquido mínimo e limite de venda comprometida."},
+{p:"Permite definir destino, cronograma de entrega e possivelmente logística antes de fixar todos os componentes do preço.",c:"A fixação pendente continua exposta; prazo final, base, forma de conversão e multa variam por contrato.",a:"Se a parte aberta subir até a fixação, a receita contratada pode melhorar.",b:"Se a parte aberta cair, pode haver fixação desfavorável ou compulsória no prazo contratual.",v:"Verificar no contrato quais componentes já estão fixos (CBOT, prêmio, câmbio), quem fixa e até quando."},
+{p:"Converte parte do custo de fertilizantes, sementes ou defensivos em obrigação previamente conhecida de entrega de sacas.",c:"Pode ser caro em relação ao mercado futuro dos insumos; risco de safra e custo de oportunidade das sacas comprometidas.",a:"Com alta forte da soja, as sacas prometidas deixam de capturar sua valorização no mercado à vista.",b:"Se a soja cair, a relação insumo/sacas pactuada pode proteger o custo de aquisição.",v:"Comparar quantidade total de sacas, preço implícito do pacote, prazo, tributos, garantias e produtividade conservadora."},
+{p:"Define antecipadamente receita por volume comprometido, facilitando orçamento e proteção da margem se o preço superar o custo.",c:"Cria obrigação física: quebra de safra e perda de qualidade podem exigir recomprar ou renegociar soja cara.",a:"Se o preço físico subir, o volume vendido fica no preço contratado e não captura toda a valorização.",b:"Se o preço físico cair, o preço travado protege o volume entregue, desde que a contraparte pague.",v:"Definir limite de comprometimento com cenário de produtividade baixa, despesas de entrega, prazo e cláusulas de inadimplência."},
+{p:"A put assegura direito econômico de vender o subjacente pelo strike durante sua validade e conserva participação na alta.",c:"O prêmio pago é custo certo; o strike não garante o preço líquido da soja local por causa de prêmio, frete e câmbio.",a:"Se o futuro subir, a put pode expirar sem valor; a valorização do físico pode compensar seu custo.",b:"Se o futuro cair abaixo do strike, a put tende a ganhar valor e compensar parte da queda.",v:"Comparar strike, prêmio, vencimento, liquidez e tamanho do contrato com custo por saca e risco de base."},
+{p:"A compra de put protege parte da baixa; a venda de call pode reduzir o desembolso inicial.",c:"A call limita ganhos acima do teto e pode exigir garantias. Custo zero só existe se prêmios líquidos realmente se compensarem.",a:"Se o futuro subir além do strike da call, o ganho adicional do subjacente protegido fica limitado.",b:"Se cair abaixo do strike da put, a put tende a compensar a perda até o piso contratado.",v:"Comparar cenários entre strikes, despesas, ajustes de margem e exposição física correspondente."},
+{p:"Pode reduzir custo inicial da estrutura ao acrescentar prêmio recebido da venda de uma put mais baixa.",c:"Abaixo do strike da put vendida, a estrutura perde a proteção adicional; não é um seguro de piso ilimitado.",a:"A call vendida limita a valorização capturada acima do teto.",b:"Entre as puts há compensação; abaixo da put vendida, o benefício da proteção fica limitado à diferença dos strikes.",v:"Simular payoff por faixas, custos, garantias e risco de base. Exige avaliação profissional por sua complexidade."},
+{p:"Permite proteger o futuro de soja sem antecipar a venda física a uma cooperativa ou trading específica.",c:"Exige margem e ajustes; o contrato SJC da B3 é cotado em US$/saca, portanto não trava sozinho o preço local em R$.",a:"Futuro vendido tende a gerar ajuste negativo enquanto o preço físico pode se valorizar.",b:"Futuro vendido tende a gerar ajuste positivo, compensando parte da queda do físico sujeito ao diferencial de base.",v:"Confirmar produto/código B3, lote, preço US$/saca, câmbio, vencimento, garantias e liquidez."},
+{p:"Preserva opção de venda futura quando há capacidade de armazenar e expectativa fundamentada de preço líquido melhor.",c:"Exige capital e gera armazenagem, seguro, perdas, juros e risco de redução do preço de mercado.",a:"Só vale se o aumento líquido de preço exceder todos os custos de carrego e o custo de oportunidade do caixa.",b:"Se preço cair, ou subir menos que o carrego, a venda imediata teria sido financeiramente melhor.",v:"Calcular preço futuro líquido esperado menos preço atual, custo do estoque, financiamento, quebras e descontos."}
 ];
 
 // === Calculadora por estratégia clássica ===
@@ -5766,6 +5779,16 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                         <div><div style={{...S.estratClassicaSecLabel,color:'#7AB8E0'}}>CENÁRIO DE ALTA</div><div style={S.estratClassicaSecText}>{EXAME_ESTRATEGIAS[i].alta}</div></div>
                         <div><div style={{...S.estratClassicaSecLabel,color:'#D99079'}}>CENÁRIO DE BAIXA</div><div style={S.estratClassicaSecText}>{EXAME_ESTRATEGIAS[i].baixa}</div></div>
                       </div>
+                    <div style={{...S.estratClassicaSec,display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(210px,1fr))',gap:12}}>
+                      <div><div style={{...S.estratClassicaSecLabel,color:'#C8E04A'}}>VANTAGENS POTENCIAIS</div><div style={S.estratClassicaSecText}>{EXPLICA_ESTRATEGIAS[i].p}</div></div>
+                      <div><div style={{...S.estratClassicaSecLabel,color:'#E6B84A'}}>DESVANTAGENS E CUSTOS</div><div style={S.estratClassicaSecText}>{EXPLICA_ESTRATEGIAS[i].c}</div></div>
+                      <div><div style={{...S.estratClassicaSecLabel,color:'#7AB8E0'}}>CENÁRIO DE ALTA</div><div style={S.estratClassicaSecText}>{EXPLICA_ESTRATEGIAS[i].a}</div></div>
+                      <div><div style={{...S.estratClassicaSecLabel,color:'#D99079'}}>CENÁRIO DE BAIXA</div><div style={S.estratClassicaSecText}>{EXPLICA_ESTRATEGIAS[i].b}</div></div>
+                    </div>
+                    <div style={{...S.estratClassicaSec,borderLeft:'2px solid #7AB8E0',paddingLeft:12}}>
+                      <div style={{...S.estratClassicaSecLabel,color:'#7AB8E0'}}>ANTES DE APLICAR</div>
+                      <div style={S.estratClassicaSecText}>{EXPLICA_ESTRATEGIAS[i].v}</div>
+                    </div>
                       <div style={S.estratClassicaSec}>
                         <div style={S.estratClassicaSecLabel}>EXEMPLO</div>
                       <div style={S.estratClassicaSecText}>{est.exemplo}</div>
