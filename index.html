@@ -985,7 +985,7 @@ const ESTRATEGIAS_CLASSICAS = [
     nome: 'Venda escalonada',
     sinonimos: 'Hedge em camadas, dollar-cost averaging out',
     descricao: 'Vender frações fixas em datas ou gatilhos pré-definidos (ex: 20% a cada R$ 10 de alta ou a cada mês).',
-    quando: 'Sempre. É a estratégia base de qualquer produtor disciplinado. Especialmente útil quando não há convicção forte de direção.',
+    quando: 'Quando se deseja reduzir risco de escolher um único dia para toda a safra. Especialmente útil quando não há convicção forte de direção.',
     risco: 'Nunca acerta o topo nem o fundo. Aceita média ponderada.',
     exemplo: 'Trava 20% a cada R$ 10 de alta a partir de R$ 140. Em rally para R$ 180, fixa 4 camadas a 140/150/160/170 = média R$ 155.',
     melhor_para: 'JC/RS: começar 30% em out/nov, mais 30% em dez/jan, 40% restante na colheita (mai/jun).',
@@ -1015,14 +1015,14 @@ const ESTRATEGIAS_CLASSICAS = [
     quando: 'Quando preço futuro está acima do seu custo + margem alvo, mesmo antes do plantio.',
     risco: 'Risco de produção (quebra de safra). Se não colher o volume vendido, precisa comprar no mercado para entregar — pode ser catastrófico.',
     exemplo: 'Em out/2021 produtor RS vende 40% da safra 21/22 a R$ 170/saca. Em jan/2022 seca atinge o Sul, ele só colhe 50% do esperado e precisa recomprar.',
-    melhor_para: 'JC/RS: ATENÇÃO — região teve quebras severas em 21/22, 22/23 e 23/24 por estiagem. Nunca pré-venda mais que 50% da expectativa conservadora.',
+    melhor_para: 'JC/RS: ATENÇÃO — região teve quebras severas em 21/22, 22/23 e 23/24 por estiagem. O volume prudente depende de produtividade conservadora, risco de quebra e capacidade de reposição.',
   },
   {
     nome: 'Put protetiva',
     sinonimos: 'Seguro de preço, opção de venda',
     descricao: 'Compra opção de venda (put) na B3 ou via tradera. Paga prêmio e garante direito de vender por preço mínimo (strike).',
     quando: 'Quando preço está bom, você quer dormir tranquilo, mas acredita que ainda pode subir.',
-    risco: 'Perde o prêmio pago se mercado não cair abaixo do strike. Custo típico: 2–5% do valor da safra.',
+    risco: 'O prêmio é custo certo, dependente de strike, volatilidade, vencimento e liquidez; base e câmbio continuam em aberto.',
     exemplo: 'CBOT a 12 USD/bu. Compra put strike 11,50 vencimento maio por 0,40 USD/bu. Se CBOT cair para 10, exerce e vende a 11,50. Se subir para 14, deixa expirar e vende físico a 14.',
     melhor_para: 'JC/RS: vale a pena em anos de risco climático elevado (La Niña), funcionando como "seguro" sobre o preço.',
   },
@@ -1040,17 +1040,17 @@ const ESTRATEGIAS_CLASSICAS = [
     sinonimos: 'Collar com put vendida, fence assimétrico',
     descricao: 'Collar normal + venda de put mais baixa (OTM). Recebe prêmio extra mas assume risco se preço cair muito.',
     quando: 'Convicção de que mercado não cairá abaixo do piso baixo. Usado por traders, raro em produtor.',
-    risco: 'Se mercado despencar abaixo da put vendida, você assume prejuízo dobrado.',
-    exemplo: 'Compra put 11 + vende call 13,50 + vende put 9,50. Funciona como collar mas paga prêmio líquido positivo. Se CBOT for a 8, prejuízo grande.',
+    risco: 'Abaixo do strike da put vendida, a proteção deixa de formar um piso integral, e a receita volta a cair.',
+    exemplo: 'Compra put 11 + vende call 13,50 + vende put 9,50. Funciona como collar mas paga prêmio líquido positivo. Se CBOT for a 8, o ganho das puts fica limitado à diferença entre strikes, sem piso integral.',
     melhor_para: 'JC/RS: não recomendado para produtor; risco assimétrico em ano de surpresa baixista.',
   },
   {
-    nome: 'Hedge com B3 (SFI/SOJ)',
+    nome: 'Hedge com futuros de soja B3 (SFI/SJC)',
     sinonimos: 'Vende futuro de soja na bolsa brasileira',
-    descricao: 'Vende contrato futuro SFI/SOJ na B3 (Bovespa). Trava preço em reais por saca. Não envolve tradera.',
+    descricao: 'Vende futuro financeiro de soja na B3. SFI/SJC são referenciados em US$/saca; sozinho não fixa preço local em reais.',
     quando: 'Produtor com volume grande, acesso a corretora, e que quer fixar preço em R$ direto sem amarrar venda física.',
     risco: 'Exige depósito de margem (R$ por contrato). Chamadas de margem se mercado subir. Liquidez da B3 é menor que CME.',
-    exemplo: 'Vende 10 contratos SFI (27 ton cada) a R$ 145/saca para maio. Se preço cair para 130, ganha 15 × 450 sacas = R$ 6.750/contrato. Mas vende físico ao mercado a 130.',
+    exemplo: 'Exemplo didático: 1 contrato com 450 sacas, vendido a US$ 28/sc. Se o futuro cair a US$ 26/sc, o ganho financeiro bruto é US$ 900 antes dos custos, câmbio e risco de base.',
     melhor_para: 'JC/RS: opção para quem entrega físico em indústria local (Passo Fundo, Marau) e quer hedge desvinculado do destino.',
   },
   {
@@ -1062,6 +1062,18 @@ const ESTRATEGIAS_CLASSICAS = [
     exemplo: 'Colheita mai/2023 com prêmio 0,20. Estoca até nov/2023 quando prêmio sobe para 0,80. Ganho: 0,60 × 2,2 × 5 = R$ 6,60/saca. Custo: 6 meses × 1,20 = R$ 7,20.',
     melhor_para: 'JC/RS: produtor com armazém próprio (estrutura comum em cooperativas locais); sem armazém, custo costuma comer o ganho.',
   },
+];
+
+const EXAME_ESTRATEGIAS = [
+  {pro:"Dilui risco de vender tudo no preço de um único dia.",contra:"A venda inicial limita ganhos posteriores na parcela já vendida.",alta:"Preço cresce: parcelas iniciais perdem o topo, saldo participa.",baixa:"Preço cai: camadas já fixadas protegem só parte da produção."},
+  {pro:"Reserva destino e logística mantendo componentes de preço em aberto.",contra:"Prazo final e regras da empresa podem obrigar fixação em cenário ruim.",alta:"Componente aberto sobe: melhora possível até prazo de fixação.",baixa:"Componente aberto cai: venda fica pior no dia da fixação."},
+  {pro:"Trava sacas devidas para pagar insumos e reduz incerteza de custo.",contra:"Compromete entrega futura mesmo com quebra e abre mão de alta na soja.",alta:"Soja dispara: sacas comprometidas valeriam mais à vista.",baixa:"Soja cai: relação de troca previamente definida pode proteger."},
+  {pro:"Receita contratada pode assegurar margem do volume vendável.",contra:"Perde upside e exige entrega mesmo em caso de quebra.",alta:"Soja sobe: a parte vendida não recebe preço maior.",baixa:"Soja cai: preço pactuado protege apenas o volume firmado."},
+  {pro:"Protege quedas do preço futuro sem limitar a alta do subjacente.",contra:"Prêmio pago é custo; risco de base e câmbio ficam abertos.",alta:"Futuro sobe: participa da alta, mas perde o prêmio pago.",baixa:"Futuro cai abaixo do strike: a put tende a compensar a queda."},
+  {pro:"Put dá proteção na baixa e a call financia parte do custo.",contra:"Call vendida limita alta e pode exigir margem.",alta:"Acima do strike da call, upside do hedge fica limitado.",baixa:"Abaixo da put comprada, o contrato oferece proteção ao subjacente."},
+  {pro:"Pode reduzir desembolso com a venda da put inferior.",contra:"Abaixo da put vendida deixa de existir piso de preço integral.",alta:"Call vendida limita o resultado em altas expressivas.",baixa:"Proteção da put comprada se limita ao intervalo entre strikes."},
+  {pro:"Hedge financeiro sem vincular a entrega ao comprador físico.",contra:"Ajustes, margens, base local e conversão cambial são riscos.",alta:"Futuro vendido sofre ajuste negativo; físico pode valorizar.",baixa:"Futuro vendido tende a ganhar; preço físico pode cair."},
+  {pro:"Permite tentar aproveitar um prêmio sazonal após a colheita.",contra:"Armazenagem, perdas, juros do capital e risco de queda.",alta:"Só melhora se alta de preço superar custos totais do carrego.",baixa:"Se preço cair, vender antes teria evitado custos e a perda."}
 ];
 
 // === Calculadora por estratégia clássica ===
@@ -1353,7 +1365,7 @@ function EstratCalc({ idx, ctx }) {
         {ctxBlock}
         <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, padding: 8, background: '#181C18', lineHeight: 1.5}}>
           <strong>Estrutura:</strong> compra PUT em A (piso) + vende CALL em B (teto) + vende PUT em C (mais baixa).
-          Funciona como collar mas com prêmio líquido positivo. <strong>Atenção:</strong> abaixo de C você assume RISCO DOBRADO porque ficou vendido em put. Conversão usa dólar de referência R$ {dolarRef.toFixed(2)}.
+          Funciona como collar mas com prêmio líquido positivo. <strong>Atenção:</strong> abaixo de C você assume PERDA DE PROTEÇÃO abaixo da put vendida. Conversão usa dólar de referência R$ {dolarRef.toFixed(2)}.
         </div>
         <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8}}>
           <div style={S.inputBlock}>
@@ -5749,7 +5761,14 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                       <div style={S.estratClassicaSecText}>{est.risco}</div>
                     </div>
                     <div style={S.estratClassicaSec}>
-                      <div style={S.estratClassicaSecLabel}>EXEMPLO</div>
+                      <div style={{...S.estratClassicaSec,display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(210px,1fr))',gap:12}}>
+                        <div><div style={{...S.estratClassicaSecLabel,color:'#C8E04A'}}>PRÓ / POSSÍVEL VANTAGEM</div><div style={S.estratClassicaSecText}>{EXAME_ESTRATEGIAS[i].pro}</div></div>
+                        <div><div style={{...S.estratClassicaSecLabel,color:'#E6B84A'}}>CONTRA / TRADE-OFF</div><div style={S.estratClassicaSecText}>{EXAME_ESTRATEGIAS[i].contra}</div></div>
+                        <div><div style={{...S.estratClassicaSecLabel,color:'#7AB8E0'}}>CENÁRIO DE ALTA</div><div style={S.estratClassicaSecText}>{EXAME_ESTRATEGIAS[i].alta}</div></div>
+                        <div><div style={{...S.estratClassicaSecLabel,color:'#D99079'}}>CENÁRIO DE BAIXA</div><div style={S.estratClassicaSecText}>{EXAME_ESTRATEGIAS[i].baixa}</div></div>
+                      </div>
+                      <div style={S.estratClassicaSec}>
+                        <div style={S.estratClassicaSecLabel}>EXEMPLO</div>
                       <div style={S.estratClassicaSecText}>{est.exemplo}</div>
                     </div>
                     <div style={{...S.estratClassicaSec, borderLeft: '2px solid #C8E04A', paddingLeft: 12}}>
