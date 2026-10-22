@@ -61,6 +61,20 @@ class CollectorsTest(unittest.TestCase):
     def test_cotrijuc_rejects_unidentifiable_quote(self):
         with self.assertRaises(ValueError):
             u.parse_cotrijuc_soja('<html><h4>SOJA</h4><p>136,90</p></html>',today=date(2026,10,21))
+    def test_cbot_front_contract(self):
+        html = """<h3>Soja - Bolsa de Chicago</h3>
+          <table><tr><th>Contrato - Mês</th><th>Fechamento (US$ / Bushel)</th></tr>
+          <tr><td>Novembro/26</td><td>12,4825</td></tr>
+          <tr><td>Janeiro/27</td><td>12,6350</td></tr></table>
+          <p>Atualizado em: 20/10/2026</p>"""
+        v=u.parse_cbot_soja(html, today=date(2026,10,21))
+        self.assertEqual(v['data'],'2026-10-20')
+        self.assertEqual(v['contrato'],'2026-11')
+        self.assertEqual(v['valor'],12.4825)
+    def test_cbot_requires_fresh_contract_and_reference(self):
+        html = '<p>Soja - Bolsa de Chicago Novembro/25 12,4825 Atualizado em: 20/10/2026</p>'
+        with self.assertRaises(ValueError):
+            u.parse_cbot_soja(html, today=date(2026,10,21))
     def test_valid_date(self):
         self.assertEqual(u.validate_day('14/10/2026',today=date(2026,10,21)),'2026-10-14')
         with self.assertRaises(ValueError): u.validate_day('01/02/2099',today=date(2026,10,21))
