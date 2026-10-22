@@ -278,7 +278,8 @@ def download_full_history() -> dict:
                         requested=matches.first
                         break
                 if requested is None:
-                    raise RuntimeError(f"Botao nao iniciou download; opcoes visiveis: {options[:25]}") from first_error
+                    visible=[str(v).strip()[:80] for v in options if re.search('baix|dados|export|excel|csv|gado|repor',str(v),re.I)]
+                    raise RuntimeError(f"Botao nao iniciou download; controles relevantes: {visible[:12]}") from first_error
                 with page.expect_download(timeout=40000) as event:
                     requested.click()
                 download=event.value
@@ -344,7 +345,7 @@ def main() -> int:
                 print(f'NESPro: download historico indisponivel ({error}); preservando dados anteriores',flush=True)
                 if not args.dry_run and STATUS_PATH.exists():
                     status=json.loads(STATUS_PATH.read_text(encoding='utf-8'))
-                    status['historico_exportacao']={'resultado':'falha','erro':str(error)[:200],'checado_em':datetime.now(ZoneInfo('America/Sao_Paulo')).isoformat(timespec='seconds')}
+                    status['historico_exportacao']={'resultado':'falha','erro':str(error)[:600],'checado_em':datetime.now(ZoneInfo('America/Sao_Paulo')).isoformat(timespec='seconds')}
                     STATUS_PATH.write_text(json.dumps(status,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
         print("NESPro:", json.dumps(outcome, ensure_ascii=False), flush=True)
         return 0
