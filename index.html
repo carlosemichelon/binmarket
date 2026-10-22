@@ -451,6 +451,12 @@ const CURVA_MAP = [
 ];
 
 
+// Séries dos fertilizantes no mesmo eixo de tempo (cenário fixo).
+const FERT_CURVA_EXEMPLO = Array.from(new Set([...CURVA_UREIA.map(x=>x.mes),...CURVA_MAP.map(x=>x.mes)])).map(mes=>({
+  mes,ureia:CURVA_UREIA.find(x=>x.mes===mes)?.preco??null,
+  map:CURVA_MAP.find(x=>x.mes===mes)?.preco??null
+}));
+
 // Fonte: USDA-FAS World Agricultural Supply and Demand Estimates (WASDE).
 // Valores arredondados de releases públicos.
 // stocksUse = ending_stocks / total_use (%)
@@ -5210,17 +5216,18 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
             return (
               <>
                 <div style={{fontSize: 11, color: '#A89968', marginTop: 14, marginBottom: 12, lineHeight: 1.5}}>
-                  <strong>O que mostra:</strong> curvas de futuros dos principais fertilizantes — UREIA (CME UFV · Middle East FOB) e MAP/DAP (CME). Use o spread para decidir se compra agora (backwardation) ou parcela (contango).
+                  <strong>Curva ilustrativa de 2026/2027:</strong> valores exemplificativos de ureia e MAP/DAP, <strong>não são fechamentos atuais</strong>. A ureia granular FOB Oriente Médio é o contrato <strong>UME</strong>; UFV designa outra região, e MAP CFR Brasil é <strong>MFC</strong>. Consulte contratos e ajustes reais nas fontes abaixo.
+                   <div style={{display:'flex',flexWrap:'wrap',gap:16,marginTop:9}}><a href="https://www.cmegroup.com/markets/agriculture/fertilizer/urea-granular-fob-middle-east/settlements" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>↗ Ureia UME · ajustes CME</a><a href="https://www.cmegroup.com/markets/agriculture/fertilizer/map-cfr-brazil/settlements" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>↗ MAP MFC · ajustes CME</a></div>
                 </div>
-                <div style={{height: 260, marginTop: 16}}>
+                <div style={{height: 410, marginTop: 16}}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                    <LineChart data={FERT_CURVA_EXEMPLO} margin={{ top: 20, right: 28, left: 14, bottom: 50 }}>
                       <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
-                      <XAxis dataKey="mes" type="category" allowDuplicatedCategory={false} stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
-                      <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                      <XAxis dataKey="mes" stroke="#A89968" interval={0} angle={-35} textAnchor="end" height={72} tick={{fontSize:12,fontFamily:'IBM Plex Mono'}} label={{value:'Mês e ano · cenário',position:'insideBottom',offset:-40,fill:'#A89968'}} />
+                      <YAxis stroke="#A89968" domain={[430,660]} width={65} tickCount={7} tick={{fontSize:12,fontFamily:'IBM Plex Mono'}} />
                       <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 11}} />
-                      <Line type="monotone" data={CURVA_UREIA} dataKey="preco" stroke="#7AB8E0" strokeWidth={2.5} dot={{r: 4, fill: '#7AB8E0'}} name="Ureia USD/ton" />
-                      <Line type="monotone" data={CURVA_MAP} dataKey="preco" stroke="#E6B84A" strokeWidth={2.5} dot={{r: 4, fill: '#E6B84A'}} name="MAP USD/ton" />
+                      <Line type="monotone" dataKey="ureia" stroke="#7AB8E0" strokeWidth={2.5} dot={{r: 4, fill: '#7AB8E0'}} name="Ureia USD/ton" />
+                      <Line type="monotone" dataKey="map" stroke="#E6B84A" strokeWidth={2.5} dot={{r: 4, fill: '#E6B84A'}} name="MAP USD/ton" />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -5246,17 +5253,9 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                     <div style={S.simCellDelta}>spread {spreadMAP >= 0 ? '+' : ''}{spreadMAP}</div>
                   </div>
                 </div>
-                <div style={{...S.sintese, marginTop: 14, borderLeftColor: '#7AB8E0'}}>
-                  <div style={{...S.sinteseLabel, color: '#7AB8E0'}}>LEITURA</div>
-                  <div style={S.sinteseTexto}>
-                    {tipoUreia === 'backwardation' && 'UREIA em BACKWARDATION: futuro abaixo do spot → mercado prevê queda. Não trave a preço alto agora; espere ou parcele em pedidos.'}
-                    {tipoUreia === 'contango' && 'UREIA em CONTANGO: futuro acima do spot → mercado prevê alta. Compra agora vale mais que esperar. Trave preço para a safra próxima.'}
-                    {tipoUreia === 'flat' && 'UREIA neutra: sem prêmio claro de tempo. Decida por logística e disponibilidade.'}
-                    {' '}MAP: forward {spreadMAP >= 0 ? 'acima' : 'abaixo'} do spot ({spreadMAP >= 0 ? '+' : ''}{spreadMAP} USD/ton), {spreadMAP > 0 ? 'contango leve, plantio EUA pressionando' : 'mercado equilibrado'}.
-                  </div>
-                </div>
-                <div style={{marginTop: 12, padding: 12, background: '#0F1410', borderLeft: '2px solid #A89968', fontSize: 11, color: '#A89968', lineHeight: 1.5}}>
-                  <strong>Atualização manual:</strong> dados das curvas são snapshots. CME Ureia (UFV): <em>cmegroup.com/markets/agriculture/fertilizer/urea-granular-fob-middle-east.html</em>. CME DAP: <em>cmegroup.com/markets/agriculture/fertilizer/dap-fob-tampa-warehouse.html</em>. Soja CBOT (ZS): qualquer terminal (TradingView, Investing.com).
+                <div style={{...S.sintese,marginTop:14,borderLeftColor:'#7AB8E0'}}><div style={{...S.sinteseLabel,color:'#7AB8E0'}}>EXEMPLO: COMO LER O SPREAD</div><div style={S.sinteseTexto}>No exemplo, ureia: {spreadUreia >= 0?'+':''}{spreadUreia} USD/t entre primeiro e último vencimento; MAP: {spreadMAP >= 0?'+':''}{spreadMAP} USD/t. A diferença entre contratos não equivale a uma previsão de preços. Antes de comparar com valores atuais, verifique contrato, praça, frete, impostos e custo financeiro nas fontes oficiais.</div></div>
+                 <div style={{marginTop: 12, padding: 12, background: '#0F1410', borderLeft: '2px solid #A89968', fontSize: 11, color: '#A89968', lineHeight: 1.5}}>
+                  <strong>Qualidade de dados:</strong> estes pontos são modelos estáticos de 2026/2027. Não estão ligados à cotação atual dos contratos CME. Os links acima permitem conferir os vencimentos oficiais em outra aba.
                 </div>
               </>
             );
