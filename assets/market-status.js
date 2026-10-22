@@ -5,11 +5,12 @@
     cepea_soja:'Soja CEPEA · Paranaguá',
     cotrijuc_soja:'Soja balcão · Cotrijuc Júlio de Castilhos',
     cbot_soja:'Soja futuros · CBOT (Chicago)',
+    milho_cepea:'Milho · indicador CEPEA/Esalq-B3',
     conab_safra:'Conab · série de safra',
     usda_psd:'USDA · soja Brasil/EUA',
     nespro_gado:'NESPro · gado RS'
   };
-  const limits = {cepea_soja:5,cotrijuc_soja:5,cbot_soja:5,conab_safra:120,usda_psd:60,nespro_gado:15};
+  const limits = {cepea_soja:5,cotrijuc_soja:5,cbot_soja:5,milho_cepea:5,conab_safra:120,usda_psd:60,nespro_gado:15};
   const fmtDate=(v)=>/^\d{4}-\d{2}-\d{2}/.test(v||'')?v.slice(0,10).split('-').reverse().join('/'):'não informada';
   const state=(key,rec)=>{
     if (!rec || rec.status==='pendente') return ['pendente','Não verificado'];
