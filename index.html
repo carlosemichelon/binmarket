@@ -414,7 +414,7 @@ const SAZONAL_FERT = [
 ];
 
 // === CURVA DE FUTUROS SOJA CBOT (ZS) ===
-// Aproximada (USD/bu); user atualiza manualmente. Front-month vem do módulo 01.
+// Curva histórica de referência de julho/2026; NÃO representa cotação atual.
 // Padrão pré-safra: backwardation no nearby + drop na new crop (X = nov)
 const CURVA_SOJA = [
   { venc:'N26', mes:'Jul/26', preco:11.97, tipo:'old-crop' },
@@ -5143,7 +5143,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
           )}
 
           {mercVer === 'soja-curva' && (() => {
-            // Spread N26→X26 indica condição de mercado
+            // Diferença ilustrativa N26→X26; não descreve o mercado atual
             const ncrop = CURVA_SOJA.find(x => x.tipo === 'new-crop');
             const ocrop = CURVA_SOJA[0];
             const spread = ncrop && ocrop ? ncrop.preco - ocrop.preco : 0;
@@ -5151,16 +5151,18 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
             return (
               <>
                 <div style={{fontSize: 11, color: '#A89968', marginTop: 14, marginBottom: 12, lineHeight: 1.5}}>
-                  <strong>O que mostra:</strong> os 8 vencimentos mais próximos do contrato ZS (Soja CBOT) — old-crop (verde) e new-crop (amarelo). O <strong>spread old→new crop</strong> é o sinal mais importante: queda na new-crop = mercado descontando safra ampla; alta = mercado apertado prevendo escassez.
+                  <strong>Curva ilustrativa de 2026/2027:</strong> valores estáticos usados para explicar códigos e vencimentos dos contratos de soja ZS. Alguns já estão vencidos, e <strong>não representam os ajustes atuais da CME</strong>. Para decisões reais, compare os contratos vigentes na fonte oficial.
+                   <div style={{marginTop:8}}><a href="https://www.cmegroup.com/markets/agriculture/oilseeds/soybean" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>↗ Abrir cotações e vencimentos oficiais da CME</a></div>
+                   <div style={{marginTop:6,color:'#E6B84A'}}>Último contrato próximo coletado: {fontePrecos.fontes.cbot_soja?.status==='ok' ? fontePrecos.fontes.cbot_soja.contrato+' · '+fontePrecos.fontes.cbot_soja.valor+' USD/bu · '+dataPt(fontePrecos.fontes.cbot_soja.data_referencia) : 'não disponível'}. Não substitui a curva histórica.</div>
                 </div>
-                <div style={{height: 260, marginTop: 16}}>
+                <div style={{height: 410, marginTop: 16}}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={CURVA_SOJA} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                    <LineChart data={CURVA_SOJA} margin={{ top: 20, right: 28, left: 14, bottom: 50 }}>
                       <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
-                      <XAxis dataKey="venc" stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
-                      <YAxis stroke="#6B7065" domain={['auto', 'auto']} style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}}/>
+                      <XAxis dataKey="mes" stroke="#A89968" angle={-35} textAnchor="end" interval={0} height={72} tick={{fontSize:12,fontFamily:'IBM Plex Mono'}} label={{value:'Mês e ano · contratos de exemplo',position:'insideBottom',offset:-40,fill:'#A89968'}} />
+                      <YAxis stroke="#A89968" domain={[10.5,13.5]} width={65} tickCount={7} tickFormatter={v=>Number(v).toFixed(2)} tick={{fontSize:12,fontFamily:'IBM Plex Mono'}} />
                       <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 11}}
-                               formatter={(v, n, p) => [`${v.toFixed(2)} USD/bu · ${p.payload.mes}`, p.payload.tipo]}/>
+                               formatter={(v, n, p) => [`${v.toFixed(2)} USD/bu · ${p.payload.mes}`, 'Exemplo '+p.payload.venc]}/>
                       <Line type="monotone" dataKey="preco" stroke="#C8E04A" strokeWidth={2.5}
                             dot={(props) => {
                               const { cx, cy, payload } = props;
@@ -5172,32 +5174,28 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                 </div>
                 <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10, marginTop: 12}}>
                   <div style={S.simCell}>
-                    <div style={S.simCellLabel}>Front-month (N26 jul/26)</div>
+                    <div style={S.simCellLabel}>Exemplo N26 · julho/2026</div>
                     <div style={{...S.simCellValor, color: '#C8E04A'}}>{ocrop.preco.toFixed(2)}</div>
                     <div style={S.simCellDelta}>USD/bu old-crop</div>
                   </div>
                   <div style={S.simCell}>
-                    <div style={S.simCellLabel}>New-crop (X26 nov/26)</div>
+                    <div style={S.simCellLabel}>Exemplo X26 · novembro/2026</div>
                     <div style={{...S.simCellValor, color: '#E6B84A'}}>{ncrop.preco.toFixed(2)}</div>
                     <div style={S.simCellDelta}>USD/bu new-crop</div>
                   </div>
                   <div style={{...S.simCell, borderColor: tipo === 'backwardation' ? '#D9542B' : '#C8E04A'}}>
-                    <div style={S.simCellLabel}>Spread old → new</div>
+                    <div style={S.simCellLabel}>Diferença de exemplo Jul/26 → Nov/26</div>
                     <div style={{...S.simCellValor, color: spread < 0 ? '#D9542B' : '#C8E04A'}}>
                       {spread >= 0 ? '+' : ''}{spread.toFixed(2)} USD/bu
                     </div>
                     <div style={S.simCellDelta}>{tipo}</div>
                   </div>
                 </div>
-                <div style={{...S.sintese, marginTop: 14, borderLeftColor: tipo === 'backwardation' ? '#D9542B' : '#C8E04A'}}>
-                  <div style={{...S.sinteseLabel, color: tipo === 'backwardation' ? '#D9542B' : '#C8E04A'}}>LEITURA</div>
-                  <div style={S.sinteseTexto}>
-                    {tipo === 'backwardation' && 'BACKWARDATION (curva descendente): mercado APERTADO no curto prazo. Não vale estocar — preço futuro abaixo do spot. Vender agora ou hedgear front-month. Típico de safra norte ainda no campo + pré-safra BR.'}
-                    {tipo === 'flat' && 'CURVA NEUTRA: mercado equilibrado entre vencimentos. Carregar ou vender é decisão tática, não estratégica.'}
-                    {tipo === 'contango' && 'CONTANGO (curva ascendente): mercado FOLGADO no curto prazo. Vale estocar SE custo de armazém + financeiro for menor que o spread futuro. Estratégia cash-and-carry ativa.'}
-                  </div>
-                </div>
-              </>
+                <div style={{...S.sintese,marginTop:14,borderLeftColor:'#E6B84A'}}>
+                   <div style={{...S.sinteseLabel,color:'#E6B84A'}}>INTERPRETAÇÃO DO EXEMPLO</div>
+                   <div style={S.sinteseTexto}>Diferença histórica entre julho e novembro/2026: {spread>=0?'+':''}{spread.toFixed(2)} USD/bu. Backwardation significa que o vencimento posterior custa menos que o anterior; contango, o contrário. A inclinação <strong>não prevê sozinha a direção dos preços</strong>. Não use uma curva de exemplo antiga para decidir hedge ou armazenagem hoje.</div>
+                 </div>
+                             </>
             );
           })()}
 
