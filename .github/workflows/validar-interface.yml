@@ -1,0 +1,28 @@
+name: Validar interface BinMarket
+
+on:
+  push:
+    paths:
+      - 'index.html'
+      - 'bovinos.html'
+      - 'assets/**'
+      - 'scripts/validate_interface.cjs'
+      - '.github/workflows/validar-interface.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  jsx:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar parser Babel
+        run: npm install --no-save --ignore-scripts '@babel/parser@7.28.4'
+      - name: Validar codigo JSX, seções e JavaScript
+        run: node scripts/validate_interface.cjs
