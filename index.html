@@ -1769,156 +1769,115 @@ function RentabilidadeBloco({ data, resumo }) {
 // BLOCO ATUALIZAÇÃO · checklist com idade dos dados + links oficiais
 // ============================================================
 function AtualizacaoBloco() {
-  // Estado de fontes: data da última atualização CONHECIDA (atualizar via commit ou GitHub Actions)
-  const HOJE = new Date();
-  const fontes = [
-    // === DIÁRIO ===
-    { freq:'diário', nome:'CEPEA Paranaguá soja', ultima:'2026-06-17', limite:7,
-      onde:'HISTORICO_CEPEA_RAW · linha ~110',
-      url:'https://www.cepea.esalq.usp.br/br/indicador/series/soja.aspx',
-      auto:'PARCIAL · GH Actions processa .xls em data/cepea/' },
-    { freq:'diário', nome:'USD/BRL · BCB SGS', ultima:'2026-06-21', limite:7,
-      onde:'state default `dolar` no PainelSoja',
-      url:'https://www.bcb.gov.br/estabilidadefinanceira/historicocotacoes',
-      auto:'AUTOMÁTICO · BCB SGS série 1' },
-    { freq:'diário', nome:'CBOT futuros soja', ultima:'2026-06-20', limite:7,
-      onde:'state `cbotSoja` · curva no módulo 05',
-      url:'https://www.barchart.com/futures/quotes/ZS*0/futures-prices',
-      auto:'MANUAL · sem API gratuita CME' },
-    { freq:'semanal', nome:'Prêmio Paranaguá', ultima:'2026-06-16', limite:14,
-      onde:'state `premio` no PainelSoja',
-      url:'https://www.safras.com.br/',
-      auto:'MANUAL · pago' },
-
-    // === MENSAL ===
-    { freq:'mensal', nome:'WASDE USDA', ultima:'2026-06-12', limite:35,
-      onde:'USDA_HISTORICO · linha ~225',
-      url:'https://www.usda.gov/oce/commodity/wasde',
-      auto:'MANUAL · PDF mensal · ~10 do mês' },
-    { freq:'mensal', nome:'Conab BR', ultima:'2026-06-11', limite:35,
-      onde:'CONAB_HISTORICO · linha ~280',
-      url:'https://www.conab.gov.br/info-agro/safras/graos',
-      auto:'MANUAL · PDF mensal' },
-    { freq:'mensal', nome:'ANEC embarques', ultima:'2026-05-30', limite:35,
-      onde:'ANEC_EXPORT_PADRAO · linha ~545',
-      url:'https://www.anec.com.br/',
-      auto:'MANUAL · estatísticas mensais' },
-    { freq:'mensal', nome:'CDI / IPCA / Selic', ultima:'2026-05-31', limite:35,
-      onde:'MACRO_ANUAL · linha ~470',
-      url:'https://www3.bcb.gov.br/sgspub/',
-      auto:'AUTOMÁTICO · BCB SGS série 12/433/4189' },
-
-    // === ANUAL ===
-    { freq:'anual', nome:'SIDRA · PRODUTIVIDADE_JC', ultima:'2024-09-15', limite:400,
-      onde:'PRODUTIVIDADE_JC · linha ~591',
-      url:'https://sidra.ibge.gov.br/tabela/1612',
-      auto:'AUTOMÁTICO · API SIDRA t/1612/n6/4311205' },
-    { freq:'anual', nome:'Conab custos RS Planalto', ultima:'2026-01-20', limite:400,
-      onde:'MACRO_ANUAL[ano].custo · linha ~470',
-      url:'https://www.conab.gov.br/info-agro/custos-de-producao',
-      auto:'MANUAL · Excel anual' },
-    { freq:'anual', nome:'Emater RS · safra', ultima:'2025-12-15', limite:400,
-      onde:'PRODUTIVIDADE_JC 2025-26 estimativas',
-      url:'https://www.agricultura.rs.gov.br/inicial',
-      auto:'MANUAL · radiografia anual' },
+  // Mesmos manifestos da coleta GitHub usados pelo botão "Fontes de dados".
+  const [estado, setEstado] = useState({mercado:null, gado:null, auditoria:null, falhas:[], consultado:false});
+  useEffect(() => {
+    let vivo=true;
+    async function consultar() {
+      const arquivos=['data/fontes/mercado.json','data/bovinos/atualizacao.json','data/fontes/auditoria.json'];
+      const respostas=await Promise.allSettled(arquivos.map(async (p) => {
+        const r=await fetch(p,{cache:'no-store'});
+        if(!r.ok)throw Error(p+': HTTP '+r.status);
+        return r.json();
+      }));
+      if(!vivo)return;
+      setEstado({
+        mercado:respostas[0].status==='fulfilled'?respostas[0].value:null,
+        gado:respostas[1].status==='fulfilled'?respostas[1].value:null,
+        auditoria:respostas[2].status==='fulfilled'?respostas[2].value:null,
+        falhas:respostas.map((r,i)=>r.status==='rejected'?arquivos[i]:null).filter(Boolean),
+        consultado:true,
+      });
+    }
+    consultar();
+    const timer=setInterval(consultar,10*60*1000);
+    return ()=>{vivo=false;clearInterval(timer);};
+  },[]);
+  const catalogo=[
+    {id:'cotrijuc_soja',freq:'diário',titulo:'Soja balcão · Cotrijuc JC',max:5,grupo:'Preço observado',calc:'Cotação local de balcão divulgada pela cooperativa; não é o preço teórico CIF.'},
+    {id:'cepea_soja',freq:'diário',titulo:'Soja CEPEA · Paranaguá',max:5,grupo:'Preço observado',calc:'Indicador Paranaguá por saca de 60 kg; no manifesto pode vir de republicação secundária.'},
+    {id:'milho_cepea',freq:'diário',titulo:'Milho CEPEA/Esalq-B3',max:5,grupo:'Preço observado',calc:'Indicador por saca de 60 kg, com fallback de republicação datada.'},
+    {id:'cbot_soja',freq:'diário',titulo:'CBOT · soja Chicago',max:5,grupo:'Futuro negociado',calc:'USD/bushel, vencimento indicado no manifesto; não equivale ao preço físico local.'},
+    {id:'nespro_gado',freq:'semanal',titulo:'NESPro/UFRGS · gado RS',max:15,grupo:'Preço observado',calc:'Coleta semanal de peso vivo e reposição; exportação do histórico pode falhar separadamente.'},
+    {id:'conab_safra',freq:'por safra',titulo:'Conab · produção brasileira soja',max:120,grupo:'Fundamentos',calc:'Planilha oficial: série de produção nacional; exportação, estoques e custos de propriedade não são automaticamente atualizados por ela.'},
+    {id:'usda_psd',freq:'mensal',titulo:'USDA PSD · soja BR/EUA',max:65,grupo:'Fundamentos',calc:'Produção, exportação e estoques por ano de comercialização USDA; diferente da safra Conab.'}
   ];
-
-  // Calcula idade + status
-  const enriched = fontes.map(f => {
-    const ultDate = new Date(f.ultima);
-    const dias = Math.floor((HOJE - ultDate) / (1000*60*60*24));
-    const status = dias < f.limite * 0.6 ? 'ok' :
-                   dias < f.limite ? 'avisa' : 'atrasada';
-    return { ...f, dias, status };
+  const dataBR=d => /^\d{4}-\d{2}-\d{2}/.test(d||'')?d.slice(0,10).split('-').reverse().join('/'):'—';
+  const idade=d => {
+    if(!/^\d{4}-\d{2}-\d{2}/.test(d||''))return null;
+    const age=Math.floor((Date.now()-new Date(d.slice(0,10)+'T12:00:00-03:00').getTime())/86400000);
+    return Math.max(0,age);
+  };
+  const fontes=estado.mercado?.fontes||{};
+  const itens=catalogo.map(f=>{
+    const x=f.id==='nespro_gado'?{
+      status:estado.gado?.ultima_coleta?'ok':'pendente',
+      data_referencia:estado.gado?.ultima_coleta,
+      verificado_em:estado.gado?.checado_em,
+      url:estado.gado?.fonte,
+      erro:estado.gado?.historico_exportacao?.resultado==='falha'?'Exportação histórica indisponível; coleta semanal independente.':null,
+      descricao_extra:estado.gado?.historico_exportacao?.resultado==='falha'?'A base histórica completa ainda não foi importada.':null
+    }:fontes[f.id];
+    const checked=idade(x?.verificado_em);
+    const ref=(f.id==='conab_safra'||f.id==='usda_psd')?(x?.verificado_em||''):(x?.data_referencia||'');
+    const diff=idade(ref);
+    const falhou=x?.status==='falha';
+    const situacao=!x?(estado.consultado?'Sem confirmação':'Consultando'):
+      falhou?'Falha na coleta':
+      diff===null?'Sem data validada':
+      diff>f.max?'Defasado':'Dentro do prazo';
+    const cor=falhou||situacao==='Defasado'?'#D9542B':situacao==='Dentro do prazo'?'#C8E04A':'#E6B84A';
+    const safra=f.id==='conab_safra'?x?.ultima_safra:f.id==='usda_psd'?x?.data_referencia:null;
+    return {...f,x,checked,ref,diff,situacao,cor,safra};
   });
-
-  const atrasadas = enriched.filter(f => f.status === 'atrasada').length;
-  const avisos = enriched.filter(f => f.status === 'avisa').length;
-  const okCount = enriched.filter(f => f.status === 'ok').length;
-
+  const ok=itens.filter(x=>x.situacao==='Dentro do prazo').length;
+  const falhas=itens.filter(x=>x.situacao!=='Dentro do prazo').length;
+  const lacunas=Object.entries(estado.auditoria?.series_nao_integralmente_automaticas||{});
+  const linkFonte=x=>x?.url&&/^https:\/\//.test(x.url)?x.url:null;
   return (
-    <div>
-      {/* Resumo */}
-      <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 14}}>
-        <div style={{padding: 12, background: '#1A211A', borderLeft: '3px solid #C8E04A'}}>
-          <div style={{fontSize: 10, color: '#C8E04A', letterSpacing: 1}}>✓ ATUALIZADOS</div>
-          <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 28, color: '#C8E04A', fontWeight: 700}}>{okCount}</div>
-          <div style={{fontSize: 10, color: '#A89968'}}>de {enriched.length} fontes</div>
-        </div>
-        <div style={{padding: 12, background: '#211A11', borderLeft: '3px solid #E6B84A'}}>
-          <div style={{fontSize: 10, color: '#E6B84A', letterSpacing: 1}}>⚠ AVISO</div>
-          <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 28, color: '#E6B84A', fontWeight: 700}}>{avisos}</div>
-          <div style={{fontSize: 10, color: '#A89968'}}>próximas do limite</div>
-        </div>
-        <div style={{padding: 12, background: '#211010', borderLeft: '3px solid #D9542B'}}>
-          <div style={{fontSize: 10, color: '#D9542B', letterSpacing: 1}}>✗ ATRASADAS</div>
-          <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 28, color: '#D9542B', fontWeight: 700}}>{atrasadas}</div>
-          <div style={{fontSize: 10, color: '#A89968'}}>precisam atualizar</div>
-        </div>
+    <div id="fontes-detalhadas">
+      <div style={{fontSize:12,color:'#A89968',lineHeight:1.7,marginBottom:14}}>
+        <strong style={{color:'#E8E2D0'}}>Leitura dos registros publicados no GitHub:</strong> a data da cotação é diferente da data em que o robô consultou a fonte.
+        Uma execução bem-sucedida não garante nova cotação. CDI, IPCA, Selic e USD/BRL são tratados por outra rotina; enquanto ela não publicar
+        um manifesto com data individual, a atualização desses indicadores não pode ser certificada nesta tabela.
       </div>
-
-      {/* Tabela por frequência */}
-      {['diário', 'mensal', 'anual'].map(freq => {
-        const grupo = enriched.filter(f => f.freq === freq || (freq === 'diário' && f.freq === 'semanal'));
-        if (grupo.length === 0) return null;
-        const titulo = freq === 'diário' ? '↻ DIÁRIO / SEMANAL'
-                     : freq === 'mensal' ? '↻ MENSAL'
-                     : '↻ ANUAL';
-        return (
-          <div key={freq} style={{marginBottom: 16}}>
-            <div style={{fontSize: 11, color: '#9C7DBF', marginBottom: 6, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 1, fontWeight: 600}}>{titulo}</div>
-            <div style={{overflowX: 'auto', border: '1px solid #2A2F28'}}>
-              <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace"}}>
-                <thead>
-                  <tr style={{background: '#181C18'}}>
-                    <th style={{padding: 6, textAlign: 'left', color: '#A89968', letterSpacing: 1, borderBottom: '1px solid #2A2F28'}}>STATUS</th>
-                    <th style={{padding: 6, textAlign: 'left', color: '#A89968'}}>DADO</th>
-                    <th style={{padding: 6, textAlign: 'right', color: '#A89968'}}>ÚLTIMA</th>
-                    <th style={{padding: 6, textAlign: 'right', color: '#A89968'}}>IDADE</th>
-                    <th style={{padding: 6, textAlign: 'left', color: '#A89968'}}>AUTOMAÇÃO</th>
-                    <th style={{padding: 6, textAlign: 'left', color: '#A89968'}}>FONTE OFICIAL</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {grupo.map((f, i) => {
-                    const corStatus = f.status === 'ok' ? '#C8E04A' : f.status === 'avisa' ? '#E6B84A' : '#D9542B';
-                    const iconeStatus = f.status === 'ok' ? '✓' : f.status === 'avisa' ? '⚠' : '✗';
-                    return (
-                      <tr key={i} style={{borderBottom: '1px solid #1F231D'}}>
-                        <td style={{padding: 6, color: corStatus, fontSize: 14, fontWeight: 700}}>{iconeStatus}</td>
-                        <td style={{padding: 6, color: '#E8E2D0'}}>
-                          <div style={{fontWeight: 600}}>{f.nome}</div>
-                          <div style={{fontSize: 9, color: '#6B7065'}}>{f.onde}</div>
-                        </td>
-                        <td style={{padding: 6, textAlign: 'right', color: '#A89968'}}>{f.ultima}</td>
-                        <td style={{padding: 6, textAlign: 'right', color: corStatus, fontWeight: 600}}>{f.dias}d</td>
-                        <td style={{padding: 6, color: f.auto.startsWith('AUTOMÁTICO') ? '#C8E04A' : f.auto.startsWith('PARCIAL') ? '#E6B84A' : '#A89968', fontSize: 10}}>{f.auto}</td>
-                        <td style={{padding: 6}}>
-                          <a href={f.url} target="_blank" rel="noopener noreferrer" style={{color: '#7AB8E0', textDecoration: 'none', fontSize: 10}}>→ abrir</a>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        );
-      })}
-
-      {/* Como atualizar */}
-      <div style={{padding: 12, background: '#0F1410', borderLeft: '3px solid #C8E04A', fontSize: 11, color: '#A89968', lineHeight: 1.6}}>
-        <strong style={{color: '#E8E2D0'}}>Como atualizar (3 caminhos):</strong>
-        <div style={{marginTop: 6}}>
-          <strong style={{color: '#C8E04A'}}>1. Automático (GitHub Actions):</strong> roda diariamente 12:00 UTC. Você não faz nada — ele puxa BCB (USD, CDI, IPCA), processa CEPEA se você anexar .xls em <code style={{color:'#7AB8E0'}}>data/cepea/</code>, e busca SIDRA JC anual. Veja Actions → "Atualizar dados".
-        </div>
-        <div style={{marginTop: 6}}>
-          <strong style={{color: '#E6B84A'}}>2. Manual rápido (sliders):</strong> os módulos 01 e 02 têm sliders que você pode mexer para simular cenários sem editar código (preço, dólar, prêmio, custos). Mudanças não persistem mas servem para "e se?".
-        </div>
-        <div style={{marginTop: 6}}>
-          <strong style={{color: '#9C7DBF'}}>3. Manual edição código:</strong> clique no link "→ abrir" da fonte, copia o número novo, abre <code style={{color:'#7AB8E0'}}>index.html</code> num editor, busca pela constante na linha indicada, edita, commit no GitHub. Painel atualiza automático via GitHub Pages.
-        </div>
+      {estado.falhas.length>0 && <div style={{padding:10,background:'#291b17',color:'#F5B2A5',marginBottom:12}}>Falha na leitura de: {estado.falhas.join(', ')}. Não interpretar ausência de arquivo como cotação nova.</div>}
+      <div style={{display:'flex',gap:12,flexWrap:'wrap',marginBottom:16,fontSize:12,color:'#A89968'}}>
+        <span><strong style={{color:'#C8E04A'}}>{ok}</strong> fontes dentro do prazo</span>
+        <span><strong style={{color:'#E6B84A'}}>{falhas}</strong> fontes a verificar</span>
+        <span><strong style={{color:'#E6B84A'}}>{lacunas.length}</strong> grupos de integração incompleta</span>
       </div>
+      <div style={{overflowX:'auto'}}>
+        <table style={{width:'100%',borderCollapse:'collapse',fontSize:11,fontFamily:"'IBM Plex Mono',monospace",minWidth:750}}>
+          <thead><tr style={{background:'#222822',color:'#A89968',textAlign:'left'}}>
+            {['Fonte e método','Frequência','Referência da fonte','Consultado em','Situação','Dados / origem'].map(s=><th key={s} style={{padding:9,borderBottom:'1px solid #344136'}}>{s}</th>)}
+          </tr></thead>
+          <tbody>{itens.map(f=><tr key={f.id} style={{borderBottom:'1px solid #2A2F28',verticalAlign:'top'}}>
+            <td style={{padding:9,minWidth:190}}><strong style={{color:'#E8E2D0'}}>{f.titulo}</strong><div style={{fontFamily:"'IBM Plex Sans',sans-serif",marginTop:6,color:'#A89968',lineHeight:1.55}}>{f.calc}</div></td>
+            <td style={{padding:9,color:'#A89968'}}>{f.freq}</td>
+            <td style={{padding:9,color:'#E8E2D0'}}>{f.safra?'Safra '+f.safra:dataBR(f.x?.data_referencia)}{f.id==='cbot_soja'&&f.x?.contrato?<div>Contrato {f.x.contrato}</div>:null}</td>
+            <td style={{padding:9,color:'#A89968'}}>{dataBR(f.x?.verificado_em)}</td>
+            <td style={{padding:9,color:f.cor,fontWeight:600}}>{f.situacao}{f.diff!==null&&<div style={{fontWeight:400}}>{f.diff} dia(s) desde a referência da verificação adequada</div>}</td>
+            <td style={{padding:9,color:'#A89968'}}>{linkFonte(f.x)&&<a href={linkFonte(f.x)} target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>Consultar origem ↗</a>}
+              {f.x?.observacao&&<div style={{marginTop:5}}>{f.x.observacao}</div>}{f.x?.erro&&<div style={{marginTop:5,color:'#E6B84A'}}>{String(f.x.erro).slice(0,140)}</div>}{f.x?.descricao_extra&&<div>{f.x.descricao_extra}</div>}</td>
+          </tr>)}</tbody>
+        </table>
+      </div>
+      <details style={{marginTop:16,padding:12,border:'1px solid #2A2F28'}}>
+        <summary style={{cursor:'pointer',color:'#C8E04A'}}>Séries ainda não integradas automaticamente e premissas de cálculo</summary>
+        {lacunas.length>0?lacunas.map(([id,obs])=><p key={id} style={{fontSize:12,color:'#A89968',lineHeight:1.6,margin:'10px 0'}}><strong style={{color:'#E8E2D0'}}>{id.replaceAll('_',' ')}:</strong> {obs}</p>):<p style={{fontSize:12,color:'#A89968'}}>Auditoria não disponível: não é possível certificar cobertura integral.</p>}
+      </details>
+      <details style={{marginTop:12,padding:12,border:'1px solid #2A2F28'}}>
+        <summary style={{cursor:'pointer',color:'#C8E04A'}}>Metodologia técnica de atualização e rastreabilidade</summary>
+        <div style={{fontSize:12,color:'#A89968',lineHeight:1.8,marginTop:10}}>
+          <p><strong>1 — Preço observado:</strong> cotações identificadas por fonte, praça, unidade e data. Cotrijuc: balcão JC; CEPEA: indicador Paranaguá; CBOT: futuro em USD/bu, com contrato. Preços de praças distintas não são intercambiáveis.</p>
+          <p><strong>2 — Verificação:</strong> os workflows consultam fontes em diferentes frequências; o preço só muda se houver uma publicação nova válida. A coluna “consultado em” registra a verificação, não um novo pregão.</p>
+          <p><strong>3 — Gráficos históricos:</strong> séries compiladas ou com proxies devem ser identificadas separadamente das séries recebidas automaticamente. Os 66 trimestres de soja não representam 66 cotações diárias atuais.</p>
+          <p><strong>4 — Cenários:</strong> frete, prêmio local, custo agrícola e parâmetros de hedge são hipóteses editáveis e não dados verificados automaticamente. Não confundir a simulação do produtor com o valor real de mercado.</p>
+          <p><strong>5 — Falhas:</strong> registros anteriores são preservados. O painel informa quando a origem ou o histórico não está disponível; o último valor conhecido não passa a ser a cotação de hoje.</p>
+          <p><a href="https://github.com/carlosemichelon/binmarket/actions" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>Execuções no GitHub Actions ↗</a> · <a href="data/fontes/mercado.json" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>Manifesto de preços ↗</a> · <a href="data/fontes/auditoria.json" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>Auditoria de cobertura ↗</a></p>
+        </div>
+      </details>
     </div>
   );
 }
@@ -6689,9 +6648,9 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
         {/* 17 — ATUALIZAÇÃO DE DADOS */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
-          <div style={{...S.cardLabel, color: '#7AB8E0'}}>17 — ↻ Atualização de dados · checklist + links oficiais</div>
+          <div style={{...S.cardLabel, color: '#7AB8E0'}}>17 — Auditoria técnica · fontes, datas, métodos e cobertura</div>
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
-            Status de frescor de cada fonte usada no painel. Verde = recente · Amarelo = revisar · Vermelho = desatualizado. Inclui automação por GitHub Actions, link direto para fonte oficial e onde editar no código se for manual.
+            Dados de coleta e auditoria sincronizados diretamente com os arquivos do GitHub. Datas reais de referência, procedimentos técnicos, estado das integrações e fontes primárias/secundárias. Sem checklist de datas fixas.
           </div>
           <AtualizacaoBloco />
         </section>
