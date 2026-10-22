@@ -333,13 +333,61 @@ def fetch_conab(session:requests.Session) -> dict:
             'observacoes':None, 'unidade':'produção nacional em mil toneladas; demais séries do simulador não atualizadas', **conab_snapshot}
 
 
+
+# FONTE 4 · COTRIJUC / JULIO DE CASTILHOS (COTACAO LOCAL REAL)
+COTRIJUC_URL = 'https://www.cotrijuc.com.br/'
+COTRIJUC_CSV = DIR / 'cotrijuc_soja.csv'
+
+
+def parse_cotrijuc_soja(html: str, today: date | None = None) -> dict:
+    """Extrai somente a primeira cotacao SOJA no bloco Graos da home.
+
+    Exige data publicada pela propria cooperativa; nao usa dia da coleta.
+    """
+    text = BeautifulSoup(html, 'html.parser').get_text(' ', strip=True)
+    block = re.search(
+        r'COTA(?:Ç|C)[OÕ]ES DO DIA(.{0,1500}?)(?:Bolsa de Chicago|Moeda|J[uú]lio de Castilhos)',
+        text, re.I)
+    if not block:
+        raise ValueError('Cotrijuc: bloco de cotacoes de graos nao identificado')
+    m = re.search(r'(\d{2}/\d{2}/\d{4}).{0,200}?\bSOJA\b\s*(\d{1,3}(?:\.\d{3})*,\d{2})', block.group(1), re.I)
+    if not m:
+        raise ValueError('Cotrijuc: par data e preco de soja nao identificado')
+    ref = validate_day(m.group(1), today)
+    value = br_number(m.group(2))
+    if not 35 <= value <= 400:
+        raise ValueError('Cotrijuc: preco fora da faixa permitida')
+    return {'data':ref,'brl_saca60':round(value,2)}
+
+
+def fetch_cotrijuc(session: requests.Session) -> dict:
+    r = session.get(COTRIJUC_URL, headers=HEADERS, timeout=35)
+    r.raise_for_status()
+    record = parse_cotrijuc_soja(r.text)
+    previous = load_cepea(COTRIJUC_CSV)
+    prevdate = max(previous) if previous else None
+    # Nao permitir regressao da referencia, mesmo se cache da fonte atrasar.
+    if prevdate and record['data'] < prevdate:
+        raise ValueError('Cotrijuc: fonte retornou data anterior a ultima registrada')
+    previous[record['data']] = {'data':record['data'], 'brl_saca60':f"{record['brl_saca60']:.2f}"}
+    output = StringIO()
+    writer = csv.DictWriter(output, fieldnames=['data','brl_saca60'], delimiter=';', lineterminator='\n')
+    writer.writeheader()
+    for key in sorted(previous):
+        writer.writerow(previous[key])
+    atomic_write(COTRIJUC_CSV, output.getvalue().encode('utf-8'))
+    return {'status':'ok','url':COTRIJUC_URL,
+            'data_referencia':record['data'], 'valor':record['brl_saca60'],
+            'unidade':'R$/saca de 60 kg - preco local de balcao',
+            'observacoes':len(previous)}
+
 def run() -> dict:
     DIR.mkdir(parents=True, exist_ok=True)
     status = read_json(STATUS)
     sources = status.get('fontes') or {}
     checked = now_br().isoformat(timespec='seconds')
     with requests.Session() as session:
-        for key, func in [('cepea_soja',fetch_cepea),('conab_safra',fetch_conab),('usda_psd',fetch_usda)]:
+        for key, func in [('cepea_soja',fetch_cepea),('conab_safra',fetch_conab),('usda_psd',fetch_usda),('cotrijuc_soja',fetch_cotrijuc)]:
             before = sources.get(key) or {}
             try:
                 fresh = func(session)
@@ -349,7 +397,7 @@ def run() -> dict:
                 # Não modifica a data de referência nem os últimos arquivos íntegros.
                 sources[key] = {**before, 'status':'falha', 'verificado_em':checked,
                                 'erro':str(exc)[:300], 'url': before.get('url') or
-                                {'cepea_soja':CEPEA_URL,'conab_safra':CONAB_URL,'usda_psd':USDA_URL}[key]}
+                                {'cepea_soja':CEPEA_URL,'conab_safra':CONAB_URL,'usda_psd':USDA_URL,'cotrijuc_soja':COTRIJUC_URL}[key]}
                 print(f'{key}: falha: {exc}',flush=True)
     output = {'versao':1,'verificado_em':checked,'fontes':sources,
               'aviso':'Verificação automática não implica cotação nova. Custos, prêmios locais e séries estimadas do simulador não são preços coletados automaticamente.'}
