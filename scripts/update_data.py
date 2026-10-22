@@ -62,26 +62,24 @@ BCB_SGS = {
 }
 
 
-def fetch_bcb_sgs(series_id: int, start_year: int = 2010) -> pd.DataFrame:
-    """Busca série temporal do BCB SGS. Retorna DataFrame [data, valor]."""
-    url = (
-        f"https://api.bcb.gov.br/dados/serie/bcdata.sgs.{series_id}/dados"
-        f"?formato=json&dataInicial=01/01/{start_year}"
-    )
-    headers = {
-        "User-Agent": "Mozilla/5.0 (compatible; PainelSoja/1.0)",
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "pt-BR,pt;q=0.9",
-    }
-    r = requests.get(url, timeout=30, headers=headers)
-    r.raise_for_status()
-    data = r.json()
-    if not data:
-        return pd.DataFrame(columns=["data", "valor"])
-    df = pd.DataFrame(data)
-    df["data"] = pd.to_datetime(df["data"], format="%d/%m/%Y")
-    df["valor"] = pd.to_numeric(df["valor"])
-    return df
+def fetch_bcb_sgs(series_id:int,start_year:int=2010) -> pd.DataFrame:
+    """Busca SGS por blocos de ate nove anos, sem limite de dez anos da API."""
+    years_end=datetime.now().year
+    chunks=[]
+    headers={'User-Agent':'BinMarket/2.0 (painel de indicadores)','Accept':'application/json'}
+    for begin in range(start_year,years_end+1,9):
+        last=min(begin+8,years_end)
+        url=(f"https://api.bcb.gov.br/dados/serie/bcdata.sgs.{series_id}/dados"
+             f"?formato=json&dataInicial=01/01/{begin}&dataFinal=31/12/{last}")
+        r=requests.get(url,timeout=40,headers=headers)
+        r.raise_for_status()
+        rows=r.json()
+        if rows:chunks.extend(rows)
+    if not chunks:return pd.DataFrame(columns=['data','valor'])
+    df=pd.DataFrame(chunks)
+    df['data']=pd.to_datetime(df['data'],format='%d/%m/%Y',errors='coerce')
+    df['valor']=pd.to_numeric(df['valor'],errors='coerce')
+    return df.dropna(subset=['data','valor']).drop_duplicates(subset='data').sort_values('data').reset_index(drop=True)
 
 
 def cdi_acumulado_anual(df_cdi_diario: pd.DataFrame) -> dict[int, float]:
@@ -127,41 +125,48 @@ def update_dolar_atual(html: str) -> tuple[str, bool, str]:
         return html, False, str(e)
 
 
-def update_macro_anual(html: str) -> tuple[str, bool]:
-    """Atualiza CDI e IPCA anuais no objeto MACRO_ANUAL."""
+def update_macro_anual(html:str) -> tuple[str,bool]:
+    """CDI e IPCA fechados BCB e Selic observada sem alterar demais series."""
     try:
-        cdi_df = fetch_bcb_sgs(BCB_SGS["cdi_diario"], start_year=2010)
-        ipca_df = fetch_bcb_sgs(BCB_SGS["ipca_mensal"], start_year=2010)
-        cdi_anual = cdi_acumulado_anual(cdi_df)
-        ipca_anual = ipca_acumulado_anual(ipca_df)
-
-        # Para cada ano presente em MACRO_ANUAL, substituir cdi e ipca
-        def update_year(match: re.Match) -> str:
-            ano = int(match.group(1))
-            ouro = match.group(2)
-            cobre = match.group(3)
-            cdi_old = match.group(4)
-            ipca_old = match.group(5)
-            custo = match.group(6)
-            cdi_new = round(cdi_anual.get(ano, float(cdi_old)), 4)
-            ipca_new = round(ipca_anual.get(ano, float(ipca_old)), 4)
-            return (
-                f"  {ano}: {{ ouro: {ouro}, cobre: {cobre}, "
-                f"cdi: {cdi_new}, ipca: {ipca_new}, custo: {custo} }},"
-            )
-
-        pattern = (
-            r"  (\d{4}): \{ ouro: (\d+), cobre: (\d+), "
-            r"cdi: ([\d.]+), ipca: ([\d.]+), custo: (\d+) \},"
-        )
-        new_html, n = re.subn(pattern, update_year, html)
-        if n == 0:
-            return html, False
-        log(f"MACRO_ANUAL atualizado ({n} anos · CDI/IPCA fechados do BCB)")
-        return new_html, True
-    except Exception as e:
-        log(f"MACRO_ANUAL falhou: {e}", ok=False)
-        return html, False
+        cdi=fetch_bcb_sgs(BCB_SGS['cdi_diario'],start_year=2010)
+        ipca=fetch_bcb_sgs(BCB_SGS['ipca_mensal'],start_year=2010)
+        selic=fetch_bcb_sgs(BCB_SGS['selic_meta'],start_year=2010)
+        if cdi.empty or ipca.empty or selic.empty:
+            return html,False
+        cdi_a=cdi_acumulado_anual(cdi)
+        ipca_a=ipca_acumulado_anual(ipca)
+        selic_y=selic.assign(ano=selic['data'].dt.year).groupby('ano')['valor'].last().to_dict()
+        current=date.today().year
+        matches=0
+        def patch(m:re.Match)->str:
+            nonlocal matches
+            year=int(m.group(1))
+            body=m.group(2)
+            original=body
+            # Reais percentuais sao armazenados no MACRO_ANUAL como fracao decimal.
+            values={}
+            if year<current:
+                if year in cdi_a:values['cdi']=round(float(cdi_a[year]),4)
+                if year in ipca_a:values['ipca']=round(float(ipca_a[year]),4)
+            if year in selic_y:values['selic']=round(float(selic_y[year])/100,4)
+            for field,v in values.items():
+                body,n=re.subn(r'(\b'+re.escape(field)+r':\s*)[\d.]+',
+                               lambda x:x.group(1)+f'{v:.4f}',body,count=1)
+            if body!=original:matches+=1
+            return f'{m.group(1)}: {{{body}}},'
+        pattern=re.compile(r'(?m)^\s*(20\d\d):\s*\{([^\n{}]+)\},')
+        # Alterar SOMENTE as linhas dentro de MACRO_ANUAL.
+        start=html.find('const MACRO_ANUAL = {')
+        end=html.find('\n};',start)
+        if start<0 or end<0:return html,False
+        section=html[start:end]
+        new_section=pattern.sub(patch,section)
+        html=html[:start]+new_section+html[end:]
+        log(f'BCB SGS: CDI/IPCA fechados e Selic anual em {matches} anos')
+        return html, True
+    except Exception as exc:
+        log(f'BCB macro falhou: {exc}',ok=False)
+        return html,False
 
 
 # ===========================================================================
