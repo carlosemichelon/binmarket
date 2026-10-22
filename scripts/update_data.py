@@ -140,8 +140,8 @@ def update_macro_anual(html:str) -> tuple[str,bool]:
         matches=0
         def patch(m:re.Match)->str:
             nonlocal matches
-            year=int(m.group(1))
-            body=m.group(2)
+            year=int(m.group(2))
+            body=m.group(3)
             original=body
             # Reais percentuais sao armazenados no MACRO_ANUAL como fracao decimal.
             values={}
@@ -153,8 +153,8 @@ def update_macro_anual(html:str) -> tuple[str,bool]:
                 body,n=re.subn(r'(\b'+re.escape(field)+r':\s*)[\d.]+',
                                lambda x:x.group(1)+f'{v:.4f}',body,count=1)
             if body!=original:matches+=1
-            return f'{m.group(1)}: {{{body}}},'
-        pattern=re.compile(r'(?m)^\s*(20\d\d):\s*\{([^\n{}]+)\},')
+            return f'{m.group(1)}{m.group(2)}: {{{body}}},'
+        pattern=re.compile(r'(?m)^([ \t]*)(20\d\d):[ \t]*\{([^\n{}]+)\},')
         # Alterar SOMENTE as linhas dentro de MACRO_ANUAL.
         start=html.find('const MACRO_ANUAL = {')
         end=html.find('\n};',start)
