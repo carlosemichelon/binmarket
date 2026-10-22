@@ -974,6 +974,11 @@ const ESTRATEGIAS = {
   },
 };
 
+const ANALISE_MATRIZ = {
+  cbot:{pro:'Ao fixar parte da CBOT, reduz a perda com queda dos futuros.',contra:'Pode perder altas sobre a parcela protegida e exigir caixa para ajustes.',baixa:'Futuro vendido tende a compensar parte da queda; há risco de base.',alta:'Futuro vendido pode sofrer ajuste negativo enquanto o físico sobe.'},
+  premio:{pro:'Fixar prêmio contratado protege o diferencial de eventual queda.',contra:'Renuncia a um prêmio melhor; local, vencimento e qualidade precisam coincidir.',baixa:'Diferencial fixado conserva condições para o volume contratado.',alta:'Prêmio mais alto não melhora a parcela previamente fixada.'},
+  dolar:{pro:'Hedge cambial reduz risco de valorização do real.',contra:'Limita benefício do dólar mais alto e pode exigir garantias.',baixa:'Dólar mais baixo pode ser parcialmente compensado por hedge vendido.',alta:'Ajuste negativo do hedge pode acompanhar valorização cambial.'}
+};
 // === Estratégias clássicas de comercialização ===
 const ESTRATEGIAS_CLASSICAS = [
   {
@@ -5549,12 +5554,18 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                   {' · '}Expectativa: <strong style={{color: corNivel(exp === 'alta' ? 'alto' : exp === 'baixa' ? 'baixo' : 'medio')}}>{exp.toUpperCase()}</strong>
                 </div>
                 <div style={S.estratNota}>{e.nota}</div>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(210px,1fr))',gap:9,marginTop:9,padding:11,background:'#111913',border:'1px solid #334037',fontSize:11,lineHeight:1.6}}>
+                  <div><strong style={{color:'#C8E04A'}}>Pró:</strong> {ANALISE_MATRIZ[c.key].pro}</div>
+                  <div><strong style={{color:'#E6B84A'}}>Contra:</strong> {ANALISE_MATRIZ[c.key].contra}</div>
+                  <div><strong style={{color:'#7AB8E0'}}>Se cair:</strong> {ANALISE_MATRIZ[c.key].baixa}</div>
+                  <div><strong style={{color:'#D99079'}}>Se subir:</strong> {ANALISE_MATRIZ[c.key].alta}</div>
+                </div>
               </div>
             );
           })}
           <details style={{...S.sintese,marginTop:14}}>
 <summary style={{cursor:'pointer',color:'#C8E04A',fontWeight:600}}>Aplicação prática e limitações da matriz</summary>
-<div style={{...S.sinteseTexto,marginTop:9}}>Confira data e praça das fontes no módulo 17; compare preço líquido e custo no módulo 02. Identifique a exposição que deseja proteger e analise instrumentos, contrato, vencimento, volume e custos nos módulos 07 e 09. Os resultados são hipóteses condicionais de proteção, <strong>não recomendações automáticas de venda</strong>.</div>
+<div style={{...S.sinteseTexto,marginTop:9}}>Confira data e praça das fontes no módulo 17; compare preço líquido e custo no módulo 02. Identifique a exposição que deseja proteger e analise instrumentos, contrato, vencimento, volume e custos nos módulos 07 e 09. Os percentuais são parâmetros ilustrativos, não otimização estatística nem recomendação automática de venda. Confira se a operação exige margem, prêmio, crédito e garantia e se o volume protegido corresponde ao volume produzido.</div>
 </details>
         </section>
 
