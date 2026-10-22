@@ -3074,6 +3074,9 @@ function PainelSoja() {
         const remote = await response.json();
         if (!alive || !remote || typeof remote.fontes !== 'object') return;
         setFontePrecos({fontes: remote.fontes, carregado: true, erro: null});
+        const future = remote.fontes.cbot_soja;
+        if (future && future.status==='ok' && Number.isFinite(Number(future.valor)) &&
+            Number(future.valor)>5 && Number(future.valor)<30) setCbot(Number(future.valor));
         const local = remote.fontes.cotrijuc_soja;
         if (local && Number.isFinite(Number(local.valor)) && Number(local.valor)>35 && Number(local.valor)<400)
           setBalcaoSoja(Number(local.valor));
