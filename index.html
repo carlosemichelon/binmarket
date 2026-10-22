@@ -441,37 +441,37 @@ const SAZONAL_FERT = [
 // Curva histórica de referência de julho/2026; NÃO representa cotação atual.
 // Padrão pré-safra: backwardation no nearby + drop na new crop (X = nov)
 const CURVA_SOJA = [
-  { venc:'N26', mes:'Jul/26', preco:11.97, tipo:'old-crop' },
-  { venc:'Q26', mes:'Ago/26', preco:11.85, tipo:'old-crop' },
-  { venc:'U26', mes:'Set/26', preco:11.70, tipo:'old-crop' },
-  { venc:'X26', mes:'Nov/26', preco:11.40, tipo:'new-crop' },  // ★ new crop drop
-  { venc:'F27', mes:'Jan/27', preco:11.50, tipo:'new-crop' },
-  { venc:'H27', mes:'Mar/27', preco:11.58, tipo:'new-crop' },
-  { venc:'K27', mes:'Mai/27', preco:11.65, tipo:'new-crop' },
-  { venc:'N27', mes:'Jul/27', preco:11.70, tipo:'old-crop' },
+  { venc:'N26', mes:'Jul/2026', preco:11.97, tipo:'old-crop' },
+  { venc:'Q26', mes:'Ago/2026', preco:11.85, tipo:'old-crop' },
+  { venc:'U26', mes:'Set/2026', preco:11.70, tipo:'old-crop' },
+  { venc:'X26', mes:'Nov/2026', preco:11.40, tipo:'new-crop' },  // ★ new crop drop
+  { venc:'F27', mes:'Jan/2027', preco:11.50, tipo:'new-crop' },
+  { venc:'H27', mes:'Mar/2027', preco:11.58, tipo:'new-crop' },
+  { venc:'K27', mes:'Mai/2027', preco:11.65, tipo:'new-crop' },
+  { venc:'N27', mes:'Jul/2027', preco:11.70, tipo:'old-crop' },
 ];
 
 // === CURVA DE FUTUROS UREIA (CME UFV — Urea FOB Middle East) ===
 // USD/ton métrica; mercado menos líquido que soja mas serve de referência
 const CURVA_UREIA = [
-  { venc:'M+0', mes:'Jul/26', preco:525 },
-  { venc:'M+1', mes:'Ago/26', preco:520 },
-  { venc:'M+2', mes:'Set/26', preco:510 },
-  { venc:'M+3', mes:'Out/26', preco:495 },
-  { venc:'M+4', mes:'Nov/26', preco:500 },
-  { venc:'M+5', mes:'Dez/26', preco:515 },
-  { venc:'M+6', mes:'Jan/27', preco:525 },
+  { venc:'M+0', mes:'Jul/2026', preco:525 },
+  { venc:'M+1', mes:'Ago/2026', preco:520 },
+  { venc:'M+2', mes:'Set/2026', preco:510 },
+  { venc:'M+3', mes:'Out/2026', preco:495 },
+  { venc:'M+4', mes:'Nov/2026', preco:500 },
+  { venc:'M+5', mes:'Dez/2026', preco:515 },
+  { venc:'M+6', mes:'Jan/2027', preco:525 },
 ];
 
 // === CURVA DE FUTUROS MAP/DAP ===
 // CME DAP futures (USD/ton); referência fosfato
 const CURVA_MAP = [
-  { venc:'M+0', mes:'Jul/26', preco:570 },
-  { venc:'M+1', mes:'Ago/26', preco:580 },
-  { venc:'M+2', mes:'Set/26', preco:585 },
-  { venc:'M+3', mes:'Out/26', preco:590 },
-  { venc:'M+4', mes:'Nov/26', preco:595 },
-  { venc:'M+5', mes:'Dez/26', preco:590 },
+  { venc:'M+0', mes:'Jul/2026', preco:570 },
+  { venc:'M+1', mes:'Ago/2026', preco:580 },
+  { venc:'M+2', mes:'Set/2026', preco:585 },
+  { venc:'M+3', mes:'Out/2026', preco:590 },
+  { venc:'M+4', mes:'Nov/2026', preco:595 },
+  { venc:'M+5', mes:'Dez/2026', preco:590 },
 ];
 
 
@@ -5203,7 +5203,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={CURVA_SOJA} margin={{ top: 20, right: 28, left: 14, bottom: 50 }}>
                       <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
-                      <XAxis dataKey="mes" stroke="#A89968" angle={-35} textAnchor="end" interval={0} height={72} tick={{fontSize:12,fontFamily:'IBM Plex Mono'}} label={{value:'Mês e ano · contratos de exemplo',position:'insideBottom',offset:-40,fill:'#A89968'}} />
+                      <XAxis dataKey="mes" stroke="#A89968" angle={-35} textAnchor="end" interval={0} height={88} tick={{fontSize:12,fontFamily:'IBM Plex Mono'}} label={{value:'Mês e ano · contratos de exemplo',position:'insideBottom',offset:-55,fill:'#A89968'}} />
                       <YAxis stroke="#A89968" domain={[10.5,13.5]} width={65} tickCount={7} tickFormatter={v=>Number(v).toFixed(2)} tick={{fontSize:12,fontFamily:'IBM Plex Mono'}} />
                       <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 11}}
                                formatter={(v, n, p) => [`${v.toFixed(2)} USD/bu · ${p.payload.mes}`, 'Exemplo '+p.payload.venc]}/>
@@ -5262,7 +5262,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={FERT_CURVA_EXEMPLO} margin={{ top: 20, right: 28, left: 14, bottom: 50 }}>
                       <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
-                      <XAxis dataKey="mes" stroke="#A89968" interval={0} angle={-35} textAnchor="end" height={72} tick={{fontSize:12,fontFamily:'IBM Plex Mono'}} label={{value:'Mês e ano · cenário',position:'insideBottom',offset:-40,fill:'#A89968'}} />
+                      <XAxis dataKey="mes" stroke="#A89968" interval={0} angle={-45} textAnchor="end" height={88} tick={{fontSize:12,fontFamily:'IBM Plex Mono'}} label={{value:'Mês e ano · cenário',position:'insideBottom',offset:-55,fill:'#A89968'}} />
                       <YAxis stroke="#A89968" domain={[430,660]} width={65} tickCount={7} tick={{fontSize:12,fontFamily:'IBM Plex Mono'}} />
                       <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 11}} />
                       <Line type="monotone" dataKey="ureia" stroke="#7AB8E0" strokeWidth={2.5} dot={{r: 4, fill: '#7AB8E0'}} name="Ureia USD/ton" />
