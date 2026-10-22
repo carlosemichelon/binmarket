@@ -6154,6 +6154,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
               </div>
               <div style={{marginTop: 22, color: '#C8E04A', fontSize: 12, fontWeight: 600}}>Séries USDA PSD · Brasil e EUA (atualização automática)</div>
               {usdaBrasilAuto ? (
+                <>
                 <FonteJuntoGrafico modulo={12} ordem={3} />
                 <div style={{height: 285, marginTop: 10}}>
                   <ResponsiveContainer width="100%" height="100%">
@@ -6170,6 +6171,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
+                </>
               ) : <div style={{color:'#A89968',fontSize:12,marginTop:8}}>USDA ainda não carregou; não confundir série estática da Conab com atualização USDA.</div>}
               <div style={{fontSize:10,color:'#6B7065',marginBottom:12}}>Fonte: USDA PSD. Ano de mercado USDA, diferente da safra brasileira Conab. Valores em milhões de toneladas.</div>
               <div style={S.legendaHist}>
