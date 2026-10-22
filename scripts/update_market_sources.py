@@ -484,13 +484,86 @@ def fetch_milho(session:requests.Session) -> dict:
             'observacao':'Fonte secundaria datada' if error else 'Indicador Esalq/B3'}
 
 
+
+# PRÊMIO DE EXPORTAÇÃO - PARANAGUÁ / PR (NÃO É PRÊMIO RIO GRANDE)
+# Fonte secundária Notícias Agrícolas; vencimentos separados e apuração explícita.
+PREMIO_PARANAGUA_URL = 'https://www.noticiasagricolas.com.br/cotacoes/soja/premio-soja-paranagua-pr'
+PREMIO_PARANAGUA_CSV = DIR / 'premio_soja_paranagua.csv'
+PREMIO_MESES = {'janeiro':1,'fevereiro':2,'marco':3,'março':3,'abril':4,'maio':5,
+                'junho':6,'julho':7,'agosto':8,'setembro':9,'outubro':10,'novembro':11,'dezembro':12}
+
+def parse_premios_paranagua(html: str, today: date | None = None) -> dict:
+    """Lê APENAS a primeira tabela de fechamento de prêmio soja Paranaguá.
+    US$/bushel, nunca cents/bushel, e nunca preço físico R$/saca.
+    """
+    today = today or now_br().date()
+    txt = BeautifulSoup(html, 'html.parser').get_text(' ', strip=True)
+    title = re.search(r'Pr[eê]mio\s+Soja\s+Paranagu[aá]\s*/\s*PR', txt, re.I)
+    if not title:
+        raise ValueError('Prêmio: título específico Paranaguá/PR ausente')
+    after = txt[title.end():title.end()+14000]
+    closed = re.search(r'Fechamento:\s*(\d{2}/\d{2}/\d{4})', after, re.I)
+    if not closed:
+        raise ValueError('Prêmio: fechamento datado ausente')
+    reference = validate_day(closed.group(1), today)
+    # Não confundir um histórico antigo ou a data da consulta com uma cotação nova.
+    if (today-date.fromisoformat(reference)).days > 10:
+        raise ValueError('Prêmio: último fechamento tem mais de 10 dias')
+    current = after[closed.end():]
+    next_closed = re.search(r'Fechamento:\s*\d{2}/\d{2}/\d{4}', current, re.I)
+    if next_closed:
+        current = current[:next_closed.start()]
+    matches = re.findall(
+        r'\b(Janeiro|Fevereiro|Mar[cç]o|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro)'
+        r'/(\d{2}|\d{4})\s+([+-]?\d{1,2},\d{2,4})\b', current, re.I)
+    rows = {}
+    for month, raw_year, raw_price in matches:
+        yr = int(raw_year) + (2000 if len(raw_year)==2 else 0)
+        mo = PREMIO_MESES[month.lower()]
+        if (yr,mo) < (today.year,today.month) or (yr,mo) > (today.year+2,12):
+            continue
+        price = br_number(raw_price)
+        if not -5 <= price <= 7:
+            raise ValueError('Prêmio: valor fora de faixa ou unidade incorreta')
+        rows[f'{yr}-{mo:02d}'] = round(price,4)
+    if not rows:
+        raise ValueError('Prêmio: nenhum vencimento futuro válido em US$/bushel')
+    return {'data':reference, 'contratos':[{'contrato':k,'usd_bu':rows[k]} for k in sorted(rows)]}
+
+def fetch_premios_paranagua(session: requests.Session) -> dict:
+    r=session.get(PREMIO_PARANAGUA_URL, headers=HEADERS, timeout=35)
+    r.raise_for_status()
+    result=parse_premios_paranagua(r.text)
+    old={}
+    if PREMIO_PARANAGUA_CSV.exists():
+        with PREMIO_PARANAGUA_CSV.open(encoding='utf-8',newline='') as stream:
+            for row in csv.DictReader(stream,delimiter=';'):
+                if re.fullmatch(r'\d{4}-\d\d-\d\d',row.get('data','')) and re.fullmatch(r'\d{4}-\d\d',row.get('contrato','')):
+                    old[(row['data'],row['contrato'])]=row
+    # A observação nova só muda a combinação (dia, vencimento), nunca as demais.
+    for item in result['contratos']:
+        k=(result['data'],item['contrato'])
+        old[k]={'data':result['data'],'contrato':item['contrato'],'usd_bu':f"{item['usd_bu']:.4f}"}
+    output=StringIO()
+    writer=csv.DictWriter(output,fieldnames=['data','contrato','usd_bu'],delimiter=';',lineterminator='\n')
+    writer.writeheader()
+    for key in sorted(old):
+        writer.writerow(old[key])
+    atomic_write(PREMIO_PARANAGUA_CSV,output.getvalue().encode('utf-8'))
+    first=result['contratos'][0]
+    return {'status':'ok','url':PREMIO_PARANAGUA_URL,'data_referencia':result['data'],
+            'contrato':first['contrato'],'valor':first['usd_bu'],
+            'contratos':result['contratos'],'observacoes':len(old),
+            'praca':'Paranaguá/PR','unidade':'USD/bushel - prêmio portuário por vencimento',
+            'observacao':'Fonte secundária Notícias Agrícolas; referência de Paranaguá, NÃO prêmio de Rio Grande nem proposta de compra local'}
+
 def run() -> dict:
     DIR.mkdir(parents=True, exist_ok=True)
     status = read_json(STATUS)
     sources = status.get('fontes') or {}
     checked = now_br().isoformat(timespec='seconds')
     with requests.Session() as session:
-        for key, func in [('cepea_soja',fetch_cepea),('conab_safra',fetch_conab),('usda_psd',fetch_usda),('cotrijuc_soja',fetch_cotrijuc),('cbot_soja',fetch_cbot_soja),('milho_cepea',fetch_milho)]:
+        for key, func in [('cepea_soja',fetch_cepea),('conab_safra',fetch_conab),('usda_psd',fetch_usda),('cotrijuc_soja',fetch_cotrijuc),('cbot_soja',fetch_cbot_soja),('milho_cepea',fetch_milho),('premio_soja_paranagua',fetch_premios_paranagua)]:
             before = sources.get(key) or {}
             try:
                 fresh = func(session)
@@ -500,10 +573,10 @@ def run() -> dict:
                 # Não modifica a data de referência nem os últimos arquivos íntegros.
                 sources[key] = {**before, 'status':'falha', 'verificado_em':checked,
                                 'erro':str(exc)[:300], 'url': before.get('url') or
-                                {'cepea_soja':CEPEA_URL,'conab_safra':CONAB_URL,'usda_psd':USDA_URL,'cotrijuc_soja':COTRIJUC_URL,'cbot_soja':CBOT_SOURCE,'milho_cepea':MILHO_URL}[key]}
+                                {'cepea_soja':CEPEA_URL,'conab_safra':CONAB_URL,'usda_psd':USDA_URL,'cotrijuc_soja':COTRIJUC_URL,'cbot_soja':CBOT_SOURCE,'milho_cepea':MILHO_URL,'premio_soja_paranagua':PREMIO_PARANAGUA_URL}[key]}
                 print(f'{key}: falha: {exc}',flush=True)
     output = {'versao':1,'verificado_em':checked,'fontes':sources,
-              'aviso':'Verificação automática não implica cotação nova. Custos, prêmios locais e séries estimadas do simulador não são preços coletados automaticamente.'}
+              'aviso':'Verificação automática não implica cotação nova. O prêmio Paranaguá tem coleta própria; prêmio Rio Grande, frete, custos e cenários locais permanecem premissas.'}
     atomic_write(STATUS, (json.dumps(output,ensure_ascii=False,indent=2,sort_keys=True)+'\n').encode())
     return output
 
