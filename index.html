@@ -3037,6 +3037,33 @@ function PainelSoja() {
   const [dolar, setDolar] = useState(5.01);
   const [freteCIF, setFreteCIF] = useState(10);
   const [fontePrecos, setFontePrecos] = useState({ fontes: {}, carregado: false, erro: null });
+  const [conabSerieAuto, setConabSerieAuto] = useState(null);
+  // Produção Conab (mil t) atualiza diretamente o gráfico a cada visita.
+  useEffect(() => {
+    let alive = true;
+    const atualizarConab = async () => {
+      try {
+        const response = await fetch('data/fontes/conab_producao.csv', {cache:'no-store'});
+        if (!response.ok) throw new Error('CONAB HTTP '+response.status);
+        const raw = await response.text();
+        const updates = new Map(CONAB_BR.map(record => [record.safra, {...record}]));
+        let valid = 0;
+        for(const line of raw.trim().split(/\r?\n/).slice(1)) {
+          const [safra, rawPrice] = line.split(';');
+          const milTon = Number(rawPrice);
+          if (!/^20\d{2}\/\d{2}$/.test(safra) || !Number.isFinite(milTon) || milTon<=10000 || milTon>=250000) continue;
+          const old = updates.get(safra) || {safra};
+          updates.set(safra, {...old, producao: Math.round(milTon/1000*10)/10});
+          valid++;
+        }
+        if (alive && valid>=5) setConabSerieAuto([...updates.values()].sort((a,b) => a.safra.localeCompare(b.safra)));
+      }catch(e){console.warn('Produção Conab: arquivo não sincronizado',e);}
+    };
+    atualizarConab();
+    const timer = setInterval(atualizarConab, 10*60*1000);
+    return () => {alive=false;clearInterval(timer);};
+  }, []);
+
   // Valores de fontes publicados pelo GitHub Actions; atualiza ao abrir e de 10 em 10 minutos.
   useEffect(() => {
     let alive = true;
@@ -5543,7 +5570,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
             <>
               <div style={{height: 300, marginTop: 16}}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={CONAB_BR} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
+                  <BarChart data={conabSerieAuto || CONAB_BR} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
                     <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
                     <XAxis dataKey="safra" stroke="#6B7065" angle={-45} textAnchor="end" style={{fontSize: 10, fontFamily: 'IBM Plex Mono'}} />
                     <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
@@ -5556,7 +5583,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                 </ResponsiveContainer>
               </div>
               <div style={S.legendaHist}>
-                <strong>Brasil triplicou produção em 15 anos:</strong> 75 Mt (10/11) → 175 Mt (25/26 estimado).
+                <strong>Produção Conab (fonte automática):</strong> {conabSerieAuto ? (conabSerieAuto[conabSerieAuto.length-1].producao.toFixed(1)+' Mt na safra '+conabSerieAuto[conabSerieAuto.length-1].safra) : 'carregando série publicada'}. Exportação, esmagamento e estoques nesta série permanecem referências históricas, não valores automaticamente verificados.
                 Em 17/18 ultrapassamos os EUA pela primeira vez na produção mundial; hoje Brasil sozinho responde por ~40% da oferta global.<br/><br/>
                 <strong>Padrões importantes:</strong><br/>
                 · Brasil <strong>quase não estoca</strong> — esmaga ou exporta tudo (estoque carryover normalmente &lt; 10 Mt, frequentemente próximo de zero)<br/>
