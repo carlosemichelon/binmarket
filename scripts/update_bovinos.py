@@ -201,7 +201,75 @@ def fetch_browser_html() -> str:
             browser.close()
 
 
-def update(html: str, today: date | None = None, *, persist: bool = True) -> dict:
+
+# Download automatico do historico completo exposto pela pagina NESPro.
+# Datas e categorias nao reconhecidas sao ignoradas; nunca inventar preco.
+def decode_export(content: bytes, filename: str) -> dict:
+    from io import BytesIO, StringIO
+    if len(content) > 18_000_000:
+        raise ValueError("Exportacao NESPro muito grande")
+    if filename.lower().endswith(".xlsx") or content[:2] == b"PK":
+        from openpyxl import load_workbook
+        wb = load_workbook(BytesIO(content), data_only=True, read_only=True)
+        sheets = [list(sh.values) for sh in wb.worksheets if "ovino" not in normal(sh.title) and "varejo" not in normal(sh.title)]
+        wb.close()
+    elif filename.lower().endswith(".xls"):
+        import xlrd
+        wb=xlrd.open_workbook(file_contents=content)
+        sheets=[[sh.row_values(i) for i in range(sh.nrows)] for sh in wb.sheets() if "ovino" not in normal(sh.name) and "varejo" not in normal(sh.name)]
+    else:
+        txt=content.decode("utf-8-sig")
+        try:sep=csv.Sniffer().sniff(txt[:2000],delimiters=",;\t").delimiter
+        except csv.Error:sep=";"
+        sheets=[list(csv.reader(StringIO(txt),delimiter=sep))]
+    aliases={"boi_gordo_pv":"pv_macho","boi_gordo_pc":"pc_macho","vaca_gorda_pv":"pv_femea","vaca_gorda_pc":"pc_femea","vaca_de_invernar":"vaca_invernar"}
+    results={}
+    for grid in sheets:
+        for pos in range(min(len(grid),20)):
+            header=[normal(v).replace(" ","_") for v in grid[pos]]
+            datecol=next((i for i,h in enumerate(header) if h in ("data","date","semana","data_coleta")),None)
+            if datecol is None:continue
+            columns={i:(h if h in COLS else aliases.get(h)) for i,h in enumerate(header) if h in COLS or h in aliases}
+            categ=next((i for i,h in enumerate(header) if h in ("categoria","indicador")),None)
+            pricecol=next((i for i,h in enumerate(header) if h in ("valor","preco","preco_kg")),None)
+            if not columns and (categ is None or pricecol is None):continue
+            for values in grid[pos+1:]:
+                if datecol>=len(values):continue
+                try:
+                    v=values[datecol]
+                    day=(v.date() if isinstance(v,datetime) else v).isoformat() if isinstance(v,(datetime,date)) else date_value(str(v))
+                except (ValueError,TypeError):continue
+                record=results.setdefault(day,{"data":day})
+                if categ is not None and pricecol is not None and max(categ,pricecol)<len(values):
+                    raw=normal(values[categ]).replace(" ","_")
+                    key=raw if raw in COLS else aliases.get(raw)
+                    val=price_value(values[pricecol])
+                    if key and val is not None:record[key]=val
+                else:
+                    for i,key in columns.items():
+                        if i<len(values):
+                            val=price_value(values[i])
+                            if val is not None:record[key]=val
+            break
+    results={d:r for d,r in results.items() if len(r)>1}
+    if not results:raise ValueError("Sem dados bovinos reconhecidos na exportacao")
+    return results
+
+
+def download_full_history() -> dict:
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        browser=p.chromium.launch(headless=True)
+        try:
+            page=browser.new_page(accept_downloads=True,locale="pt-BR",timezone_id="America/Sao_Paulo")
+            page.goto(SOURCE,wait_until="domcontentloaded",timeout=60000)
+            with page.expect_download(timeout=25000) as event:
+                page.get_by_role("button",name=re.compile("Baixar base de dados",re.I)).first.click()
+            download=event.value
+            return decode_export(Path(download.path()).read_bytes(),download.suggested_filename)
+        finally:browser.close()
+
+def update(html: str, today: date | None = None, *, persist: bool = True, extra: dict | None = None) -> dict:
     today = today or datetime.now(ZoneInfo("America/Sao_Paulo")).date()
     source_day, published = parse_page(html)
     if source_day > (today + timedelta(days=1)).isoformat():
@@ -213,6 +281,9 @@ def update(html: str, today: date | None = None, *, persist: bool = True) -> dic
 
     before = load_csv(CSV_PATH)
     merged = {d: dict(row) for d, row in before.items()}
+    for day,record in (extra or {}).items():
+        if '2020-01-01' <= day <= (today + timedelta(days=1)).isoformat():
+            merged[day] = {**merged.get(day,{'data':day}), **record}
     for day, new_record in published.items():
         if day > (today + timedelta(days=1)).isoformat():
             continue
@@ -244,6 +315,13 @@ def main() -> int:
             except (requests.RequestException, ValueError, RuntimeError) as exc:
                 print(f"Coleta HTTP não disponível ({exc}); tentando navegador Chromium...", flush=True)
                 outcome = update(fetch_browser_html(), persist=not args.dry_run)
+        if not args.fixture:
+            try:
+                full=download_full_history()
+                outcome=update(fetch_html(),persist=not args.dry_run,extra=full)
+                outcome['historico_exportado']=len(full)
+            except Exception as error:
+                print(f'NESPro: download historico indisponivel ({error}); preservando dados anteriores',flush=True)
         print("NESPro:", json.dumps(outcome, ensure_ascii=False), flush=True)
         return 0
     except Exception as exc:
