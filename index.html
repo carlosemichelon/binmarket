@@ -105,13 +105,13 @@ const BU_PER_SACA = 2.2046;
 const GRAFICO_METODO = {
   1:['COTAÇÃO + CENÁRIO','Cotrijuc JC; CEPEA Paranaguá; CBOT; câmbio BCB','data de cada cotação no painel','R$/saca; USD/bushel; BRL/USD','Preço teórico JC = (CBOT + prêmio ajustável) × 2,2046 × dólar − frete ajustável. Cotrijuc é preço observado independente.','Cotação automática; frete, prêmio e cenário são premissas.','https://www.cotrijuc.com.br/'],
   2:['CUSTOS PERSONALIZÁVEIS','Premissas da propriedade; Conab para referências regionais','safra/cenário do usuário','R$/ha, R$/saca, sc/insumo','Custo/sc = custo/ha ÷ produtividade; margem = preço de referência − custo/sc. Terra e despesas editáveis.','Custos próprios não são dados atualizados automaticamente.','https://www.gov.br/conab/'],
-  3:['HISTÓRICO E MODELO','CEPEA/Esalq Paranaguá; câmbio; CBOT; fertilizantes','2010Q1–2026Q2, base histórica','R$/saca; USD/bushel; R$/USD','Média trimestral das séries compiladas; referência modelada JC ajusta parâmetros adicionais. Não é série de cotações locais observadas.','Trimestres históricos não recebem diretamente a cotação diária nova.','https://www.cepea.esalq.usp.br/br/indicador/series/soja.aspx'],
-  4:['ÍNDICE SAZONAL','CEPEA/Esalq e referências de fertilizantes','2010–junho/2026 na base do módulo','% da média anual','Índice do mês = média histórica do mês ÷ média anual × 100; padrões não garantem repetição.','Estatística histórica compilada; não é previsão automática.','https://www.cepea.esalq.usp.br/'],
-  5:['CENÁRIO DE DERIVATIVOS','CBOT e parâmetros de farelo, óleo, DCE e fretes','vencimento CBOT informado; demais pontos simulados','USD/bu, USD/t, RMB/t','Crush de esmagamento e curvas sob premissas. Não significa que cada vencimento está cotado na mesma data.','CBOT de soja tem coletor; outras curvas e entradas são cenários.','https://www.cmegroup.com/markets/agriculture/oilseeds/soybean.html'],
-  6:['HISTÓRICOS MISTOS','USDA PSD e Conab; compilação mundial histórica','anos USDA e safras Conab não equivalentes','milhões t; estoque/uso %','Estoque/uso = estoque final ÷ demanda × 100; série Conab produção e PSD BR/EUA recebem CSV, mundo e demais colunas podem ser estáticas.','Distinga compilações dos gráficos ligados às fontes automáticas.','https://apps.fas.usda.gov/psdonline/'],
-  7:['COMPARAÇÃO HISTÓRICA COM PROXIES','CEPEA, BCB, Conab, NESPro e indicadores correlatos','2010Q1–2026Q2; coberturas diferentes','índice base 100; unidades específicas em subabas','Normalização = valor do período ÷ valor inicial × 100. Boi, frete e custos podem incluir estimativas/extrapolações.','Série trimestral compilada, diferente dos preços spot atuais.','https://www.cepea.esalq.usp.br/'],
-  9:['SIMULAÇÃO RETROSPECTIVA','Série histórica compilada e critérios de venda informados','janela histórica selecionada','R$/saca, % e sacas','Compara estratégias sobre a mesma janela retrospectiva; não representa transações executadas nem previsão futura.','Recalculado ao mudar parâmetros; entradas históricas não são cotação de hoje.',null],
-  13:['ANÁLISE DA OPERAÇÃO','Cotrijuc real; CEPEA no porto; CBOT e custos parametrizados','data individual das fontes e cenário atual','R$/saca; R$/ha; %','Cotrijuc observado − preço teórico JC é comparação entre medidas independentes. Margem e hedge dependem dos custos e das condições informados.','Preços públicos são coletados, mas custos e condições de contrato são pessoais.','https://www.cotrijuc.com.br/']
+  10:['HISTÓRICO E MODELO','CEPEA/Esalq Paranaguá; câmbio; CBOT; fertilizantes','2010Q1–2026Q2, base histórica','R$/saca; USD/bushel; R$/USD','Média trimestral das séries compiladas; referência modelada JC ajusta parâmetros adicionais. Não é série de cotações locais observadas.','Trimestres históricos não recebem diretamente a cotação diária nova.','https://www.cepea.esalq.usp.br/br/indicador/series/soja.aspx'],
+  11:['ÍNDICE SAZONAL','CEPEA/Esalq e referências de fertilizantes','2010–junho/2026 na base do módulo','% da média anual','Índice do mês = média histórica do mês ÷ média anual × 100; padrões não garantem repetição.','Estatística histórica compilada; não é previsão automática.','https://www.cepea.esalq.usp.br/'],
+  4:['CENÁRIO DE DERIVATIVOS','CBOT e parâmetros de farelo, óleo, DCE e fretes','vencimento CBOT informado; demais pontos simulados','USD/bu, USD/t, RMB/t','Crush de esmagamento e curvas sob premissas. Não significa que cada vencimento está cotado na mesma data.','CBOT de soja tem coletor; outras curvas e entradas são cenários.','https://www.cmegroup.com/markets/agriculture/oilseeds/soybean.html'],
+  12:['HISTÓRICOS MISTOS','USDA PSD e Conab; compilação mundial histórica','anos USDA e safras Conab não equivalentes','milhões t; estoque/uso %','Estoque/uso = estoque final ÷ demanda × 100; série Conab produção e PSD BR/EUA recebem CSV, mundo e demais colunas podem ser estáticas.','Distinga compilações dos gráficos ligados às fontes automáticas.','https://apps.fas.usda.gov/psdonline/'],
+  13:['COMPARAÇÃO HISTÓRICA COM PROXIES','CEPEA, BCB, Conab, NESPro e indicadores correlatos','2010Q1–2026Q2; coberturas diferentes','índice base 100; unidades específicas em subabas','Normalização = valor do período ÷ valor inicial × 100. Boi, frete e custos podem incluir estimativas/extrapolações.','Série trimestral compilada, diferente dos preços spot atuais.','https://www.cepea.esalq.usp.br/'],
+  6:['SIMULAÇÃO RETROSPECTIVA','Série histórica compilada e critérios de venda informados','janela histórica selecionada','R$/saca, % e sacas','Compara estratégias sobre a mesma janela retrospectiva; não representa transações executadas nem previsão futura.','Recalculado ao mudar parâmetros; entradas históricas não são cotação de hoje.',null],
+  3:['ANÁLISE DA OPERAÇÃO','Cotrijuc real; CEPEA no porto; CBOT e custos parametrizados','data individual das fontes e cenário atual','R$/saca; R$/ha; %','Cotrijuc observado − preço teórico JC é comparação entre medidas independentes. Margem e hedge dependem dos custos e das condições informados.','Preços públicos são coletados, mas custos e condições de contrato são pessoais.','https://www.cotrijuc.com.br/']
 };
 function MetodoGrafico({id}) {
   const m=GRAFICO_METODO[id];
@@ -1262,7 +1262,7 @@ function EstratCalc({ idx, ctx }) {
       <div>
         {ctxBlock}
         <div style={{padding: 10, background: '#181C18', fontSize: 11, color: '#A89968', marginBottom: 10, lineHeight: 1.5}}>
-          <strong style={{color: '#E8E2D0'}}>Estocagem = arbitragem cash-and-carry.</strong> Você guarda a soja na esperança de vender mais caro depois. Custo TOTAL = armazenagem física + <strong>juros sobre capital preso</strong> (CDI). Só vale se a alta esperada superar AMBOS. Compare com a curva de futuros (módulo 05) — se o spread futuro &lt; custo carrego, é arbitragem negativa: melhor vender hoje.
+          <strong style={{color: '#E8E2D0'}}>Estocagem = arbitragem cash-and-carry.</strong> Você guarda a soja na esperança de vender mais caro depois. Custo TOTAL = armazenagem física + <strong>juros sobre capital preso</strong> (CDI). Só vale se a alta esperada superar AMBOS. Compare com a curva de futuros (módulo 04) — se o spread futuro &lt; custo carrego, é arbitragem negativa: melhor vender hoje.
         </div>
         <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8}}>
           <div style={S.inputBlock}><label style={S.inputLabel}>Custo armazém R$/sc/mês</label><input type="number" step="0.10" value={a} placeholder="1,20" onChange={e => setA(e.target.value)} /></div>
@@ -1286,7 +1286,7 @@ function EstratCalc({ idx, ctx }) {
           {labelRow('TOTAL fazenda', `R$ ${(liquidoSc * ctx.prodSoja * ctx.areaTotal).toFixed(0)}`, liquidoSc > 0 ? '#C8E04A' : '#D9542B')}
         </div>
         <div style={{marginTop: 8, padding: 10, background: '#0F1410', fontSize: 11, color: '#A89968', lineHeight: 1.5, borderLeft: '2px solid #A89968'}}>
-          <strong>Insight do consultor:</strong> em ciclo de juros altos (Selic &gt; 13%), o custo financeiro do carrego facilmente supera 8-10% da saca em 6 meses. <strong>Sem alta robusta esperada, vender é matematicamente superior</strong>. Compare com a curva futuros CBOT (módulo 05 aba "Curva soja"): se está em backwardation (futuro &lt; spot), o mercado já fica te dizendo para vender já.
+          <strong>Insight do consultor:</strong> em ciclo de juros altos (Selic &gt; 13%), o custo financeiro do carrego facilmente supera 8-10% da saca em 6 meses. <strong>Sem alta robusta esperada, vender é matematicamente superior</strong>. Compare com a curva futuros CBOT (módulo 04 aba "Curva soja"): se está em backwardation (futuro &lt; spot), o mercado já fica te dizendo para vender já.
         </div>
       </div>
     );
@@ -1367,7 +1367,7 @@ function EstratCalc({ idx, ctx }) {
 
 // ============================================================
 // BLOCO DEDICADO: CUSTOS DE PRODUÇÃO
-// Aba self-contained do módulo 07 — auto-suficiente, separada do gráfico multi-ativo
+// Aba self-contained do módulo 13 — auto-suficiente, separada do gráfico multi-ativo
 // ============================================================
 function CustosBloco({ data, margemAnual }) {
   // Custo total Conab 2010 vs 2026 para cálculo de % aumento
@@ -1543,7 +1543,7 @@ function CustosBloco({ data, margemAnual }) {
           <li><strong>Máquinas</strong> — Hilux subiu +{((MACRO_ANUAL[2026].hilux/MACRO_ANUAL[2010].hilux - 1)*100).toFixed(0)}%, tratores/colheitadeiras seguiram padrão similar. Depreciação ficou cara.</li>
         </ul>
         <div style={{marginTop: 8}}>
-          <strong style={{color:'#E8E2D0'}}>O que o produtor pode fazer:</strong> otimizar os <strong>2 maiores</strong> (terra: parceria vs arrendamento; fertilizantes: sazonalidade do módulo 04 + relação de troca do módulo 02). Esses dois representam ~60% do custo total.
+          <strong style={{color:'#E8E2D0'}}>O que o produtor pode fazer:</strong> otimizar os <strong>2 maiores</strong> (terra: parceria vs arrendamento; fertilizantes: sazonalidade do módulo 11 + relação de troca do módulo 02). Esses dois representam ~60% do custo total.
         </div>
       </div>
     </div>
@@ -1568,7 +1568,7 @@ function RentabilidadeBloco({ data, resumo }) {
       </div>
 
       <div style={{padding: 12, background: '#0F1410', borderLeft: '3px solid #C8E04A', marginBottom: 16, fontSize: 12, color: '#E8E2D0', lineHeight: 1.6}}>
-        <strong>O que esta aba mostra:</strong> a margem líquida ANUAL real do produtor de JC/RS — combinando o preço médio CEPEA (módulo 03), o custo Conab (módulo acima) e a <strong>produtividade real registrada pelo IBGE (PAM tabela 1612)</strong> para o município. <br/>
+        <strong>O que esta aba mostra:</strong> a margem líquida ANUAL real do produtor de JC/RS — combinando o preço médio CEPEA (módulo 10), o custo Conab (módulo acima) e a <strong>produtividade real registrada pelo IBGE (PAM tabela 1612)</strong> para o município. <br/>
         <strong style={{color:'#FF7F50'}}>★ CORREÇÃO IMPORTANTE:</strong> o custo Conab R$/sc assume produtividade ~50 sc/ha (RS Planalto). Quando a safra quebra (30 sc/ha), o custo R$/ha permanece quase fixo, mas o custo REAL por saca DISPARA. A tabela abaixo mostra o "custo real" recalculado com a produtividade efetiva — anos de quebra severa têm custo R$/sc 50-80% maior que o Conab nominal e margem REAL negativa.<br/>
         <em>Fonte produtividade: IBGE/SIDRA tabela 1612 + Emater/RS + estimativa Conab para safras futuras.</em>
       </div>
@@ -1781,7 +1781,7 @@ function RentabilidadeBloco({ data, resumo }) {
           <li><strong>Melhor ano: {resumo.melhorAno.ano}</strong> ({resumo.melhorAno.prodScHa.toFixed(1)} sc/ha · {resumo.melhorAno.obs}) — rentabilidade de R$ {resumo.melhorAno.rentabilidadeHa.toLocaleString('pt-BR')}/ha. Diluição: custo real desceu para R$ {resumo.melhorAno.custoRealSaca.toFixed(2)}/sc.</li>
           <li><strong>Quebras concentradas em La Niña</strong> ({resumo.anosQuebra}/17 = {Math.round(resumo.anosQuebra/17*100)}%): 2012, 2020, 2021, 2022. Sequência 20-22 foi quase fatal (3 quebras seguidas, prejuízo acumulado de ~R$ {Math.abs(RENTABILIDADE_REAL_JC.filter(r => [2020,2021,2022].includes(r.ano)).reduce((s,r)=>s+r.rentabilidadeHa,0)).toLocaleString('pt-BR')}/ha).</li>
           <li><strong>Ponto de equilíbrio JC/RS</strong>: aproximadamente <strong>38-42 sc/ha</strong> (varia com preço). Abaixo disso, margem é negativa mesmo com preço bom. A tabela de sensibilidade acima mostra isso quantitativamente.</li>
-          <li><strong>Estratégia recomendada (consultor):</strong> seguro de produção para piso (cobre custo fixo R$/ha) + hedge gradual de preço por camadas (módulos 06 e 08). O combo seguro + hedge é o que viabiliza descapitalização em ano bom. <strong>Custo do seguro Proagro Mais ~3-5% da garantia</strong> — compensa amplamente os prejuízos potenciais de quebra.</li>
+          <li><strong>Estratégia recomendada (consultor):</strong> seguro de produção para piso (cobre custo fixo R$/ha) + hedge gradual de preço por camadas (módulos 12 e 05). O combo seguro + hedge é o que viabiliza descapitalização em ano bom. <strong>Custo do seguro Proagro Mais ~3-5% da garantia</strong> — compensa amplamente os prejuízos potenciais de quebra.</li>
         </ul>
       </div>
     </div>
@@ -2485,7 +2485,7 @@ function DecisaoEstrategicaBloco() {
           <ul style={{margin: '4px 0 12px 16px', padding: 0}}>
             <li><strong>Seguro Proagro/privado</strong> — reduz significativamente o VaR da quebra severa. Custa 3-5% da garantia mas viabiliza estratégia B.</li>
             <li><strong>Valorização da TERRA</strong> — terra própria tem valorização real ~3-5% a.a. no RS, não computado aqui.</li>
-            <li><strong>Otimização de venda</strong> — assume preço médio R$ {precoEsperado}/sc; uma boa estratégia de hedge (módulos 6-8) pode adicionar 10-20% de margem.</li>
+            <li><strong>Otimização de venda</strong> — assume preço médio R$ {precoEsperado}/sc; uma boa estratégia de hedge (módulos 12-8) pode adicionar 10-20% de margem.</li>
             <li><strong>Custos fiscais reais</strong> — IR rural, ITR, Funrural não computados aqui (vide módulo 15).</li>
             <li><strong>Mudança climática</strong> — usa frequências históricas; se La Niñas estão mais frequentes, prob de quebra pode subir.</li>
             <li><strong>Cenário B parcial:</strong> pode-se arrendar SÓ uma fração (ex: 30 ha em vez de {areaArrendarHa}). Teste no input.</li>
@@ -2780,7 +2780,7 @@ function TourGuiado({ onClose }) {
     },
     {
       titulo: '✓ Pronto!',
-      texto: 'Dica: comece editando o módulo 02 com seus custos reais. Em seguida veja o módulo 12 (plano de hedge) e 11 (decisão estratégica). Use o botão ? no canto para reabrir este tour. Boa safra!',
+      texto: 'Dica: comece editando o módulo 02 com seus custos reais. Em seguida veja o módulo 09 (plano de hedge) e 11 (decisão estratégica). Use o botão ? no canto para reabrir este tour. Boa safra!',
     },
   ];
   const [step, setStep] = useState(0);
@@ -3365,7 +3365,7 @@ function PainelSoja() {
   const [usdCny, setUsdCny] = useState(7.10);              // taxa CNY/USD
   // === SAZONALIDADE — toggle de visão ===
   const [sazVer, setSazVer] = useState('historico');
-  // === Sub-aba do módulo 05 (Crush / Curva soja / Curva fertilizantes) ===
+  // === Sub-aba do módulo 04 (Crush / Curva soja / Curva fertilizantes) ===
   const [mercVer, setMercVer] = useState('crush');
 
   // === DERIVADOS DE CUSTO ===
@@ -3809,9 +3809,20 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
           <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:1.8,color:'#C8E04A',marginBottom:6}}>ÁREA DE TRABALHO</div>
           <h2 style={{fontFamily:"'IBM Plex Serif',serif",fontSize:25,fontWeight:400,color:'#E8E2D0',margin:'0 0 8px'}}>Operação · preço, custo, rentabilidade e comercialização</h2>
           <p style={{fontSize:12,color:'#A89968',lineHeight:1.6,margin:0}}>O cálculo parte das cotações e das premissas escolhidas. Custos e decisões são editáveis; mantenha a praça e a data de cada preço em vista.</p>
+          <nav aria-label="Índice dos módulos 01 a 09" style={{display:'flex',flexWrap:'wrap',gap:7,marginTop:15}}>
+<a href="#modulo-01" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>01</b> Componentes do preço</a>
+<a href="#modulo-02" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>02</b> Custos detalhados, margem &amp; relação de troca</a>
+<a href="#modulo-03" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>03</b> Análise operacional ·</a>
+<a href="#modulo-04" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>04</b> Mercados de derivativos · Crush</a>
+<a href="#modulo-05" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>05</b> Estratégia recomendada para a ja</a>
+<a href="#modulo-06" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>06</b> Simulador de venda escalonada</a>
+<a href="#modulo-07" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>07</b> Estratégias clássicas de comercialização</a>
+<a href="#modulo-08" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>08</b> ★ Decisão estratégica · Própria</a>
+<a href="#modulo-09" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>09</b> ★ Plano de hedge sugerido · açõe</a>
+          </nav>
         </div>
 {/* 01 — COMPONENTES */}
-        <section style={S.card}>
+        <section id="modulo-01" style={S.card}>
           <div style={S.cardLabel}>01 — Componentes do preço</div>
           <MetodoGrafico id={1} />
           {[
@@ -3958,13 +3969,13 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
               </ResponsiveContainer>
             </div>
             <div style={{fontSize: 10, color: '#6B7065', fontFamily: "'IBM Plex Mono', monospace", marginTop: 6, padding: 8, background: '#0F1410', borderLeft: '2px solid #6B7065'}}>
-              <strong style={{color:'#A89968'}}>Como interpretar:</strong> se o final do gráfico está bem acima do custo, sua margem está garantida no cenário — pode esperar mais para travar. Se está próximo ou abaixo, atue agora (consulte o módulo 03 para a recomendação automática). A largura da banda azul mostra <strong>quanto pode variar</strong>: bandas largas = volatilidade alta dos componentes → considere put protetiva (módulo 07 #5). <strong>Pontos visíveis na linha verde</strong> permitem hover para ver os 3 componentes projetados em cada mês.
+              <strong style={{color:'#A89968'}}>Como interpretar:</strong> se o final do gráfico está bem acima do custo, sua margem está garantida no cenário — pode esperar mais para travar. Se está próximo ou abaixo, atue agora (consulte o módulo 05 para o diagnóstico estratégico). A largura da banda azul mostra <strong>quanto pode variar</strong>: bandas largas = volatilidade alta dos componentes → considere put protetiva (módulo 07, estratégia de put protetiva). <strong>Pontos visíveis na linha verde</strong> permitem hover para ver os 3 componentes projetados em cada mês.
             </div>
           </div>
         </section>
 
         {/* 02 — CUSTOS DETALHADOS E TROCA */}
-        <section style={S.card}>
+        <section id="modulo-02" style={S.card}>
           <div style={S.cardLabel}>02 — Custos detalhados, margem & relação de troca</div>
           <MetodoGrafico id={2} />
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
@@ -4392,12 +4403,12 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                         atual: `R$ ${custoVarHa.toFixed(0)}/ha`,
                         afeta: [
                           { onde: 'Mód 02', desc: 'MC unitária, PE sc/ha, MS%', critico: true },
-                          { onde: 'Mód 09', desc: 'Custo base do simulador escalonado', critico: false },
-                          { onde: 'Mód 10', desc: 'Calculadoras barter, forward, three-way', critico: false },
-                          { onde: 'Mód 07 · Rentab', desc: 'Custo real R$/ha histórico (16 anos)', critico: true },
-                          { onde: 'Mód 07 · Margem', desc: 'Recalcula margem soja %', critico: false },
-                          { onde: 'Mód 11', desc: 'Esperança matemática 3 cenários', critico: true },
-                          { onde: 'Mód 12', desc: 'Break-even atual + recomendação tática', critico: true },
+                          { onde: 'Mód 06', desc: 'Custo base do simulador escalonado', critico: false },
+                          { onde: 'Mód 07', desc: 'Calculadoras barter, forward, three-way', critico: false },
+                          { onde: 'Mód 13 · Rentab', desc: 'Custo real R$/ha histórico (16 anos)', critico: true },
+                          { onde: 'Mód 13 · Margem', desc: 'Recalcula margem soja %', critico: false },
+                          { onde: 'Mód 08', desc: 'Esperança matemática 3 cenários', critico: true },
+                          { onde: 'Mód 09', desc: 'Break-even atual + recomendação tática', critico: true },
                         ],
                       },
                       {
@@ -4405,9 +4416,9 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                         atual: `R$ ${custoFixoBase.toFixed(0)}/ha`,
                         afeta: [
                           { onde: 'Mód 02', desc: 'Ponto de equilíbrio sc/ha', critico: true },
-                          { onde: 'Mód 07 · Rentab', desc: 'Custo fixo histórico (80% do custo R$/ha)', critico: true },
-                          { onde: 'Mód 11', desc: 'Capital empregado em custeio', critico: true },
-                          { onde: 'Mód 12', desc: 'Break-even total · status COBRE/NÃO COBRE', critico: true },
+                          { onde: 'Mód 13 · Rentab', desc: 'Custo fixo histórico (80% do custo R$/ha)', critico: true },
+                          { onde: 'Mód 08', desc: 'Capital empregado em custeio', critico: true },
+                          { onde: 'Mód 09', desc: 'Break-even total · status COBRE/NÃO COBRE', critico: true },
                         ],
                       },
                       {
@@ -4415,9 +4426,9 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                         atual: `${arrendamentoScHa} sc/ha`,
                         afeta: [
                           { onde: 'Mód 02', desc: 'Terra R$/ha = arrend × % × preço CIF', critico: true },
-                          { onde: 'Mód 07 · Tudo', desc: 'Margem yield idx recalcula 66 trimestres', critico: true },
-                          { onde: 'Mód 07 · Rentab', desc: 'Rentabilidade JC ano-a-ano com arrendamento real', critico: true },
-                          { onde: 'Mód 11', desc: 'Cenário B (arrendar adicional)', critico: true },
+                          { onde: 'Mód 13 · Tudo', desc: 'Margem yield idx recalcula 66 trimestres', critico: true },
+                          { onde: 'Mód 13 · Rentab', desc: 'Rentabilidade JC ano-a-ano com arrendamento real', critico: true },
+                          { onde: 'Mód 08', desc: 'Cenário B (arrendar adicional)', critico: true },
                         ],
                       },
                       {
@@ -4425,8 +4436,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                         atual: `${pctArrendada}%`,
                         afeta: [
                           { onde: 'Mód 02', desc: 'Terra efetiva = arrend × ESTE × preço', critico: true },
-                          { onde: 'Mód 07 inteiro', desc: 'Todo histórico recalcula com sua estrutura', critico: true },
-                          { onde: 'Mód 11', desc: 'Define qual cenário (A: 0% · B: ~50% · C: independe)', critico: true },
+                          { onde: 'Mód 13 inteiro', desc: 'Todo histórico recalcula com sua estrutura', critico: true },
+                          { onde: 'Mód 08', desc: 'Define qual cenário (A: 0% · B: ~50% · C: independe)', critico: true },
                         ],
                       },
                     ]
@@ -4440,10 +4451,10 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                         atual: `${cbot.toFixed(2)} USD/bu`,
                         afeta: [
                           { onde: 'Mód 01', desc: 'Preço teórico = (CBOT+prêmio) × 2,2046 × dólar − frete; cotação local real prevalece quando disponível', critico: true },
-                          { onde: 'Mód 05', desc: 'Crush margin BR e China', critico: false },
-                          { onde: 'Mód 03', desc: 'Estratégia recomendada (preço alto/baixo)', critico: true },
-                          { onde: 'Mód 10', desc: 'Todas calculadoras (preço base)', critico: true },
-                          { onde: 'Mód 12', desc: 'Diagnóstico margem atual', critico: true },
+                          { onde: 'Mód 04', desc: 'Crush margin BR e China', critico: false },
+                          { onde: 'Mód 10', desc: 'Estratégia recomendada (preço alto/baixo)', critico: true },
+                          { onde: 'Mód 07', desc: 'Todas calculadoras (preço base)', critico: true },
+                          { onde: 'Mód 09', desc: 'Diagnóstico margem atual', critico: true },
                         ],
                       },
                       {
@@ -4451,8 +4462,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                         atual: `R$ ${dolar.toFixed(2)}`,
                         afeta: [
                           { onde: 'Mód 01', desc: 'Multiplica direto no preço CIF JC', critico: true },
-                          { onde: 'Mód 05 · China', desc: 'Crush China usa este dólar para frete Santos', critico: false },
-                          { onde: 'Mód 03 a 08', desc: 'Todos preços spot ajustam', critico: true },
+                          { onde: 'Mód 04 · China', desc: 'Crush China usa este dólar para frete Santos', critico: false },
+                          { onde: 'Mód 10 a 08', desc: 'Todos preços spot ajustam', critico: true },
                         ],
                       },
                       {
@@ -4460,7 +4471,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                         atual: `${premio.toFixed(0)} cents/bu`,
                         afeta: [
                           { onde: 'Mód 01', desc: 'Soma ao CBOT antes de converter para R$', critico: true },
-                          { onde: 'Mód 03', desc: 'Estratégia depende de prêmio firme/fraco', critico: false },
+                          { onde: 'Mód 10', desc: 'Estratégia depende de prêmio firme/fraco', critico: false },
                         ],
                       },
                       {
@@ -4483,11 +4494,11 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                         afeta: [
                           { onde: 'Mód 02', desc: 'Custo R$/sc = R$/ha ÷ produtividade', critico: true },
                           { onde: 'Mód 02', desc: 'PE sc/ha vs produtividade = MS%', critico: true },
-                          { onde: 'Mód 03', desc: 'Total fazenda = prod × área × preço', critico: true },
-                          { onde: 'Mód 09', desc: 'Total sacas a distribuir nas vendas', critico: true },
-                          { onde: 'Mód 10', desc: '% safra hedgeada nas calculadoras', critico: true },
-                          { onde: 'Mód 11', desc: 'Receita esperada × probabilidades', critico: true },
-                          { onde: 'Mód 12', desc: 'Total sacas para travar', critico: true },
+                          { onde: 'Mód 10', desc: 'Total fazenda = prod × área × preço', critico: true },
+                          { onde: 'Mód 06', desc: 'Total sacas a distribuir nas vendas', critico: true },
+                          { onde: 'Mód 07', desc: '% safra hedgeada nas calculadoras', critico: true },
+                          { onde: 'Mód 08', desc: 'Receita esperada × probabilidades', critico: true },
+                          { onde: 'Mód 09', desc: 'Total sacas para travar', critico: true },
                         ],
                       },
                       {
@@ -4495,8 +4506,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                         atual: `R$ ${custoFert}/ton`,
                         afeta: [
                           { onde: 'Mód 02', desc: 'Relação de troca soja:NPK = NPK ÷ sacaCIF', critico: false },
-                          { onde: 'Mód 10 · Barter', desc: 'Calcula sacas pagas em NPK', critico: false },
-                          { onde: 'Mód 04', desc: 'Aparece no gráfico de NPK histórico', critico: false },
+                          { onde: 'Mód 07 · Barter', desc: 'Calcula sacas pagas em NPK', critico: false },
+                          { onde: 'Mód 11', desc: 'Aparece no gráfico de NPK histórico', critico: false },
                         ],
                       },
                     ]
@@ -4547,12 +4558,12 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                         </thead>
                         <tbody>
                           {[
-                            { dec: 'Plantar próprio vs arrendar', infl: 'arrendamento sc/ha + % arrendada + produtividade', onde: 'Mód 11' },
-                            { dec: 'Quanto travar agora forward', infl: 'preço CIF JC + custo total + mês atual', onde: 'Mód 12' },
-                            { dec: 'Comprar NPK ou esperar', infl: 'NPK R$/ton + base CBOT + mês até plantio', onde: 'Mód 12 (set-out)' },
-                            { dec: 'Seguro Proagro sim/não', infl: 'custo fixo + histórico de quebras (40% prob)', onde: 'Mód 11 + 09 · Rentab' },
-                            { dec: 'Aumentar área plantada', infl: 'margem real + custo fixo de novo arrendamento', onde: 'Mód 11 cenário B' },
-                            { dec: 'Estocar pós-colheita', infl: 'CDI + spread spot-futuro + custo armazém', onde: 'Mód 10 · Estocagem' },
+                            { dec: 'Plantar próprio vs arrendar', infl: 'arrendamento sc/ha + % arrendada + produtividade', onde: 'Mód 08' },
+                            { dec: 'Quanto travar agora forward', infl: 'preço CIF JC + custo total + mês atual', onde: 'Mód 09' },
+                            { dec: 'Comprar NPK ou esperar', infl: 'NPK R$/ton + base CBOT + mês até plantio', onde: 'Mód 09 (set-out)' },
+                            { dec: 'Seguro Proagro sim/não', infl: 'custo fixo + histórico de quebras (40% prob)', onde: 'Mód 08 + 06 · Rentab' },
+                            { dec: 'Aumentar área plantada', infl: 'margem real + custo fixo de novo arrendamento', onde: 'Mód 08 cenário B' },
+                            { dec: 'Estocar pós-colheita', infl: 'CDI + spread spot-futuro + custo armazém', onde: 'Mód 07 · Estocagem' },
                           ].map((d, i) => (
                             <tr key={i} style={{borderBottom: '1px solid #1F231D'}}>
                               <td style={{padding: 6, color: '#E8E2D0', fontWeight: 600}}>{d.dec}</td>
@@ -4874,11 +4885,11 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
         </section>
 
-        {/* 13 — ANÁLISE OPERACIONAL */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#C8E04A', background: '#1A211A'}}>
+        {/* 03 — ANÁLISE OPERACIONAL */}
+        <section id="modulo-03" className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#C8E04A', background: '#1A211A'}}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 4}}>
-            <div style={{...S.cardLabel, color: '#C8E04A', margin: 0}}>13 — Análise operacional · preços, rentabilidade e hedge</div>
-          <MetodoGrafico id={13} />
+            <div style={{...S.cardLabel, color: '#C8E04A', margin: 0}}>03 — Análise operacional · preços, rentabilidade e hedge</div>
+          <MetodoGrafico id={3} />
             <button onClick={copiarRelatorio} style={{
               background: '#C8E04A', color: '#0F1410', border: 'none', padding: '8px 14px',
               fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 600,
@@ -5088,10 +5099,10 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
         </section>
 
 
-        {/* 05 — CRUSH MARGIN + CURVAS DE FUTUROS */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#E6B84A'}}>
-          <div style={{...S.cardLabel, color: '#E6B84A'}}>05 — Mercados de derivativos · Crush · Curvas de futuros</div>
-          <MetodoGrafico id={5} />
+        {/* 04 — CRUSH MARGIN + CURVAS DE FUTUROS */}
+        <section id="modulo-04" className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#E6B84A'}}>
+          <div style={{...S.cardLabel, color: '#E6B84A'}}>04 — Mercados de derivativos · Crush · Curvas de futuros</div>
+          <MetodoGrafico id={4} />
           <div style={S.tabRow}>
             {[
               { k: 'crush', l: 'Crush BR/global (esmagador)' },
@@ -5385,9 +5396,9 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
               ), marginBottom: 12, fontSize: 12, color: '#E8E2D0', lineHeight: 1.6}}>
                 <div style={{fontSize: 10, letterSpacing: 1, marginBottom: 4, color: '#A89968'}}>LEITURA</div>
                 {crushChinaClass === 'excelente' && '★★ CRUSH EXCEPCIONAL (>US$ 100/ton): esmagadoras chinesas com margem fora de série. Demanda explosiva para soja BR. Prêmio Paranaguá deve subir 30-50¢/bu. JANELA AGRESSIVA para vender físico.'}
-                {crushChinaClass === 'saudavel' && '★ CRUSH SAUDÁVEL ($50-100/ton): faixa histórica boa. Esmagadoras compram com regularidade, prêmio firme. Continue escalonando vendas conforme estratégia normal (módulo 03).'}
+                {crushChinaClass === 'saudavel' && '★ CRUSH SAUDÁVEL ($50-100/ton): faixa histórica boa. Esmagadoras compram com regularidade, prêmio firme. Continue escalonando vendas conforme estratégia normal (módulo 10).'}
                 {crushChinaClass === 'apertado' && 'CRUSH APERTADO ($20-50/ton): margem fina, esmagadoras reduzem ritmo de compras. Prêmio pode cair se persistir. Atenção a sinais de Sinograin liberar estoques estratégicos (deprime preço).'}
-                {crushChinaClass === 'critico' && 'CRUSH CRÍTICO (<$20/ton): mercado em vermelho. Esmagadoras só compram o essencial. Risco de prêmio Paranaguá colapsar 50¢-1,00 USD/bu. Considere hedge agressivo via put protetiva (módulo 10 #5).'}
+                {crushChinaClass === 'critico' && 'CRUSH CRÍTICO (<$20/ton): mercado em vermelho. Esmagadoras só compram o essencial. Risco de prêmio Paranaguá colapsar 50¢-1,00 USD/bu. Considere hedge agressivo via put protetiva (módulo 07 #5).'}
                 {crushChinaClass === 'negativo' && '⚠ CRUSH NEGATIVO: esmagadoras operam no prejuízo. Param de comprar, podem cancelar embarques (default), Sinograin libera estoques. Prêmio derrete. Cenário 2015-16 ou abr/2024. Hedge defensivo URGENTE.'}
               </div>
 
@@ -5482,9 +5493,9 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
         </section>
 
 
-        {/* 08 — ESTRATÉGIA */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#C8E04A'}}>
-          <div style={{...S.cardLabel, color: '#C8E04A'}}>08 — Estratégia recomendada para a janela atual</div>
+        {/* 05 — ESTRATÉGIA */}
+        <section id="modulo-05" className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#C8E04A'}}>
+          <div style={{...S.cardLabel, color: '#C8E04A'}}>05 — Estratégia recomendada para a janela atual</div>
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 14, lineHeight: 1.6}}>
             <strong>Como funciona:</strong> o painel cruza 2 informações para cada componente (CBOT, prêmio, dólar) e gera uma recomendação:
             <ol style={{margin: '6px 0 0 16px', padding: 0}}>
@@ -5535,10 +5546,10 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
           </div>
         </section>
 
-        {/* 09 — SIMULADOR */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#E6B84A'}}>
-          <div style={{...S.cardLabel, color: '#E6B84A'}}>09 — Simulador de venda escalonada</div>
-          <MetodoGrafico id={9} />
+        {/* 06 — SIMULADOR */}
+        <section id="modulo-06" className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#E6B84A'}}>
+          <div style={{...S.cardLabel, color: '#E6B84A'}}>06 — Simulador de venda escalonada</div>
+          <MetodoGrafico id={6} />
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 12, lineHeight: 1.6}}>
             <strong>Para que serve:</strong> escolha uma janela do passado (ex: a safra 22/23 completa, ou o 2º semestre 2024) e compare <strong>6 estratégias de venda diferentes</strong> sobre o MESMO preço histórico. Mostra na prática o que cada decisão teria dado em R$/saca — útil para entender quanto vale o "tudo no início", "tudo no fim", "escalonado linear" e "gatilho de trava" comparados ao topo perfeito e ao fundo.
           </div>
@@ -5626,7 +5637,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                 </summary>
                 <div style={{marginTop: 10}}>
                   <div style={{fontSize: 11, color: '#A89968', marginBottom: 12, lineHeight: 1.5, padding: 10, background: '#0F1410', borderLeft: '2px solid #7AB8E0'}}>
-                    <strong style={{color:'#E8E2D0'}}>O que esta seção mostra:</strong> aplica retrospectivamente 4 estratégias do módulo 10 sobre os preços REAIS dessa janela. Permite responder "se eu tivesse usado put protetiva em vez de escalonado, ganharia mais?" para qualquer janela do passado. <strong>Lição prática:</strong> a melhor estratégia muda com o cenário de mercado, e olhar pra trás revela padrões repetíveis.
+                    <strong style={{color:'#E8E2D0'}}>O que esta seção mostra:</strong> aplica retrospectivamente 4 estratégias do módulo 07 sobre os preços REAIS dessa janela. Permite responder "se eu tivesse usado put protetiva em vez de escalonado, ganharia mais?" para qualquer janela do passado. <strong>Lição prática:</strong> a melhor estratégia muda com o cenário de mercado, e olhar pra trás revela padrões repetíveis.
                   </div>
                   <div style={{overflowX: 'auto', border: '1px solid #2A2F28'}}>
                     <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace"}}>
@@ -5688,9 +5699,9 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
           )}
         </section>
 
-        {/* 10 — ESTRATÉGIAS CLÁSSICAS */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
-          <div style={S.cardLabel}>10 — Estratégias clássicas de comercialização</div>
+        {/* 07 — ESTRATÉGIAS CLÁSSICAS */}
+        <section id="modulo-07" className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+          <div style={S.cardLabel}>07 — Estratégias clássicas de comercialização</div>
           <div style={S.estratClassicaWrap}>
             {ESTRATEGIAS_CLASSICAS.map((est, i) => (
               <div key={i} style={S.estratClassicaCard}>
@@ -5735,18 +5746,18 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
 
 
-        {/* 11 — DECISÃO ESTRATÉGICA · A vs B vs C */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
-          <div style={{...S.cardLabel, color: '#C8E04A'}}>11 — ★ Decisão estratégica · Própria vs Arrendar vs CDI</div>
+        {/* 08 — DECISÃO ESTRATÉGICA · A vs B vs C */}
+        <section id="modulo-08" className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+          <div style={{...S.cardLabel, color: '#C8E04A'}}>08 — ★ Decisão estratégica · Própria vs Arrendar vs CDI</div>
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
             Análise probabilística baseada em 25 anos de dados SIDRA reais (2000-2024). Compara: <strong>(A)</strong> plantar só área própria · <strong>(B)</strong> própria + arrendar área adicional · <strong>(C)</strong> não plantar, capital em CDI. Calcula esperança matemática, probabilidade de margem positiva e Value at Risk.
           </div>
           <DecisaoEstrategicaBloco />
         </section>
 
-        {/* 12 — PLANO DE HEDGE SUGERIDO */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
-          <div style={{...S.cardLabel, color: '#C8E04A'}}>12 — ★ Plano de hedge sugerido · ações por mês</div>
+        {/* 09 — PLANO DE HEDGE SUGERIDO */}
+        <section id="modulo-09" className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+          <div style={{...S.cardLabel, color: '#C8E04A'}}>09 — ★ Plano de hedge sugerido · ações por mês</div>
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
             Roadmap mensal de ações baseado em (1) seu custo real R$/sc do módulo 02 · (2) preço atual CEPEA · (3) sazonalidade JC · (4) calendário WASDE/ANEC. Próximos 6 meses a partir de hoje, com diagnóstico tático imediato.
           </div>
@@ -5764,12 +5775,22 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
         <div className="span-2" id="mercado-dados" style={{gridColumn:'span 2',padding:'23px 24px',background:'#151E18',border:'1px solid #37513A',borderLeft:'4px solid #C8E04A',scrollMarginTop:90}}>
           <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:1.8,color:'#C8E04A',marginBottom:6}}>ÁREA DE TRABALHO</div>
           <h2 style={{fontFamily:"'IBM Plex Serif',serif",fontSize:25,fontWeight:400,color:'#E8E2D0',margin:'0 0 8px'}}>Mercado · dados, metodologia e planejamento</h2>
-          <p style={{fontSize:12,color:'#A89968',lineHeight:1.6,margin:0}}>Séries e análises históricas, sazonalidade, fundamentos, comparações, eventos, impostos e rastreabilidade das fontes. A numeração original dos módulos foi preservada para manter as referências técnicas entre eles.</p>
+          <p style={{fontSize:12,color:'#A89968',lineHeight:1.6,margin:0}}>Séries e análises históricas, sazonalidade, fundamentos, comparações, eventos, impostos e rastreabilidade das fontes. Os módulos foram numerados de 01 a 17 conforme a ordem desta versão; as referências técnicas internas seguem essa mesma numeração.</p>
+          <nav aria-label="Índice dos módulos 10 a 17" style={{display:'flex',flexWrap:'wrap',gap:7,marginTop:15}}>
+<a href="#modulo-10" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>10</b> Histórico (CEPEA Paranaguá, 2010–2026)</a>
+<a href="#modulo-11" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>11</b> Sazonalidade · Calendário do ano</a>
+<a href="#modulo-12" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>12</b> Fundamentos · Oferta · Demanda ·</a>
+<a href="#modulo-13" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>13</b> Multi-ativo histórico · 16 anos</a>
+<a href="#modulo-14" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>14</b> Calendário de decisões · próximo</a>
+<a href="#modulo-15" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>15</b> Tributação rural · planejamento</a>
+<a href="#modulo-16" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>16</b> Eventos-chave para calibrar leitura</a>
+<a href="#modulo-17" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>17</b> Auditoria técnica · fontes, data</a>
+          </nav>
         </div>
-{/* 03 — HISTÓRICO */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
-          <div style={S.cardLabel}>03 — Histórico (CEPEA Paranaguá, 2010–2026)</div>
-          <MetodoGrafico id={3} />
+{/* 10 — HISTÓRICO */}
+        <section id="modulo-10" className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+          <div style={S.cardLabel}>10 — Histórico (CEPEA Paranaguá, 2010–2026)</div>
+          <MetodoGrafico id={10} />
           <div style={S.tabRow}>
             {[
               { k: 'saca', l: 'Preço estimado JC' },
@@ -5815,10 +5836,10 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
           </div>
         </section>
 
-        {/* 04 — SAZONALIDADE */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#7AB8E0'}}>
-          <div style={{...S.cardLabel, color: '#7AB8E0'}}>04 — Sazonalidade · Calendário do ano agrícola</div>
-          <MetodoGrafico id={4} />
+        {/* 11 — SAZONALIDADE */}
+        <section id="modulo-11" className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#7AB8E0'}}>
+          <div style={{...S.cardLabel, color: '#7AB8E0'}}>11 — Sazonalidade · Calendário do ano agrícola</div>
+          <MetodoGrafico id={11} />
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 12, lineHeight: 1.5}}>
             Padrão de preço CEPEA Paranaguá calculado em <strong>5.050 cotações diárias 2010-2026</strong>. Cada mês mostra o % da média anual: <strong>FEV é historicamente o pior (94%)</strong>, <strong>SET e NOV os melhores (105%)</strong>. Spread médio anual: <strong>~11%</strong> entre vale e pico.
           </div>
@@ -6041,10 +6062,10 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
           })()}
         </section>
 
-        {/* 06 — FUNDAMENTOS USDA + CONAB */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#7AB8E0'}}>
-          <div style={{...S.cardLabel, color: '#7AB8E0'}}>06 — Fundamentos · Oferta · Demanda · Estoques (USDA + Conab)</div>
-          <MetodoGrafico id={6} />
+        {/* 12 — FUNDAMENTOS USDA + CONAB */}
+        <section id="modulo-12" className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#7AB8E0'}}>
+          <div style={{...S.cardLabel, color: '#7AB8E0'}}>12 — Fundamentos · Oferta · Demanda · Estoques (USDA + Conab)</div>
+          <MetodoGrafico id={12} />
           <div style={{fontSize: 12, color: '#A89968', marginBottom: 12, lineHeight: 1.5}}>
             <strong>Por que isso importa:</strong> o preço do bushel em Chicago é, no fundo, um balanço entre quanto o mundo produz e quanto consome. Quando os estoques finais estão apertados (S/U &lt; 22%), preços disparam; quando estão folgados (S/U &gt; 28%), preços caem. Os fundamentos drivam o CBOT meses à frente — antes do dólar, antes do prêmio.
           </div>
@@ -6228,11 +6249,11 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
           </div>
         </section>
 
-        {/* 07 — MULTI-ATIVO HISTÓRICO */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#A89968'}}>
+        {/* 13 — MULTI-ATIVO HISTÓRICO */}
+        <section id="modulo-13" className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#A89968'}}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 8}}>
-            <div style={{...S.cardLabel, color: '#A89968'}}>07 — Multi-ativo histórico · 16 anos de mercado</div>
-          <MetodoGrafico id={7} />
+            <div style={{...S.cardLabel, color: '#A89968'}}>13 — Multi-ativo histórico · 16 anos de mercado</div>
+          <MetodoGrafico id={13} />
             <div style={{fontSize: 10, color: '#FF7F50', fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 0.5, padding: '3px 8px', background: '#181C18', borderLeft: '2px solid #FF7F50'}}>
               ★ Histórico recalculado: arrendamento {arrendamentoScHa} sc/ha · {pctArrendada}% arrendada (módulo 02)
             </div>
@@ -6474,7 +6495,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                     <strong style={{color: '#C8E04A'}}>Observações importantes:</strong>
                     <ul style={{margin: '4px 0 0 16px', padding: 0}}>
                       <li><strong>★ Arrendamento JC = 20 sc/ha (Planalto Médio · terra valorizada)</strong> — a R$ 130/sc soja e 50 sc/ha de prod, isso vira <strong>R$ 52/sc só para terra</strong> (cerca de 55% do custo total Conab). É o item MAIS sensível à decisão de plantio em JC. <strong>Nota:</strong> Conab subestima isso usando renda da terra teórica (~14 sc/ha) — o custo REAL para o produtor JC é ~R$ 38/sc MAIOR que o Conab nominal.</li>
-                      <li><strong>Fertilizante (segundo maior · ~25%)</strong> é onde a sazonalidade NPK (módulo 04) e relação de troca (módulo 02) podem economizar 10-15%.</li>
+                      <li><strong>Fertilizante (segundo maior · ~25%)</strong> é onde a sazonalidade NPK (módulo 11) e relação de troca (módulo 02) podem economizar 10-15%.</li>
                       <li>Os <strong>dois itens juntos (terra + adubo) somam ~60-65% do custo total</strong>. Otimizando esses dois você impacta dois terços da estrutura.</li>
                       <li>O custo do Conab usa <em>"custo total"</em> que inclui custo de oportunidade da terra mesmo em terra própria. Em fluxo de caixa real (COE), esse item não sai do bolso — então o custo efetivamente desembolsado é R$ ~55-60/sc.</li>
                       <li>Em <strong>parceria</strong>, o custo da terra zera (vira % do produto). Em <strong>arrendamento</strong>, vira despesa fixa em sacas (a R$ 130/sc, 15 sc/ha = R$ 1.950/ha = ~R$ 35/sc).</li>
@@ -6557,10 +6578,10 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
         </section>
 
         {/* 14 — CALENDÁRIO DE DECISÕES 12 MESES */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#7AB8E0'}}>
+        <section id="modulo-14" className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#7AB8E0'}}>
           <div style={{...S.cardLabel, color: '#7AB8E0'}}>14 — Calendário de decisões · próximos 12 meses</div>
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 14, lineHeight: 1.6}}>
-            <strong>Sua agenda anual operacional.</strong> Cada mês tem uma decisão central — não fazer atrasa o ciclo todo. Conecta sazonalidade soja (módulo 04), NPK (módulo 04), USDA/Conab (módulo 06), embarques ANEC (módulo 06) e estratégias de hedge (módulo 10). Imprima e mantenha sobre a mesa.
+            <strong>Sua agenda anual operacional.</strong> Cada mês tem uma decisão central — não fazer atrasa o ciclo todo. Conecta sazonalidade soja (módulo 11), NPK (módulo 11), USDA/Conab (módulo 12), embarques ANEC (módulo 12) e estratégias de hedge (módulo 07). Imprima e mantenha sobre a mesa.
           </div>
           <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10}}>
             {[
@@ -6585,7 +6606,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
               { mes:'ABR', cor:'#E6B84A', fase:'Pós-colheita JC · ANEC pico embarques', decisoes:[
                 '★ Pico de embarques BR (16% anual)',
                 'Prêmio Paranaguá pressionado',
-                'Avalie barter NPK para safra 26/27 (módulo 10 #3)',
+                'Avalie barter NPK para safra 26/27 (módulo 07 #3)',
                 'Considere put protetiva para safra estocada',
               ]},
               { mes:'MAI', cor:'#A89968', fase:'★ JANELA NPK · preço fertilizante baixo', decisoes:[
@@ -6662,13 +6683,13 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
             })}
           </div>
           <div style={{marginTop: 14, padding: 12, background: '#0F1410', borderLeft: '2px solid #7AB8E0', fontSize: 11, color: '#A89968', lineHeight: 1.5}}>
-            <strong style={{color:'#E8E2D0'}}>Como usar:</strong> a cada início de mês, abra essa aba e marque o mês atual (destacado). Vá pelo cardápio do mês e tome 1-2 decisões prioritárias. Conecte com módulo 08 (estratégia para janela atual) e módulo 10 (calculadora da decisão escolhida).
+            <strong style={{color:'#E8E2D0'}}>Como usar:</strong> a cada início de mês, abra essa aba e marque o mês atual (destacado). Vá pelo cardápio do mês e tome 1-2 decisões prioritárias. Conecte com módulo 05 (estratégia para janela atual) e módulo 07 (calculadora da decisão escolhida).
           </div>
         </section>
 
 
         {/* 15 — TRIBUTAÇÃO RURAL */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#9C7DBF'}}>
+        <section id="modulo-15" className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#9C7DBF'}}>
           <div style={{...S.cardLabel, color: '#9C7DBF'}}>15 — Tributação rural · planejamento fiscal</div>
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 14, lineHeight: 1.6}}>
             Calculadoras dos principais tributos sobre a atividade rural em RS. Fontes: Lei 9.250/1995 (IR rural), Lei 9.393/1996 (ITR), Lei 8.212/1991 art. 25 (Funrural), Convênio ICMS 100/97 (diferimento RS). <strong>Disclaimer: simulações educacionais — consulte seu contador para decisões reais.</strong>
@@ -6681,7 +6702,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
 
         {/* 16 — EVENTOS */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+        <section id="modulo-16" className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
           <div style={S.cardLabel}>16 — Eventos-chave para calibrar leitura</div>
           <div className="eventos-grid" style={S.eventosGrid}>
             {[
@@ -6710,7 +6731,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
         </section>
 
         {/* 17 — ATUALIZAÇÃO DE DADOS */}
-        <section id="auditoria-fontes" className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+        <section id="modulo-17" id="auditoria-fontes" className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
           <div style={{...S.cardLabel, color: '#7AB8E0'}}>17 — Auditoria técnica · fontes, datas, métodos e cobertura</div>
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
             Dados de coleta e auditoria sincronizados diretamente com os arquivos do GitHub. Datas reais de referência, procedimentos técnicos, estado das integrações e fontes primárias/secundárias. Sem checklist de datas fixas.
@@ -6737,15 +6758,15 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
           <div>· <strong>05_gestao_riscos</strong> — derivativos, opções, seguros alta/baixa/cambial (8)</div>
           <div>· <strong>06_fertilizantes</strong> — NPK panorama, relação de troca (2)</div>
         </div>
-        <div>Aplicação no painel: a metodologia <strong>PPE (Flat Price = Futuro + Prêmio + Câmbio − Logística)</strong> é exatamente o modelo dos módulos 01 e 03. O conceito de <strong>basis</strong> sustenta o módulo 09; <strong>análise fundamentalista</strong> alimenta o módulo 07; <strong>margem de contribuição</strong> é a base do bloco "margem por hectare" na Análise Operacional. Ver <code>material/INDICE.md</code> para mapa completo aula↔módulo.</div>
+        <div>Aplicação no painel: a metodologia <strong>PPE (Flat Price = Futuro + Prêmio + Câmbio − Logística)</strong> é exatamente o modelo dos módulos 01 e 10. O conceito de <strong>basis</strong> sustenta o módulo 06; <strong>análise fundamentalista</strong> alimenta o módulo 13; <strong>margem de contribuição</strong> é a base do bloco "margem por hectare" na Análise Operacional. Ver <code>material/INDICE.md</code> para mapa completo aula↔módulo.</div>
 
         <div style={{fontWeight: 600, color: '#A89968', marginTop: 12, marginBottom: 6}}>FONTES COMPLEMENTARES</div>
         <div>· <strong>CBOT futures (USD/bu):</strong> Soja Rotterdam CIF (Banco Mundial / Oil World / USDA via IndexMundi), conversão (USD/ton − 30) ÷ 36,7437.</div>
         <div>· <strong>Prêmio Paranaguá:</strong> calculado como (CEPEA USD/bu − CBOT futures) — prêmio físico EFETIVO sobre Chicago, sem interpolação.</div>
         <div>· <strong>Ureia (R$/ton):</strong> Black Sea FOB (Banco Mundial via IndexMundi) × USD/BRL × 1,3 (markup posto-BR para logística + ICMS).</div>
         <div>· <strong>Balcão Cotrijuc</strong> (Júlio de Castilhos): {localValido ? 'R$ '+cotrijucPreco.toFixed(2)+'/saca, cotação de '+dataPt(cotrijucFonte.data_referencia) : 'cotação indisponível; painel apresenta proxy estimada e rotulada'}. Fonte: <em>cotrijuc.com.br</em>. Consulta automática; atenção ao aviso de dados antigos.</div>
-        <div>· <strong>Macro/financeiro (módulo 10):</strong> Ouro USD/oz (LBMA London PM Fix), Cobre USD/ton (LME), CDI anual (BCB/Cetip), IPCA anual (IBGE), Custo de produção soja RS (Conab Companhia Nacional de Abastecimento). Valores anuais aplicados a cada trimestre; CDI e IPCA compostos. Milho posto JC = CEPEA Campinas − R$ 8/saca (frete rodoviário, embutido na série multi-ativo). Boi gordo RS via NESPRO/UFRGS.</div>
-        <div>· <strong>Fundamentos S&D (módulo 07):</strong> USDA WASDE (World Agricultural Supply and Demand Estimates, <em>usda.gov/oce/commodity/wasde</em>) para mundial; Conab/Companhia Nacional de Abastecimento (<em>conab.gov.br/info-agro/safras</em>) para Brasil. Valores anuais por safra agrícola, em milhões de toneladas. Próximas atualizações: WASDE mensal (2ª quinta-feira); Conab mensal (~2ª semana).</div>
+        <div>· <strong>Macro/financeiro (módulo 07):</strong> Ouro USD/oz (LBMA London PM Fix), Cobre USD/ton (LME), CDI anual (BCB/Cetip), IPCA anual (IBGE), Custo de produção soja RS (Conab Companhia Nacional de Abastecimento). Valores anuais aplicados a cada trimestre; CDI e IPCA compostos. Milho posto JC = CEPEA Campinas − R$ 8/saca (frete rodoviário, embutido na série multi-ativo). Boi gordo RS via NESPRO/UFRGS.</div>
+        <div>· <strong>Fundamentos S&D (módulo 13):</strong> USDA WASDE (World Agricultural Supply and Demand Estimates, <em>usda.gov/oce/commodity/wasde</em>) para mundial; Conab/Companhia Nacional de Abastecimento (<em>conab.gov.br/info-agro/safras</em>) para Brasil. Valores anuais por safra agrícola, em milhões de toneladas. Próximas atualizações: WASDE mensal (2ª quinta-feira); Conab mensal (~2ª semana).</div>
         <div>· <strong>Frete JC → Rio Grande:</strong> R$ 4 (2010-12) a R$ 13 (2022, diesel) por saca; estimado conforme combustível/sazonalidade.</div>
         <div style={{marginTop: 8, fontStyle: 'italic'}}>Para atualizar: baixe nova planilha em CEPEA-Esalq/USP (gratuito) e substitua o array HISTORICO. Os 66 trimestres têm <code>conf: true</code> (dados reais), nenhum interpolado.</div>
         <div style={{marginTop: 6}}>Faixas calibradas para janela atual: CBOT {FAIXAS.cbot.baixo}–{FAIXAS.cbot.alto}, prêmio {FAIXAS.premio.baixo}–{FAIXAS.premio.alto}, dólar {FAIXAS.dolar.baixo}–{FAIXAS.dolar.alto}.</div>
