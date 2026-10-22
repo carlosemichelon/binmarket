@@ -282,6 +282,7 @@
     $('#resetData').addEventListener('click',()=>{if(!confirm('Descartar importações locais e restaurar a base oficial publicada no GitHub?'))return;rows=officialRows.map(r=>({...r}));try{localStorage.removeItem(STORAGE_KEY);}catch(e){}renderAll();setQuotePrices();setStatus('Base oficial restaurada.');});
     renderAll();setQuotePrices();
     refreshOfficialCsv();
+    setInterval(refreshOfficialCsv,10*60*1000); // paginas abertas recebem novas cotacoes automaticamente
   }
   async function refreshOfficialCsv(){
     const status=$('#remoteUpdateStatus');
@@ -293,7 +294,11 @@
       officialRows=mergeRecords(cloneBase(),parsed.records);
       rows=mergeRecords(rows,officialRows);
       renderAll();setQuotePrices();
-      if(status)status.textContent=`Arquivo do GitHub carregado · ${officialRows.length} datas · última coleta ${datePt(officialRows[officialRows.length-1].data)}.`;
+      if(status) {
+        const latest=officialRows[officialRows.length-1].data;
+        const days=Math.floor((Date.now()-new Date(latest+'T12:00:00-03:00').getTime())/86400000);
+        status.textContent=`Sincronizado com GitHub · ${officialRows.length} datas · última coleta ${datePt(latest)}.${days>15?' ATENÇÃO: última cotação tem '+days+' dias.':''}`;
+      }
     }catch(e){
       if(status)status.textContent=`Não foi possível sincronizar com o GitHub (${e?.message||'erro de rede'}). Exibindo dados salvos disponíveis.`;
       console.warn('Sincronização do gado indisponível:',e);
