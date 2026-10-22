@@ -6,7 +6,7 @@
   "observacao": "Coletas semanais; última checagem não implica preço novo.",
   "historico_exportacao": {
     "resultado": "falha",
-    "erro": "Timeout 40000ms exceeded while waiting for event \"download\"\n=========================== logs ===========================\nwaiting for event \"download\"\n==================================================",
-    "checado_em": "2026-10-21T21:49:31-03:00"
+    "erro": "Botao nao iniciou download; opcoes visiveis: ['Explorar o painel →', 'Aba 1Gado Gordo & ReposiçãoPreços semanais de PV/PC macho e fêmea, terneiros, novilhos e vacas — com relação de troca, ágio do ter",
+    "checado_em": "2026-10-21T21:50:47-03:00"
   }
 }
