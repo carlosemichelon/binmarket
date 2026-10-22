@@ -272,8 +272,8 @@ def download_full_history() -> dict:
                 # Alguns sites abrem um menu "Gado"/"CSV"/"Excel" antes do download.
                 options=page.locator('button,[role="menuitem"],a').all_text_contents()
                 requested=None
-                for label in ('Gado Gordo', 'Gado e Reposicao', 'Bovinos', 'CSV', 'Excel', 'XLSX', 'Baixar'):
-                    matches=page.get_by_text(label,exact=False)
+                for label in ('Baixar CSV', 'Baixar Excel', 'Exportar CSV', 'Exportar Excel', 'CSV', 'XLSX'):
+                    matches=page.get_by_role('button',name=re.compile(re.escape(label),re.I))
                     if matches.count() and matches.first.is_visible():
                         requested=matches.first
                         break
