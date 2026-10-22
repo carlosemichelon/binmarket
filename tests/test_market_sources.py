@@ -90,6 +90,34 @@ class CollectorsTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             u.parse_milho(html,today=date(2026,10,21))
 
+
+    def test_premio_paranagua_por_vencimento_sem_misturar_datas(self):
+        html = """<h1>Prêmio Soja Paranaguá/PR</h1>
+        <h2>Fechamento: 21/10/2026</h2>
+        <table><tr><th>Mês</th><th>US$/Bu</th><th>Variação</th></tr>
+        <tr><td>Outubro/26</td><td>+1,40</td><td>0,00</td></tr>
+        <tr><td>Novembro/26</td><td>+1,55</td><td>0,00</td></tr>
+        <tr><td>Janeiro/27</td><td>-0,15</td><td>0,00</td></tr></table>
+        <h2>Fechamento: 20/10/2026</h2><p>Outubro/26 +6,00</p>"""
+        got = u.parse_premios_paranagua(html,today=date(2026,10,22))
+        self.assertEqual(got['data'],'2026-10-21')
+        self.assertEqual(got['contratos'],[
+            {'contrato':'2026-10','usd_bu':1.4},
+            {'contrato':'2026-11','usd_bu':1.55},
+            {'contrato':'2027-01','usd_bu':-0.15}
+        ])
+
+    def test_premio_rejeita_local_errado_fechamento_ausente_e_dado_velho(self):
+        with self.assertRaises(ValueError):
+            u.parse_premios_paranagua('<h1>Prêmio Soja Rio Grande/RS</h1> Fechamento: 21/10/2026 Outubro/26 +1,40',
+                                     today=date(2026,10,22))
+        with self.assertRaises(ValueError):
+            u.parse_premios_paranagua('<h1>Prêmio Soja Paranaguá/PR</h1> Outubro/26 +1,40',
+                                     today=date(2026,10,22))
+        with self.assertRaises(ValueError):
+            u.parse_premios_paranagua('<h1>Prêmio Soja Paranaguá/PR</h1> Fechamento: 01/10/2026 Outubro/26 +1,40',
+                                     today=date(2026,10,22))
+
     def test_valid_date(self):
         self.assertEqual(u.validate_day('14/10/2026',today=date(2026,10,21)),'2026-10-14')
         with self.assertRaises(ValueError): u.validate_day('01/02/2099',today=date(2026,10,21))
