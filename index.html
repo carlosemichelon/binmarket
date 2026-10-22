@@ -1070,18 +1070,6 @@ const ESTRATEGIAS_CLASSICAS = [
   },
 ];
 
-const EXAME_ESTRATEGIAS = [
-  {pro:"Dilui risco de vender tudo no preço de um único dia.",contra:"A venda inicial limita ganhos posteriores na parcela já vendida.",alta:"Preço cresce: parcelas iniciais perdem o topo, saldo participa.",baixa:"Preço cai: camadas já fixadas protegem só parte da produção."},
-  {pro:"Reserva destino e logística mantendo componentes de preço em aberto.",contra:"Prazo final e regras da empresa podem obrigar fixação em cenário ruim.",alta:"Componente aberto sobe: melhora possível até prazo de fixação.",baixa:"Componente aberto cai: venda fica pior no dia da fixação."},
-  {pro:"Trava sacas devidas para pagar insumos e reduz incerteza de custo.",contra:"Compromete entrega futura mesmo com quebra e abre mão de alta na soja.",alta:"Soja dispara: sacas comprometidas valeriam mais à vista.",baixa:"Soja cai: relação de troca previamente definida pode proteger."},
-  {pro:"Receita contratada pode assegurar margem do volume vendável.",contra:"Perde upside e exige entrega mesmo em caso de quebra.",alta:"Soja sobe: a parte vendida não recebe preço maior.",baixa:"Soja cai: preço pactuado protege apenas o volume firmado."},
-  {pro:"Protege quedas do preço futuro sem limitar a alta do subjacente.",contra:"Prêmio pago é custo; risco de base e câmbio ficam abertos.",alta:"Futuro sobe: participa da alta, mas perde o prêmio pago.",baixa:"Futuro cai abaixo do strike: a put tende a compensar a queda."},
-  {pro:"Put dá proteção na baixa e a call financia parte do custo.",contra:"Call vendida limita alta e pode exigir margem.",alta:"Acima do strike da call, upside do hedge fica limitado.",baixa:"Abaixo da put comprada, o contrato oferece proteção ao subjacente."},
-  {pro:"Pode reduzir desembolso com a venda da put inferior.",contra:"Abaixo da put vendida deixa de existir piso de preço integral.",alta:"Call vendida limita o resultado em altas expressivas.",baixa:"Proteção da put comprada se limita ao intervalo entre strikes."},
-  {pro:"Hedge financeiro sem vincular a entrega ao comprador físico.",contra:"Ajustes, margens, base local e conversão cambial são riscos.",alta:"Futuro vendido sofre ajuste negativo; físico pode valorizar.",baixa:"Futuro vendido tende a ganhar; preço físico pode cair."},
-  {pro:"Permite tentar aproveitar um prêmio sazonal após a colheita.",contra:"Armazenagem, perdas, juros do capital e risco de queda.",alta:"Só melhora se alta de preço superar custos totais do carrego.",baixa:"Se preço cair, vender antes teria evitado custos e a perda."}
-];
-
 // Análise de cenários condicional; exemplos didáticos, não sinais de negociação.
 const EXPLICA_ESTRATEGIAS = [
 {p:"Vendas em parcelas reduzem a dependência de acertar o melhor dia e podem assegurar gradualmente a margem por saca.",c:"Em uma alta persistente, a média fica abaixo do topo. Se o mercado cair antes dos gatilhos, parte da produção permanece exposta.",a:"Com preço em alta, camadas iniciais ficam abaixo do preço final, mas as camadas restantes podem aproveitar a valorização.",b:"Com preço em queda, parcelas já vendidas ajudam a preservar receita, enquanto o saldo aberto sofre a queda.",v:"Fixar percentuais pelo volume de produção conservador, definir preço líquido mínimo e limite de venda comprometida."},
