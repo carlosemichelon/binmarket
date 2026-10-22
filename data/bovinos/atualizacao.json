@@ -1,12 +1,12 @@
 {
   "fonte": "https://bovinos-indices.nesproufrgs.com/",
   "ultima_coleta": "2026-10-14",
-  "checado_em": "2026-10-21",
+  "checado_em": "2026-10-22",
   "quantidade_datas": 8,
   "observacao": "Coletas semanais; última checagem não implica preço novo.",
   "historico_exportacao": {
     "resultado": "falha",
     "erro": "Botao nao iniciou download; controles relevantes: ['Aba 1Gado Gordo & ReposiçãoPreços semanais de PV/PC macho e fêmea, terneiros, no', 'Baixar base de dados', 'GadoGado Gordo & Reposição']",
-    "checado_em": "2026-10-21T21:53:01-03:00"
+    "checado_em": "2026-10-22T12:54:12-03:00"
   }
 }
