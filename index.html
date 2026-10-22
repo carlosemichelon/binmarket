@@ -127,6 +127,7 @@ function MetodoGrafico({id}) {
 }
 
 
+
 // Faixas de referência (calibradas para CBOT/Rio Grande/dólar)
 const FAIXAS = {
   cbot:   { baixo: 10.0, alto: 12.5, label: 'CBOT (USD/bu)' },
@@ -5089,8 +5090,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
         {/* 05 — CRUSH MARGIN + CURVAS DE FUTUROS */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#E6B84A'}}>
-          <div style={{...S.cardLabel, color: '#E6B84A'}}>05 — Mercados de derivativ
-          <MetodoGrafico id={5} />os · Crush · Curvas de futuros</div>
+          <div style={{...S.cardLabel, color: '#E6B84A'}}>05 — Mercados de derivativos · Crush · Curvas de futuros</div>
+          <MetodoGrafico id={5} />
           <div style={S.tabRow}>
             {[
               { k: 'crush', l: 'Crush BR/global (esmagador)' },
@@ -5536,8 +5537,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
         {/* 09 — SIMULADOR */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#E6B84A'}}>
-          <div style={{...S.cardLabel, color: '#E6B84A'}}>09 —
-          <MetodoGrafico id={9} /> Simulador de venda escalonada</div>
+          <div style={{...S.cardLabel, color: '#E6B84A'}}>09 — Simulador de venda escalonada</div>
+          <MetodoGrafico id={9} />
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 12, lineHeight: 1.6}}>
             <strong>Para que serve:</strong> escolha uma janela do passado (ex: a safra 22/23 completa, ou o 2º semestre 2024) e compare <strong>6 estratégias de venda diferentes</strong> sobre o MESMO preço histórico. Mostra na prática o que cada decisão teria dado em R$/saca — útil para entender quanto vale o "tudo no início", "tudo no fim", "escalonado linear" e "gatilho de trava" comparados ao topo perfeito e ao fundo.
           </div>
@@ -5766,9 +5767,9 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
           <p style={{fontSize:12,color:'#A89968',lineHeight:1.6,margin:0}}>Séries e análises históricas, sazonalidade, fundamentos, comparações, eventos, impostos e rastreabilidade das fontes.</p>
         </div>
 {/* 03 — HISTÓRICO */}
-        <section className="span-2" style={{...S.card, gr
-          <MetodoGrafico id={3} />idColumn: 'span 2'}}>
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
           <div style={S.cardLabel}>03 — Histórico (CEPEA Paranaguá, 2010–2026)</div>
+          <MetodoGrafico id={3} />
           <div style={S.tabRow}>
             {[
               { k: 'saca', l: 'Preço estimado JC' },
@@ -5808,7 +5809,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
             </ResponsiveContainer>
           </div>
           <div style={S.legendaHist}>
-            {graficoVer === 'saca' && 'Base de trimestres históricos com referência CEPEA/Esalq Paranaguá até junho de 2026. O preço de JC nesta aba é calculado com parâmetros auxiliares de câmbio e frete, não corresponde a uma cotação de balcão observada para cada trimestre. Cotações recentes são coletadas à parte.'}
+            {graficoVer === 'saca' && 'Histórico CEPEA Paranaguá compilado por trimestre até junho de 2026. A opção JC é um modelo com parâmetros auxiliares de câmbio/frete, não uma cotação observada de balcão para cada trimestre. As cotações recentes são atualizadas em base separada.'}
             {graficoVer === 'componentes' && 'CBOT teve dois super-picos: 12Q3 (17,6 USD/bu, seca EUA) e 22Q2 (19 USD/bu, guerra). Dólar saltou em 15-16 (crise BR), 20Q2 (COVID) e 24Q4 (fiscal). Prêmio Paranaguá derivado AGORA É CALCULADO DO CEPEA REAL: spike confirmado em 18Q3-19Q1 (guerra comercial China-EUA), colapso em 23Q2 (safra recorde).'}
             {graficoVer === 'troca' && 'Sacas de soja CEPEA para comprar 1 ton de ureia. PIORES períodos: 21Q4 (35 sacas) e 22Q1 (29 sacas) — ureia disparou de 245 para 821 USD/ton. MELHORES janelas para barter: 16Q2-Q3, 17Q2 e 20Q2 (~17-18 sacas).'}
           </div>
@@ -5816,8 +5817,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
         {/* 04 — SAZONALIDADE */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#7AB8E0'}}>
-    
-          <MetodoGrafico id={4} />      <div style={{...S.cardLabel, color: '#7AB8E0'}}>04 — Sazonalidade · Calendário do ano agrícola</div>
+          <div style={{...S.cardLabel, color: '#7AB8E0'}}>04 — Sazonalidade · Calendário do ano agrícola</div>
+          <MetodoGrafico id={4} />
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 12, lineHeight: 1.5}}>
             Padrão de preço CEPEA Paranaguá calculado em <strong>5.050 cotações diárias 2010-2026</strong>. Cada mês mostra o % da média anual: <strong>FEV é historicamente o pior (94%)</strong>, <strong>SET e NOV os melhores (105%)</strong>. Spread médio anual: <strong>~11%</strong> entre vale e pico.
           </div>
@@ -6042,8 +6043,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
         {/* 06 — FUNDAMENTOS USDA + CONAB */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#7AB8E0'}}>
-          <div style={{...S.cardLabel, color: '#7AB8E0
-          <MetodoGrafico id={6} />'}}>06 — Fundamentos · Oferta · Demanda · Estoques (USDA + Conab)</div>
+          <div style={{...S.cardLabel, color: '#7AB8E0'}}>06 — Fundamentos · Oferta · Demanda · Estoques (USDA + Conab)</div>
+          <MetodoGrafico id={6} />
           <div style={{fontSize: 12, color: '#A89968', marginBottom: 12, lineHeight: 1.5}}>
             <strong>Por que isso importa:</strong> o preço do bushel em Chicago é, no fundo, um balanço entre quanto o mundo produz e quanto consome. Quando os estoques finais estão apertados (S/U &lt; 22%), preços disparam; quando estão folgados (S/U &gt; 28%), preços caem. Os fundamentos drivam o CBOT meses à frente — antes do dólar, antes do prêmio.
           </div>
@@ -6230,8 +6231,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
         {/* 07 — MULTI-ATIVO HISTÓRICO */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#A89968'}}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 8}}>
-            <div style={{...S.cardLabel, c
-          <MetodoGrafico id={7} />olor: '#A89968'}}>07 — Multi-ativo histórico · 16 anos de mercado</div>
+            <div style={{...S.cardLabel, color: '#A89968'}}>07 — Multi-ativo histórico · 16 anos de mercado</div>
+          <MetodoGrafico id={7} />
             <div style={{fontSize: 10, color: '#FF7F50', fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 0.5, padding: '3px 8px', background: '#181C18', borderLeft: '2px solid #FF7F50'}}>
               ★ Histórico recalculado: arrendamento {arrendamentoScHa} sc/ha · {pctArrendada}% arrendada (módulo 02)
             </div>
