@@ -1,0 +1,101 @@
+{
+  "sha_revisado": "c052d7aaf8db83a56177124225fd7be4a28797ef",
+  "workflow_run_id": "39808048690",
+  "verificado_em_utc": "2026-10-22T15:48:49+00:00",
+  "validacao_jsx": "success",
+  "testes_coletores": "success",
+  "navegador_pages": "failure",
+  "aprovado": false,
+  "smoke": {
+    "tested_at": "2026-10-22T15:47:44.293Z",
+    "url": "https://carlosemichelon.github.io/binmarket/",
+    "checks": [
+      {
+        "name": "Pages responde HTML atualizado",
+        "ok": true,
+        "length": 522755
+      },
+      {
+        "name": "Correções de opções no Pages",
+        "ok": true
+      },
+      {
+        "name": "desktop HTTP",
+        "ok": true,
+        "http": 200
+      },
+      {
+        "name": "desktop React renderizou 05",
+        "ok": true
+      },
+      {
+        "name": "desktop 17 módulos",
+        "ok": true
+      },
+      {
+        "name": "desktop prêmio Paranaguá separado",
+        "ok": true
+      },
+      {
+        "name": "desktop sem erro de carregamento",
+        "ok": true,
+        "runtimeErrors": []
+      },
+      {
+        "name": "desktop 9 estratégias",
+        "ok": true
+      },
+      {
+        "name": "desktop carregamento",
+        "ok": false,
+        "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('.estrat-toggle').first()\n    - locator resolved to <button class=\"estrat-toggle\">…</button>\n  - attempting click action\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - <div>Este painel é seu centro de comando para decisões…</div> from <div>…</div> subtree intercepts pointer events\n  - retrying click action\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - <div>…</div> intercepts pointer events\n  - retrying click action\n    - waiting 20ms\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - <div>Este painel é seu centro de comando para decisões…</div> from <div>…</div> subtree intercepts pointer events\n  2 × retrying click action\n      - waiting 100ms\n      - waiting for element to be visible, enabled and stable\n      - element is visible, enabled ",
+        "runtimeErrors": []
+      },
+      {
+        "name": "mobile HTTP",
+        "ok": true,
+        "http": 200
+      },
+      {
+        "name": "mobile React renderizou 05",
+        "ok": true
+      },
+      {
+        "name": "mobile 17 módulos",
+        "ok": true
+      },
+      {
+        "name": "mobile prêmio Paranaguá separado",
+        "ok": true
+      },
+      {
+        "name": "mobile sem erro de carregamento",
+        "ok": true,
+        "runtimeErrors": []
+      },
+      {
+        "name": "mobile 9 estratégias",
+        "ok": true
+      },
+      {
+        "name": "mobile carregamento",
+        "ok": false,
+        "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('.estrat-toggle').first()\n    - locator resolved to <button class=\"estrat-toggle\">…</button>\n  - attempting click action\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - <div>Este painel é seu centro de comando para decisões…</div> from <div>…</div> subtree intercepts pointer events\n  - retrying click action\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - <div>…</div> intercepts pointer events\n  - retrying click action\n    - waiting 20ms\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - <div>Este painel é seu centro de comando para decisões…</div> from <div>…</div> subtree intercepts pointer events\n  2 × retrying click action\n      - waiting 100ms\n      - waiting for element to be visible, enabled and stable\n      - element is visible, enabled ",
+        "runtimeErrors": []
+      },
+      {
+        "name": "Bovinos HTTP",
+        "ok": true,
+        "http": 200
+      },
+      {
+        "name": "Bovinos conteúdo",
+        "ok": true
+      }
+    ],
+    "errors": [
+      "desktop carregamento",
+      "mobile carregamento"
+    ]
+  }
+}
