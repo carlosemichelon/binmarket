@@ -163,7 +163,7 @@ def update_macro_anual(html:str) -> tuple[str,bool]:
         new_section=pattern.sub(patch,section)
         html=html[:start]+new_section+html[end:]
         log(f'BCB SGS: CDI/IPCA fechados e Selic anual em {matches} anos')
-        return html, True
+        return html, matches>0
     except Exception as exc:
         log(f'BCB macro falhou: {exc}',ok=False)
         return html,False
