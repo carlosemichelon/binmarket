@@ -53,6 +53,7 @@ def main():
         'cbot_soja':status('cbot_soja',m.get('cbot_soja',{}),5,'Futuro de soja; contrato deve ser identificado'),
         'usda_psd':status('usda_psd',m.get('usda_psd',{}),65,'PSD Brasil/EUA, ano de comercializacao USDA'),
         'conab_safra':status('conab_safra',m.get('conab_safra',{}),95,'Somente producao nacional, nao custos individuais'),
+        'premio_soja_paranagua':status('premio_soja_paranagua',m.get('premio_soja_paranagua',{}),5,'Benchmark Paranagua, fonte secundaria por vencimento. Nao representa premio Rio Grande'),
         'nespro_gado':status('nespro_gado',g,15,'Cotacao semanal RS, nao historico de varejo e ovinos'),
     }
     snapshots={
@@ -61,7 +62,7 @@ def main():
         'historico_milho_trimestral':'Serie trimestral antiga separada da cotacao diaria automatica',
         'historico_multicommodities':'Comparacoes anuais incluem varias series compiladas',
         'preco_local_frete':'Frete local varia por propriedade, prazo e transportador; premissa de simulacao',
-        'premio_portuario':'Premio base local nao e cotacao diaria contratada; premissa de simulacao',
+        'premio_portuario_rio_grande':'Prêmio Paranagua agora coletado isoladamente; premio Rio Grande continua hipotese manual sem cotacao automatica verificada',
         'custos_agricolas':'Custos de sementes, defensivos, terra e maquinas sao cenarios personalizaveis',
         'outros_precos_mercado':'Ouro, cobre, ureia, Hilux e demais comparacoes anuais sao series historicas de referencia',
         'ovinos_e_varejo_nespro':'Nao integrados ao painel de gado de corte',
