@@ -3485,9 +3485,9 @@ function PainelSoja() {
   const cotrijucFonte = fontePrecos.fontes.cotrijuc_soja || {};
   const cepeaPreco = Number(cepeaFonte.valor);
   const cotrijucPreco = Number(cotrijucFonte.valor);
-  const cepeaValido = Number.isFinite(cepeaPreco) && cepeaPreco>=35 && cepeaPreco<=400 && /^\\d{4}-\\d{2}-\\d{2}$/.test(cepeaFonte.data_referencia||'');
-  const localValido = Number.isFinite(cotrijucPreco) && cotrijucPreco>=35 && cotrijucPreco<=400 && /^\\d{4}-\\d{2}-\\d{2}$/.test(cotrijucFonte.data_referencia||'');
-  const dataPt = d => /^\\d{4}-\\d{2}-\\d{2}$/.test(d||'') ? d.split('-').reverse().join('/') : 'sem data';
+  const cepeaValido = Number.isFinite(cepeaPreco) && cepeaPreco>=35 && cepeaPreco<=400 && /^\d{4}-\d{2}-\d{2}$/.test(cepeaFonte.data_referencia||'');
+  const localValido = Number.isFinite(cotrijucPreco) && cotrijucPreco>=35 && cotrijucPreco<=400 && /^\d{4}-\d{2}-\d{2}$/.test(cotrijucFonte.data_referencia||'');
+  const dataPt = d => /^\d{4}-\d{2}-\d{2}$/.test(d||'') ? d.split('-').reverse().join('/') : 'sem data';
   const diasAntigos = d => d ? Math.floor((Date.now()-new Date(d+'T12:00:00-03:00').getTime())/86400000) : 999;
   const localDesatualizado = localValido && (cotrijucFonte.status!=='ok'||diasAntigos(cotrijucFonte.data_referencia)>5);
   const referenciaCotacao = localValido ? 'Cotrijuc (balcao)' : cepeaValido ? 'Proxy CEPEA menos frete' : 'Modelo CBOT + premio - frete';
@@ -3731,7 +3731,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
         </div>
         <div style={S.precoBig}>
           <div style={S.precoLabel}>Saca 60 kg · {referenciaCotacao}{!localValido ? ' (estimativa)' : ''}</div>
-          <div className="preco-valor" style={S.precoValor}>R$ {sacaCIF.toFixed(2)}</div>
+          <div className="preco-valor" style={S.precoValor}>{!fontePrecos.carregado && 'Atualizando...'}{fontePrecos.carregado && 'R$ '+sacaCIF.toFixed(2)}</div>
           <div style={{...S.precoMargem, color: margemAbs > 0 ? '#C8E04A' : '#D9542B'}}>
             {margemAbs > 0 ? '+' : ''}R$ {margemAbs.toFixed(2)} ({margemPct.toFixed(1)}%) vs custo
           </div>
