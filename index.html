@@ -1890,6 +1890,15 @@ function AtualizacaoBloco() {
   const falhas=itens.filter(x=>x.situacao!=='Dentro do prazo').length;
   const lacunas=Object.entries(estado.auditoria?.series_nao_integralmente_automaticas||{});
   const linkFonte=x=>x?.url&&/^https:\/\//.test(x.url)?x.url:null;
+  const fontesOficiais={
+    cotrijuc_soja:'https://www.cotrijuc.com.br/',
+    cepea_soja:'https://www.cepea.esalq.usp.br/br/indicador/soja.aspx',
+    milho_cepea:'https://www.cepea.esalq.usp.br/br/indicador/milho.aspx',
+    cbot_soja:'https://www.cmegroup.com/markets/agriculture/oilseeds/soybean',
+    nespro_gado:'https://bovinos-indices.nesproufrgs.com/',
+    conab_safra:'https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/series-historicas/graos/soja/',
+    usda_psd:'https://apps.fas.usda.gov/psdonline/'
+  };
   return (
     <div id="auditoria-fontes">
       <div style={{fontSize:12,color:'#A89968',lineHeight:1.7,marginBottom:14}}>
@@ -1914,7 +1923,9 @@ function AtualizacaoBloco() {
             <td style={{padding:9,color:'#E8E2D0'}}>{f.safra?'Safra '+f.safra:dataBR(f.x?.data_referencia)}{f.id==='cbot_soja'&&f.x?.contrato?<div>Contrato {f.x.contrato}</div>:null}</td>
             <td style={{padding:9,color:'#A89968'}}>{dataBR(f.x?.verificado_em)}</td>
             <td style={{padding:9,color:f.cor,fontWeight:600}}>{f.situacao}{f.diff!==null&&<div style={{fontWeight:400}}>{f.diff} dia(s) desde a referência da verificação adequada</div>}</td>
-            <td style={{padding:9,color:'#A89968'}}>{linkFonte(f.x)&&<a href={linkFonte(f.x)} target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>Consultar origem ↗</a>}
+            <td style={{padding:9,color:'#A89968'}}>
+              {fontesOficiais[f.id]&&<a href={fontesOficiais[f.id]} target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0',display:'block',marginBottom:5}}>↗ Fonte primária / oficial</a>}
+              {linkFonte(f.x)&&linkFonte(f.x)!==fontesOficiais[f.id]&&<a href={linkFonte(f.x)} target="_blank" rel="noopener noreferrer" style={{color:'#E6B84A',display:'block',marginBottom:5}}>↗ Origem efetivamente coletada (pode ser republicação)</a>}
               {f.x?.observacao&&<div style={{marginTop:5}}>{f.x.observacao}</div>}{f.x?.erro&&<div style={{marginTop:5,color:'#E6B84A'}}>{String(f.x.erro).slice(0,140)}</div>}{f.x?.descricao_extra&&<div>{f.x.descricao_extra}</div>}</td>
           </tr>)}</tbody>
         </table>
@@ -5761,7 +5772,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
         <div className="span-2" id="mercado-dados" style={{gridColumn:'span 2',padding:'23px 24px',background:'#151E18',border:'1px solid #37513A',borderLeft:'4px solid #C8E04A',scrollMarginTop:90}}>
           <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:1.8,color:'#C8E04A',marginBottom:6}}>ÁREA DE TRABALHO</div>
           <h2 style={{fontFamily:"'IBM Plex Serif',serif",fontSize:25,fontWeight:400,color:'#E8E2D0',margin:'0 0 8px'}}>Mercado · dados, metodologia e planejamento</h2>
-          <p style={{fontSize:12,color:'#A89968',lineHeight:1.6,margin:0}}>Séries e análises históricas, sazonalidade, fundamentos, comparações, eventos, impostos e rastreabilidade das fontes. Os módulos foram numerados de 01 a 17 conforme a ordem desta versão; as referências técnicas internas seguem essa mesma numeração.</p>
+          <p style={{fontSize:12,color:'#A89968',lineHeight:1.6,margin:0}}>Séries e análises históricas, sazonalidade, fundamentos, comparações, eventos, impostos e rastreabilidade das fontes. Os links dos gráficos abrem as instituições em outra aba; fontes secundárias não são apresentadas como oficiais. Os módulos foram numerados de 01 a 17 conforme a ordem desta versão; as referências técnicas internas seguem essa mesma numeração.</p>
           <nav aria-label="Índice dos módulos 10 a 17" style={{display:'flex',flexWrap:'wrap',gap:7,marginTop:15}}>
 <a href="#modulo-10" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>10</b> Histórico da soja</a>
 <a href="#modulo-11" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>11</b> Sazonalidade</a>
@@ -6738,7 +6749,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
       <footer style={S.footer}>
         <div style={{fontWeight: 600, color: '#C8E04A', marginBottom: 6, fontSize: 12}}>FONTE PRIMÁRIA · ATUALIZAÇÃO</div>
-        <div>· <strong>CEPEA/Esalq-USP — Indicador Soja Paranaguá</strong> (R$/saca de 60 kg)</div>
+        <div>· <strong>CEPEA/Esalq-USP — Indicador Soja Paranaguá</strong> (R$/saca de 60 kg) · <a href="https://www.cepea.esalq.usp.br/br/indicador/soja.aspx" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>↗ indicador oficial</a></div>
         <div>· Série diária: 13/03/2006 → 16/06/2026 (5.050 cotações)</div>
         <div>· Cotação diária sincronizada: <strong>{cepeaValido ? 'R$ '+cepeaPreco.toFixed(2)+'/saca em '+dataPt(cepeaFonte.data_referencia) : 'não disponível (última série histórica da planilha em 16/06/2026)'}</strong></div>
         <div>· Planilha baixada em <strong>17/06/2026 às 14:00 BRT</strong> de <em>cepea.org.br/br/indicador/series/soja.aspx?id=92</em></div>
@@ -6756,6 +6767,14 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
         <div>Aplicação no painel: a metodologia <strong>PPE (Flat Price = Futuro + Prêmio + Câmbio − Logística)</strong> é exatamente o modelo dos módulos 01 e 03. O conceito de <strong>basis</strong> sustenta os módulos 04 e 07; <strong>análise fundamentalista</strong> alimenta o módulo 12; <strong>margem de contribuição</strong> é a base do bloco "margem por hectare" na Análise Operacional. Ver <code>material/INDICE.md</code> para mapa completo aula↔módulo.</div>
 
         <div style={{fontWeight: 600, color: '#A89968', marginTop: 12, marginBottom: 6}}>FONTES COMPLEMENTARES</div>
+        <div style={{display:'flex',flexWrap:'wrap',gap:12,margin:'10px 0'}}>
+          <a href="https://www.cmegroup.com/markets/agriculture/oilseeds/soybean" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>↗ CME CBOT soja</a>
+          <a href="https://apps.fas.usda.gov/psdonline/" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>↗ USDA PSD</a>
+          <a href="https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/series-historicas/graos/soja/" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>↗ Conab série soja</a>
+          <a href="https://www.anec.com.br/" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>↗ ANEC embarques</a>
+          <a href="https://sidra.ibge.gov.br/tabela/1612" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>↗ IBGE SIDRA 1612</a>
+          <a href="https://bovinos-indices.nesproufrgs.com/" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>↗ NESPro gado</a>
+        </div>
         <div>· <strong>CBOT futures (USD/bu):</strong> Soja Rotterdam CIF (Banco Mundial / Oil World / USDA via IndexMundi), conversão (USD/ton − 30) ÷ 36,7437.</div>
         <div>· <strong>Prêmio Paranaguá:</strong> calculado como (CEPEA USD/bu − CBOT futures) — prêmio físico EFETIVO sobre Chicago, sem interpolação.</div>
         <div>· <strong>Ureia (R$/ton):</strong> Black Sea FOB (Banco Mundial via IndexMundi) × USD/BRL × 1,3 (markup posto-BR para logística + ICMS).</div>
