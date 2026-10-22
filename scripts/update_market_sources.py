@@ -381,13 +381,57 @@ def fetch_cotrijuc(session: requests.Session) -> dict:
             'unidade':'R$/saca de 60 kg - preco local de balcao',
             'observacoes':len(previous)}
 
+
+# FONTE 5 · SOJA CBOT / CONTRATO LISTADO (REPUBLICADO DE CME)
+CBOT_SOURCE = 'https://www.noticiasagricolas.com.br/cotacoes/soja'
+CBOT_MONTHS = {'janeiro':1,'marco':3,'março':3,'maio':5,'julho':7,
+               'agosto':8,'setembro':9,'novembro':11}
+
+
+def parse_cbot_soja(html: str, today: date | None = None) -> dict:
+    """Encontra futuro de soja mais proximo nao vencido na tabela CBOT.
+
+    Nao mistura soja em Chicago (USD/bushel) com soja brasileira R$/saca.
+    """
+    today = today or now_br().date()
+    text = BeautifulSoup(html, 'html.parser').get_text(' ', strip=True)
+    part = re.search(r'Soja\s*-\s*Bolsa de Chicago\b', text, re.I)
+    if not part:
+        raise ValueError('Tabela Soja - Bolsa de Chicago nao encontrada')
+    block = text[part.end():part.end()+2500]
+    dt = re.search(r'Atualizado em:\s*(\d{2}/\d{2}/\d{4})', block)
+    if not dt:
+        raise ValueError('CBOT sem data de fechamento visivel')
+    ref = validate_day(dt.group(1), today)
+    matches = re.findall(r'\b(Janeiro|Março|Marco|Maio|Julho|Agosto|Setembro|Novembro)/(\d{2}|\d{4})\s+(\d{1,2},\d{3,4})', block, re.I)
+    possible = []
+    for month_raw, yr_raw, price_raw in matches:
+        month = CBOT_MONTHS.get(month_raw.lower())
+        year = int(yr_raw) + (2000 if len(yr_raw)==2 else 0)
+        price = br_number(price_raw)
+        if month and 5 <= price <= 30 and (year,month) >= (today.year,today.month):
+            possible.append((year,month,price))
+    if not possible:
+        raise ValueError('CBOT sem contrato futuro vigente identificavel')
+    year,month,price = sorted(possible)[0]
+    return {'data':ref,'valor':round(price,4),'contrato':f'{year}-{month:02d}'}
+
+
+def fetch_cbot_soja(session: requests.Session) -> dict:
+    r=session.get(CBOT_SOURCE, headers=HEADERS, timeout=35)
+    r.raise_for_status()
+    found=parse_cbot_soja(r.text)
+    return {'status':'ok','url':CBOT_SOURCE,
+            'data_referencia':found['data'],'valor':found['valor'],'contrato':found['contrato'],
+            'unidade':'USD/bushel - contrato futuro mais proximo ainda vigente'}
+
 def run() -> dict:
     DIR.mkdir(parents=True, exist_ok=True)
     status = read_json(STATUS)
     sources = status.get('fontes') or {}
     checked = now_br().isoformat(timespec='seconds')
     with requests.Session() as session:
-        for key, func in [('cepea_soja',fetch_cepea),('conab_safra',fetch_conab),('usda_psd',fetch_usda),('cotrijuc_soja',fetch_cotrijuc)]:
+        for key, func in [('cepea_soja',fetch_cepea),('conab_safra',fetch_conab),('usda_psd',fetch_usda),('cotrijuc_soja',fetch_cotrijuc),('cbot_soja',fetch_cbot_soja)]:
             before = sources.get(key) or {}
             try:
                 fresh = func(session)
@@ -397,7 +441,7 @@ def run() -> dict:
                 # Não modifica a data de referência nem os últimos arquivos íntegros.
                 sources[key] = {**before, 'status':'falha', 'verificado_em':checked,
                                 'erro':str(exc)[:300], 'url': before.get('url') or
-                                {'cepea_soja':CEPEA_URL,'conab_safra':CONAB_URL,'usda_psd':USDA_URL,'cotrijuc_soja':COTRIJUC_URL}[key]}
+                                {'cepea_soja':CEPEA_URL,'conab_safra':CONAB_URL,'usda_psd':USDA_URL,'cotrijuc_soja':COTRIJUC_URL,'cbot_soja':CBOT_SOURCE}[key]}
                 print(f'{key}: falha: {exc}',flush=True)
     output = {'versao':1,'verificado_em':checked,'fontes':sources,
               'aviso':'Verificação automática não implica cotação nova. Custos, prêmios locais e séries estimadas do simulador não são preços coletados automaticamente.'}
