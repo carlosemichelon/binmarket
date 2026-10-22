@@ -18,8 +18,8 @@ const methods=[...m[1].matchAll(/<MetodoGrafico id=\{(\d+)\}/g)].map(x=>Number(x
 if(!methods.every(n=>expected.includes(n)))throw Error('Metodologia aponta para índice inexistente');
 for(let n=1;n<=17;n++)if(!html.includes('href="#modulo-'+String(n).padStart(2,'0')+'"'))throw Error('Índice navegável não contém módulo '+n);
 // Checagens contra regressões detectadas na auditoria de 22/10/2026.
-const graficos=[...m[1].matchAll(/<(?:LineChart|BarChart|ComposedChart|AreaChart|ScatterChart|PieChart)(?=[\\s>])/g)].length;
-const referencias=[...m[1].matchAll(/<FonteJuntoGrafico\\s/g)].length;
+const graficos=[...m[1].matchAll(/<(?:LineChart|BarChart|ComposedChart|AreaChart|ScatterChart|PieChart)(?=[\s>])/g)].length;
+const referencias=[...m[1].matchAll(/<FonteJuntoGrafico\s/g)].length;
 if(graficos!==18)throw new Error('Inventário dos gráficos mudou; revisar documentação e fontes: '+graficos);
 if(referencias<graficos)throw new Error('Há gráficos sem chamada de FonteJuntoGrafico: '+referencias+'/'+graficos);
 if(html.includes('EXAME_ESTRATEGIAS[i].pro'))throw new Error('Blocos duplicados de estratégias não devem retornar');
