@@ -10,6 +10,7 @@ on:
     paths:
       - 'scripts/update_market_sources.py'
       - 'tests/test_market_sources.py'
+      - 'scripts/audit_painel.py'
       - '.github/workflows/update-market-sources.yml'
 
 permissions:
@@ -38,6 +39,9 @@ jobs:
         id: coleta
         continue-on-error: true
         run: python scripts/update_market_sources.py
+      - name: Auditar cobertura dos indicadores publicados
+        if: always()
+        run: python scripts/audit_painel.py
       - name: Publicar somente dados válidos e registro de falhas
         if: always()
         run: |
