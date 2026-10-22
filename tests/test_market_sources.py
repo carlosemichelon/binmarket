@@ -49,6 +49,18 @@ class CollectorsTest(unittest.TestCase):
         data=u.parse_conab_producao(Book())
         self.assertEqual(len(data),16)
         self.assertEqual(data[0]['producao_mil_ton'],150000)
+    def test_cotrijuc_valid_local_soy_and_date(self):
+        html = '''<h3>COTAÇÕES DO DIA</h3>
+        <div>Grãos Boi Gordo 21/10/2026</div>
+        <h4>SOJA</h4><p>135,50</p><h4>TRIGO</h4><p>73,00</p>
+        <div>Bolsa de Chicago</div>'''
+        record = u.parse_cotrijuc_soja(html, today=date(2026,10,21))
+        self.assertEqual(record, {'data':'2026-10-21','brl_saca60':135.50})
+        with self.assertRaises(ValueError):
+            u.parse_cotrijuc_soja(html.replace('21/10/2026','23/10/2026'),today=date(2026,10,21))
+    def test_cotrijuc_rejects_unidentifiable_quote(self):
+        with self.assertRaises(ValueError):
+            u.parse_cotrijuc_soja('<html><h4>SOJA</h4><p>136,90</p></html>',today=date(2026,10,21))
     def test_valid_date(self):
         self.assertEqual(u.validate_day('14/10/2026',today=date(2026,10,21)),'2026-10-14')
         with self.assertRaises(ValueError): u.validate_day('01/02/2099',today=date(2026,10,21))
