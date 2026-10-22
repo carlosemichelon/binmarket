@@ -75,6 +75,21 @@ class CollectorsTest(unittest.TestCase):
         html = '<p>Soja - Bolsa de Chicago Novembro/25 12,4825 Atualizado em: 20/10/2026</p>'
         with self.assertRaises(ValueError):
             u.parse_cbot_soja(html, today=date(2026,10,21))
+    def test_milho_fechamento_datado(self):
+        html = '''<h2>Indicador do Milho Esalq/B3</h2>
+        <p>Fechamento: 20/10/2026</p>
+        <table><tr><th>Data</th><th>Valor (R$/sc 60 kg)</th></tr>
+        <tr><td>20/10/2026</td><td>64,34</td><td>-0,62%</td></tr></table>
+        <h2>Milho B3</h2>'''
+        found=u.parse_milho(html,today=date(2026,10,21))
+        self.assertEqual(found['data'],'2026-10-20')
+        self.assertEqual(found['brl_saca60'],64.34)
+
+    def test_milho_data_divergente_rejeitada(self):
+        html='<h2>Indicador do Milho Esalq/B3</h2>Fechamento: 20/10/2026 19/10/2026 64,34'
+        with self.assertRaises(ValueError):
+            u.parse_milho(html,today=date(2026,10,21))
+
     def test_valid_date(self):
         self.assertEqual(u.validate_day('14/10/2026',today=date(2026,10,21)),'2026-10-14')
         with self.assertRaises(ValueError): u.validate_day('01/02/2099',today=date(2026,10,21))
