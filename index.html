@@ -3770,9 +3770,21 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
         </div>
       </header>
 
+
+      <nav aria-label="Áreas do BinMarket" style={{display:'flex',flexWrap:'wrap',alignItems:'center',gap:10,marginBottom:22,padding:'12px 0',borderBottom:'1px solid #2A2F28'}}>
+        <a href="#operacional" style={{display:'inline-block',textDecoration:'none',background:'#C8E04A',color:'#0F1410',fontSize:12,fontWeight:700,padding:'11px 16px'}}>01 · Operação</a>
+        <a href="#mercado-dados" style={{display:'inline-block',textDecoration:'none',background:'#1D281E',color:'#D8E5D1',border:'1px solid #40563D',fontSize:12,fontWeight:600,padding:'10px 15px'}}>02 · Mercado, dados e planejamento</a>
+        <a href="#auditoria-fontes" style={{display:'inline-block',textDecoration:'none',color:'#7AB8E0',fontSize:11,padding:'10px 8px'}}>Fontes e metodologias ↗</a>
+      </nav>
       <div className="grid" style={S.grid}>
 
-        {/* 01 — COMPONENTES */}
+
+        <div className="span-2" id="operacional" style={{gridColumn:'span 2',padding:'23px 24px',background:'#151E18',border:'1px solid #37513A',borderLeft:'4px solid #C8E04A',scrollMarginTop:90}}>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:1.8,color:'#C8E04A',marginBottom:6}}>ÁREA DE TRABALHO</div>
+          <h2 style={{fontFamily:"'IBM Plex Serif',serif",fontSize:25,fontWeight:400,color:'#E8E2D0',margin:'0 0 8px'}}>Operação · preço, custo, rentabilidade e comercialização</h2>
+          <p style={{fontSize:12,color:'#A89968',lineHeight:1.6,margin:0}}>O cálculo parte das cotações e das premissas escolhidas. Custos e decisões são editáveis; mantenha a praça e a data de cada preço em vista.</p>
+        </div>
+{/* 01 — COMPONENTES */}
         <section style={S.card}>
           <div style={S.cardLabel}>01 — Componentes do preço</div>
           {[
@@ -4834,278 +4846,218 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
         </section>
 
-        {/* 03 — HISTÓRICO */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
-          <div style={S.cardLabel}>03 — Histórico (CEPEA Paranaguá, 2010–2026)</div>
-          <div style={S.tabRow}>
-            {[
-              { k: 'saca', l: 'Preço CIF JC' },
-              { k: 'componentes', l: 'Componentes' },
-              { k: 'troca', l: 'Troca / fert.' },
-            ].map(t => (
-              <button key={t.k} className={`exp ${graficoVer === t.k ? 'ativo' : ''}`} onClick={() => setGraficoVer(t.k)}>
-                {t.l}
-              </button>
-            ))}
+        {/* 13 — ANÁLISE OPERACIONAL */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#C8E04A', background: '#1A211A'}}>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 4}}>
+            <div style={{...S.cardLabel, color: '#C8E04A', margin: 0}}>13 — Análise operacional · preços, rentabilidade e hedge</div>
+            <button onClick={copiarRelatorio} style={{
+              background: '#C8E04A', color: '#0F1410', border: 'none', padding: '8px 14px',
+              fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 600,
+              letterSpacing: 1, cursor: 'pointer', textTransform: 'uppercase'
+            }}>📋 Copiar relatório</button>
           </div>
-          <div style={{height: 280, marginTop: 16}}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={HISTORICO_CALC} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
-                <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
-                <XAxis dataKey="t" stroke="#6B7065" angle={-45} textAnchor="end" style={{fontSize: 10, fontFamily: 'IBM Plex Mono'}} />
-                <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
-                <Tooltip
-                  contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 12}}
-                  labelFormatter={(t) => {
-                    const it = HISTORICO_CALC.find(h => h.t === t);
-                    return `${t} · ${it ? it.evento : ''}`;
-                  }} />
-                {graficoVer === 'saca' && <Line type="monotone" dataKey="sacaCIF" stroke="#C8E04A" strokeWidth={2}
-                  dot={(props) => {
-                    const { cx, cy, payload } = props;
-                    if (payload && payload.conf) {
-                      return <circle key={`d-${cx}-${cy}`} cx={cx} cy={cy} r={5} fill="#C8E04A" stroke="#0F1410" strokeWidth={2} />;
-                    }
-                    return <circle key={`d-${cx}-${cy}`} cx={cx} cy={cy} r={2.5} fill="#6B7065" />;
-                  }} name="R$/saca CIF" />}
-                {graficoVer === 'componentes' && <Line type="monotone" dataKey="cbot" stroke="#C8E04A" strokeWidth={2} dot={{r: 3}} name="CBOT (USD/bu)" />}
-                {graficoVer === 'componentes' && <Line type="monotone" dataKey="premio" stroke="#E6B84A" strokeWidth={2} dot={{r: 3}} name="Prêmio Pgua (USD/bu)" />}
-                {graficoVer === 'componentes' && <Line type="monotone" dataKey="dolar" stroke="#D9542B" strokeWidth={2} dot={{r: 3}} name="Dólar (R$)" />}
-                {graficoVer === 'troca' && <Line type="monotone" dataKey="trocaFert" stroke="#D9542B" strokeWidth={2} dot={{r: 3}} name="sacas/ton NPK" />}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <div style={S.legendaHist}>
-            {graficoVer === 'saca' && '★ TODOS os 66 trimestres são médias de cotações DIÁRIAS reais CEPEA/Esalq Paranaguá (5.050 pregões, 2010-2026). Sem interpolação. Pico real: 22Q2 (R$ 198 média trimestral, dia 24/02 = R$ 198,67). Vale: 10Q1-Q2 (R$ 38). 25Q4 média: R$ 140.'}
-            {graficoVer === 'componentes' && 'CBOT teve dois super-picos: 12Q3 (17,6 USD/bu, seca EUA) e 22Q2 (19 USD/bu, guerra). Dólar saltou em 15-16 (crise BR), 20Q2 (COVID) e 24Q4 (fiscal). Prêmio Paranaguá derivado AGORA É CALCULADO DO CEPEA REAL: spike confirmado em 18Q3-19Q1 (guerra comercial China-EUA), colapso em 23Q2 (safra recorde).'}
-            {graficoVer === 'troca' && 'Sacas de soja CEPEA para comprar 1 ton de ureia. PIORES períodos: 21Q4 (35 sacas) e 22Q1 (29 sacas) — ureia disparou de 245 para 821 USD/ton. MELHORES janelas para barter: 16Q2-Q3, 17Q2 e 20Q2 (~17-18 sacas).'}
-          </div>
-        </section>
-
-        {/* 04 — SAZONALIDADE */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#7AB8E0'}}>
-          <div style={{...S.cardLabel, color: '#7AB8E0'}}>04 — Sazonalidade · Calendário do ano agrícola</div>
-          <div style={{fontSize: 11, color: '#A89968', marginBottom: 12, lineHeight: 1.5}}>
-            Padrão de preço CEPEA Paranaguá calculado em <strong>5.050 cotações diárias 2010-2026</strong>. Cada mês mostra o % da média anual: <strong>FEV é historicamente o pior (94%)</strong>, <strong>SET e NOV os melhores (105%)</strong>. Spread médio anual: <strong>~11%</strong> entre vale e pico.
-          </div>
-          <div style={S.tabRow}>
-            {[
-              { k: 'historico', l: 'Padrão soja (CEPEA real)' },
-              { k: 'calendario', l: 'Calendário 12 meses' },
-              { k: 'janelas', l: 'Janelas hedge/fert/venda' },
-              { k: 'fertilizantes', l: 'Sazonalidade N · P · K' },
-            ].map(t => (
-              <button key={t.k} className={`exp ${sazVer === t.k ? 'ativo' : ''}`} onClick={() => setSazVer(t.k)}>
-                {t.l}
-              </button>
-            ))}
+          <div style={{fontSize: 11, color: '#6B7065', marginBottom: 16, fontFamily: "'IBM Plex Mono', monospace"}}>
+            Inspirado em: Agrinvest (recomendação + targets) · Delara (preço local efetivo) · SLC Agrícola (hedge ratio + margem por ha)
           </div>
 
-          {sazVer === 'historico' && (
-            <>
-              <div style={{height: 280, marginTop: 16}}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={SAZONAL} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
-                    <XAxis dataKey="mes" stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
-                    <YAxis domain={[90, 110]} stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
-                    <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 11}}
-                             formatter={(v) => [`${v}% da média anual`, 'Índice']}/>
-                    <ReferenceLine y={100} stroke="#A89968" strokeDasharray="2 4" label={{value: 'média anual', fill: '#A89968', fontSize: 10, position: 'insideTopRight'}} />
-                    <Bar dataKey="indice" name="Preço em % da média anual">
-                      {SAZONAL.map((s, i) => <Cell key={i} fill={s.cor} />)}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+          {/* BLOCO 1: COMPARAÇÃO DE PREÇOS DE ORIGENS DISTINTAS */}
+          <div style={{borderTop: '1px solid #2A2F28', paddingTop: 14, marginBottom: 16}}>
+            <div style={{...S.sinteseLabel, color: '#A89968', marginBottom: 10}}>COMPARAÇÃO DE PREÇOS · {new Date().toLocaleDateString('pt-BR')}</div>
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10}}>
+              <div style={{...S.simCell, borderColor: '#C8E04A'}}>
+                <div style={S.simCellLabel}>★ CEPEA Paranaguá (cotação)</div>
+                <div style={{...S.simCellValor, color: '#C8E04A'}}>{cepeaValido ? 'R$ '+cepeaPreco.toFixed(2) : 'sem coleta'}</div>
+                <div style={S.simCellDelta}>indicador portuário · {dataPt(cepeaFonte.data_referencia)}</div>
               </div>
-              <div style={{...S.sintese, marginTop: 12, borderLeftColor: '#7AB8E0'}}>
-                <div style={{...S.sinteseLabel, color: '#7AB8E0'}}>LEITURA</div>
-                <div style={S.sinteseTexto}>
-                  Mês atual: <strong style={{color: '#C8E04A'}}>{SAZONAL[new Date().getMonth()].mes}</strong> ({SAZONAL[new Date().getMonth()].indice.toFixed(1)}% da média anual) · fase: <strong>{SAZONAL[new Date().getMonth()].fase}</strong>.
-                  O índice acima de 100 indica preço acima da média do ano; abaixo, preço deprimido.
-                  Volatilidade (desvio): mais alta em JAN-FEV ({SAZONAL[0].desvio.toFixed(1)}-{SAZONAL[1].desvio.toFixed(1)}) e DEZ-NOV ({SAZONAL[10].desvio.toFixed(1)}-{SAZONAL[11].desvio.toFixed(1)}) — meses de viradas e safra nova. Mais baixa em MAI-JUL — mercado lateral.
+              <div style={S.simCell}>
+                <div style={S.simCellLabel}>Referência operacional JC · {referenciaCotacao}</div>
+                <div style={S.simCellValor}>R$ {sacaCIF.toFixed(2)}</div>
+                <div style={S.simCellDelta}>{dataCotacao ? 'Cotação '+dataPt(dataCotacao) : 'modelo estimado'} {localDesatualizado ? '· ATENÇÃO: antigo' : ''}</div>
+              </div>
+              <div style={{...S.simCell, borderColor: '#E6B84A'}}>
+                <div style={S.simCellLabel}>Cotrijuc · preço observado</div>
+                <div style={{...S.simCellValor, color: '#E6B84A'}}>{localValido ? 'R$ '+cotrijucPreco.toFixed(2) : 'Indisponível'}</div>
+                <div style={S.simCellDelta}>
+                  Diferença versus modelo teórico JC: <span style={{color: spreadBalcaoSoja !== null && spreadBalcaoSoja >= 0 ? '#C8E04A' : '#D9542B'}}>
+                    {spreadBalcaoSoja !== null ? (spreadBalcaoSoja >= 0 ? '+' : '')+'R$ '+spreadBalcaoSoja.toFixed(2)+' ('+spreadBalcaoSojaPct.toFixed(1)+'%)' : 'sem referência local'}
+                  </span>
                 </div>
               </div>
-            </>
-          )}
-
-          {sazVer === 'calendario' && (
-            <div style={{marginTop: 16}}>
-              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10}}>
-                {SAZONAL.map((s, i) => {
-                  const isCurrent = new Date().getMonth() + 1 === s.num;
-                  return (
-                    <div key={i} style={{
-                      background: '#0F1410', padding: 12,
-                      borderLeft: `3px solid ${s.cor}`,
-                      outline: isCurrent ? `2px solid ${s.cor}` : 'none',
-                    }}>
-                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline'}}>
-                        <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 14, color: s.cor, fontWeight: 600, letterSpacing: 1}}>
-                          {isCurrent && '◉ '}{s.mes}
-                        </div>
-                        <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 13, color: s.cor}}>
-                          {s.indice.toFixed(0)}%
-                        </div>
-                      </div>
-                      <div style={{fontSize: 11, color: '#E8E2D0', marginTop: 6, fontWeight: 600}}>{s.fase}</div>
-                      <div style={{marginTop: 8, fontSize: 10, color: '#A89968', lineHeight: 1.4}}>
-                        <div>🌾 <strong>RS:</strong> {s.faseRS}</div>
-                        <div style={{marginTop: 3}}>📊 <strong>USDA:</strong> {s.usda}</div>
-                        <div style={{marginTop: 3}}>💰 média: R$ {s.precoAbs.toFixed(0)}/sc</div>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div style={S.simCell}>
+                <div style={S.simCellLabel}>CBOT futures</div>
+                <div style={S.simCellValor}>{cbot.toFixed(2)} <span style={{fontSize: 11, color: '#6B7065'}}>USD/bu</span></div>
+                <div style={S.simCellDelta}>nível {niveis.cbot}</div>
+              </div>
+              <div style={S.simCell}>
+                <div style={S.simCellLabel}>Prêmio Paranaguá</div>
+                <div style={{...S.simCellValor, color: premio >= 0 ? '#C8E04A' : '#D9542B'}}>
+                  {premio >= 0 ? '+' : ''}{premio.toFixed(2)} <span style={{fontSize: 11, color: '#6B7065'}}>USD/bu</span>
+                </div>
+                <div style={S.simCellDelta}>nível {niveis.premio}</div>
+              </div>
+              <div style={S.simCell}>
+                <div style={S.simCellLabel}>USD/BRL</div>
+                <div style={S.simCellValor}>R$ {dolar.toFixed(2)}</div>
+                <div style={S.simCellDelta}>nível {niveis.dolar}</div>
               </div>
             </div>
-          )}
 
-          {sazVer === 'janelas' && (
-            <div style={{marginTop: 16, overflowX: 'auto'}}>
-              <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace"}}>
-                <thead>
-                  <tr style={{background: '#181C18'}}>
-                    <th style={{padding: 8, textAlign: 'left', color: '#A89968', letterSpacing: 1, borderBottom: '1px solid #2A2F28'}}>MÊS</th>
-                    <th style={{padding: 8, textAlign: 'left', color: '#A89968', letterSpacing: 1, borderBottom: '1px solid #2A2F28'}}>HEDGE / TRAVA</th>
-                    <th style={{padding: 8, textAlign: 'left', color: '#A89968', letterSpacing: 1, borderBottom: '1px solid #2A2F28'}}>FERTILIZANTE</th>
-                    <th style={{padding: 8, textAlign: 'left', color: '#A89968', letterSpacing: 1, borderBottom: '1px solid #2A2F28'}}>VENDA FÍSICO</th>
-                    <th style={{padding: 8, textAlign: 'left', color: '#A89968', letterSpacing: 1, borderBottom: '1px solid #2A2F28'}}>EVENTO-CHAVE</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {SAZONAL.map((s, i) => {
-                    const j = JANELAS_OP[s.num];
-                    const isCurrent = new Date().getMonth() + 1 === s.num;
-                    return (
-                      <tr key={i} style={{background: isCurrent ? '#1A211A' : 'transparent', borderBottom: '1px solid #2A2F28'}}>
-                        <td style={{padding: 8, color: s.cor, fontWeight: 600}}>{isCurrent && '◉ '}{s.mes}</td>
-                        <td style={{padding: 8, color: '#E8E2D0'}}>{j.hedge}</td>
-                        <td style={{padding: 8, color: '#E8E2D0'}}>{j.fert}</td>
-                        <td style={{padding: 8, color: '#E8E2D0'}}>{j.venda}</td>
-                        <td style={{padding: 8, color: '#A89968', fontSize: 10}}>{j.risco}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              <div style={{fontSize: 11, color: '#A89968', marginTop: 14, padding: 12, background: '#0F1410', borderLeft: '2px solid #7AB8E0', lineHeight: 1.5}}>
-                <strong>Como ler:</strong> a coluna HEDGE diz quando travar via derivativos (CBOT, prêmio, câmbio). FERTILIZANTE indica janelas de compra do consultor (entressafra = melhor, pico indiano = pior). VENDA FÍSICO é o momento ideal para o spot/balcão. EVENTO-CHAVE alerta sobre o que pode mover o mercado naquele mês.
+            {/* Edição rápida do balcão soja */}
+            <div style={{marginTop: 14, padding: 12, background: '#0F1410', border: '1px dashed #2A2F28'}}>
+              <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#6B7065', letterSpacing: 1, marginBottom: 8, textTransform: 'uppercase'}}>
+                Atualize o balcão Cotrijuc (cotrijuc.com.br/graos)
+              </div>
+              <div style={S.inputBlock}>
+                <label style={S.inputLabel}>Preço para simulação R$/saca (editável)</label>
+                <input type="number" step="0.5" value={balcaoSoja} onChange={e => {balcaoEditadoPeloUsuario.current=true;setBalcaoSoja(parseFloat(e.target.value)||0);}} />
+                <div style={{fontSize:10,color:'#A89968',marginTop:5}}>Editar aqui não altera a cotação publicada da Cotrijuc e não será sobrescrito pela próxima sincronização.</div>
               </div>
             </div>
-          )}
+          </div>
 
-          {sazVer === 'fertilizantes' && (() => {
-            const mesAtual = new Date().getMonth() + 1;
-            const sazAtual = SAZONAL_FERT[mesAtual - 1];
-            return (
-              <>
-                <div style={{fontSize: 11, color: '#A89968', marginTop: 14, marginBottom: 12, lineHeight: 1.5}}>
-                  <strong>Padrões diferentes por nutriente:</strong>
-                  <span style={{color: '#7AB8E0'}}> N (ureia) </span> picca em jul-set (leilões indianos); <span style={{color: '#E6B84A'}}>P (MAP/DAP)</span> picca em mar-mai (plantio EUA); <span style={{color: '#C8E04A'}}>K (KCl)</span> mais estável (contratos anuais Canada/Rússia/Belarus). Por isso a compra ÓTIMA varia: <strong>ABR para ureia</strong>, <strong>AGO para MAP/KCl</strong>.
+          {/* BLOCO 2: DECISÃO DO DIA */}
+          <div style={{borderTop: '1px solid #2A2F28', paddingTop: 14, marginBottom: 16}}>
+            <div style={{...S.sinteseLabel, color: '#C8E04A', marginBottom: 10}}>DECISÃO DO DIA · RECOMENDAÇÃO</div>
+            <div style={{padding: 14, background: '#0F1410', borderLeft: '3px solid #C8E04A'}}>
+              <div style={{fontFamily: "'IBM Plex Serif', serif", fontSize: 17, lineHeight: 1.5, color: '#E8E2D0', marginBottom: 10}}>
+                {relatorio.cenarioMacro}
+              </div>
+              <div style={{fontFamily: "'IBM Plex Serif', serif", fontSize: 15, lineHeight: 1.5, color: '#C8E04A', fontWeight: 600}}>
+                → {relatorio.recSoja}
+              </div>
+              <div style={{marginTop: 14, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10}}>
+                <div style={{background: '#181C18', padding: 10, textAlign: 'center'}}>
+                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: '#6B7065', letterSpacing: 1}}>PESSIMISTA</div>
+                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 20, color: '#D9542B', fontWeight: 500}}>R$ {relatorio.pessimista}</div>
+                  <div style={{fontSize: 9, color: '#6B7065'}}>-12%</div>
                 </div>
-                <div style={{height: 280, marginTop: 8}}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={SAZONAL_FERT} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
-                      <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
-                      <XAxis dataKey="mes" stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
-                      <YAxis domain={[85, 120]} stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
-                      <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 11}}
-                               formatter={(v, n) => [`${v}% da média anual`, n]}/>
-                      <ReferenceLine y={100} stroke="#A89968" strokeDasharray="2 4" />
-                      <Line type="monotone" dataKey="ureia" stroke="#7AB8E0" strokeWidth={2.5} dot={{r: 4, fill: '#7AB8E0'}} name="Ureia (N)" />
-                      <Line type="monotone" dataKey="map" stroke="#E6B84A" strokeWidth={2.5} dot={{r: 4, fill: '#E6B84A'}} name="MAP (P)" />
-                      <Line type="monotone" dataKey="kcl" stroke="#C8E04A" strokeWidth={2} dot={{r: 3, fill: '#C8E04A'}} name="KCl (K)" />
-                      <Line type="monotone" dataKey="npk" stroke="#D9542B" strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="NPK blend médio" />
-                    </LineChart>
-                  </ResponsiveContainer>
+                <div style={{background: '#181C18', padding: 10, textAlign: 'center', border: '1px solid #A89968'}}>
+                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: '#A89968', letterSpacing: 1}}>BASE</div>
+                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 20, color: '#E8E2D0', fontWeight: 500}}>R$ {relatorio.base}</div>
+                  <div style={{fontSize: 9, color: '#A89968'}}>atual</div>
                 </div>
+                <div style={{background: '#181C18', padding: 10, textAlign: 'center'}}>
+                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: '#6B7065', letterSpacing: 1}}>OTIMISTA</div>
+                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 20, color: '#C8E04A', fontWeight: 500}}>R$ {relatorio.otimista}</div>
+                  <div style={{fontSize: 9, color: '#6B7065'}}>+12%</div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-                {/* Sumário do mês atual */}
-                <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginTop: 14}}>
-                  <div style={{...S.simCell, borderColor: '#7AB8E0'}}>
-                    <div style={S.simCellLabel}>Ureia · {sazAtual.mes}</div>
-                    <div style={{...S.simCellValor, color: sazAtual.ureia < 95 ? '#C8E04A' : sazAtual.ureia > 105 ? '#D9542B' : '#E6B84A'}}>
-                      {sazAtual.ureia}%
-                    </div>
-                    <div style={S.simCellDelta}>{sazAtual.ureia < 95 ? '★ janela compra' : sazAtual.ureia > 105 ? 'caro · evite' : 'neutro'}</div>
+          {/* BLOCO 3: HEDGE RATIO + MARGEM POR HA SOJA (estilo SLC Agrícola) */}
+          <div style={{borderTop: '1px solid #2A2F28', paddingTop: 14, marginBottom: 16}}>
+            <div style={{...S.sinteseLabel, color: '#A89968', marginBottom: 10}}>POSIÇÃO DE HEDGE · MARGEM REALIZADA</div>
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16}}>
+              <div>
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10}}>
+                  <div style={S.inputBlock}>
+                    <label style={S.inputLabel}>% safra travada</label>
+                    <input type="number" step="5" min="0" max="100" value={pctTravadoSoja} onChange={e => setPctTravadoSoja(parseFloat(e.target.value)||0)} />
                   </div>
-                  <div style={{...S.simCell, borderColor: '#E6B84A'}}>
-                    <div style={S.simCellLabel}>MAP · {sazAtual.mes}</div>
-                    <div style={{...S.simCellValor, color: sazAtual.map < 95 ? '#C8E04A' : sazAtual.map > 105 ? '#D9542B' : '#E6B84A'}}>
-                      {sazAtual.map}%
-                    </div>
-                    <div style={S.simCellDelta}>{sazAtual.map < 95 ? '★ janela compra' : sazAtual.map > 105 ? 'caro · evite' : 'neutro'}</div>
-                  </div>
-                  <div style={{...S.simCell, borderColor: '#C8E04A'}}>
-                    <div style={S.simCellLabel}>KCl · {sazAtual.mes}</div>
-                    <div style={{...S.simCellValor, color: sazAtual.kcl < 99 ? '#C8E04A' : sazAtual.kcl > 101 ? '#D9542B' : '#E6B84A'}}>
-                      {sazAtual.kcl}%
-                    </div>
-                    <div style={S.simCellDelta}>{sazAtual.kcl < 99 ? '★ janela compra' : sazAtual.kcl > 101 ? 'caro · evite' : 'estável'}</div>
-                  </div>
-                  <div style={{...S.simCell, borderColor: '#D9542B'}}>
-                    <div style={S.simCellLabel}>NPK blend · {sazAtual.mes}</div>
-                    <div style={{...S.simCellValor, color: sazAtual.npk < 97 ? '#C8E04A' : sazAtual.npk > 103 ? '#D9542B' : '#E6B84A'}}>
-                      {sazAtual.npk}%
-                    </div>
-                    <div style={S.simCellDelta}>{sazAtual.npk < 97 ? '★ comprar' : sazAtual.npk > 103 ? 'evitar' : 'neutro'}</div>
+                  <div style={S.inputBlock}>
+                    <label style={S.inputLabel}>Preço médio travado</label>
+                    <input type="number" step="1" value={precoMedioTravado} onChange={e => setPrecoMedioTravado(parseFloat(e.target.value)||0)} />
                   </div>
                 </div>
-
-                {/* Tabela operacional */}
-                <details style={{marginTop: 14}}>
-                  <summary style={{cursor: 'pointer', fontSize: 11, color: '#A89968', fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 0.5}}>
-                    ▸ tabela completa de janelas mensais por nutriente
+                <div style={{background: '#0F1410', padding: 12, border: '1px solid #2A2F28'}}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 6}}>
+                    <span style={{color: '#A89968'}}>Travado</span>
+                    <span style={{color: '#C8E04A', fontWeight: 600}}>{pctTravadoSoja}% @ R$ {precoMedioTravado}</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 6}}>
+                    <span style={{color: '#A89968'}}>Em aberto</span>
+                    <span style={{color: '#E6B84A'}}>{100-pctTravadoSoja}% @ R$ {balcaoSoja.toFixed(2)} (balcão)</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", borderTop: '1px solid #2A2F28', paddingTop: 6, marginTop: 6}}>
+                    <span style={{color: '#A89968'}}>Preço médio ponderado</span>
+                    <span style={{color: '#E8E2D0', fontWeight: 600}}>
+                      R$ {((pctTravadoSoja * precoMedioTravado + (100 - pctTravadoSoja) * balcaoSoja) / 100).toFixed(2)}
+                    </span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginTop: 4}}>
+                    <span style={{color: '#A89968'}}>Margem @ ponderado</span>
+                    <span style={{color: '#C8E04A'}}>
+                      R$ {(((pctTravadoSoja * precoMedioTravado + (100 - pctTravadoSoja) * balcaoSoja) / 100) - custoSaca).toFixed(2)}/saca
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div style={{...S.sinteseLabel, color: '#A89968', marginBottom: 8}}>Soja · margem por hectare</div>
+                <div style={{background: '#0F1410', padding: 14, border: '1px solid #C8E04A'}}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 6}}>
+                    <span style={{color: '#A89968'}}>Produtividade</span>
+                    <span style={{color: '#E8E2D0'}}>{prodSoja} sc/ha</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 6}}>
+                    <span style={{color: '#A89968'}}>Receita (a balcão)</span>
+                    <span style={{color: '#E8E2D0'}}>R$ {receitaSojaHa.toFixed(0)}/ha</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 6}}>
+                    <span style={{color: '#A89968'}}>Custo</span>
+                    <span style={{color: '#E8E2D0'}}>R$ {custoSojaHa}/ha</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 14, fontFamily: "'IBM Plex Mono', monospace", borderTop: '1px solid #2A2F28', paddingTop: 8, marginTop: 4}}>
+                    <span style={{color: '#A89968'}}>Margem</span>
+                    <span style={{color: margemSojaHa > 0 ? '#C8E04A' : '#D9542B', fontWeight: 700}}>
+                      R$ {margemSojaHa.toFixed(0)}/ha ({margemSojaPct.toFixed(0)}%)
+                    </span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginTop: 6, color: '#6B7065'}}>
+                    <span>Em {areaTotal} ha (fazenda)</span>
+                    <span>R$ {(margemSojaHa * areaTotal / 1000).toFixed(0)}k</span>
+                  </div>
+                </div>
+                <details style={{marginTop: 10, fontSize: 11, color: '#6B7065'}}>
+                  <summary style={{cursor: 'pointer', fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 0.5}}>
+                    ▸ ajustar produtividade · custo · área
                   </summary>
-                  <div style={{marginTop: 10, overflowX: 'auto'}}>
-                    <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace"}}>
-                      <thead>
-                        <tr style={{background: '#181C18'}}>
-                          <th style={{padding: 6, textAlign: 'left', color: '#A89968', borderBottom: '1px solid #2A2F28'}}>MÊS</th>
-                          <th style={{padding: 6, color: '#7AB8E0', borderBottom: '1px solid #2A2F28'}}>UREIA (N)</th>
-                          <th style={{padding: 6, color: '#E6B84A', borderBottom: '1px solid #2A2F28'}}>MAP (P)</th>
-                          <th style={{padding: 6, color: '#C8E04A', borderBottom: '1px solid #2A2F28'}}>KCl (K)</th>
-                          <th style={{padding: 6, color: '#D9542B', borderBottom: '1px solid #2A2F28'}}>NPK</th>
-                          <th style={{padding: 6, textAlign: 'left', color: '#A89968', borderBottom: '1px solid #2A2F28'}}>RECOMENDAÇÃO</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {SAZONAL_FERT.map((s, i) => {
-                          const isCurrent = mesAtual === s.num;
-                          const recs = [];
-                          if (s.ureia < 95) recs.push('★ ureia');
-                          if (s.map < 95) recs.push('★ MAP');
-                          if (s.kcl < 99) recs.push('★ KCl');
-                          const txt = recs.length > 0 ? `Comprar ${recs.join(' · ')}` :
-                                      (s.ureia > 108 || s.map > 105) ? 'Postergar compras' : 'Neutro';
-                          return (
-                            <tr key={i} style={{background: isCurrent ? '#1A211A' : 'transparent', borderBottom: '1px solid #2A2F28'}}>
-                              <td style={{padding: 6, color: '#E8E2D0', fontWeight: 600}}>{isCurrent && '◉ '}{s.mes}</td>
-                              <td style={{padding: 6, textAlign: 'center', color: s.ureia < 95 ? '#C8E04A' : s.ureia > 105 ? '#D9542B' : '#E8E2D0'}}>{s.ureia}%</td>
-                              <td style={{padding: 6, textAlign: 'center', color: s.map < 95 ? '#C8E04A' : s.map > 105 ? '#D9542B' : '#E8E2D0'}}>{s.map}%</td>
-                              <td style={{padding: 6, textAlign: 'center', color: s.kcl < 99 ? '#C8E04A' : s.kcl > 101 ? '#D9542B' : '#E8E2D0'}}>{s.kcl}%</td>
-                              <td style={{padding: 6, textAlign: 'center', color: s.npk < 97 ? '#C8E04A' : s.npk > 103 ? '#D9542B' : '#E8E2D0'}}>{s.npk}%</td>
-                              <td style={{padding: 6, color: '#A89968', fontSize: 10}}>{txt}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                  <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 10}}>
+                    <div style={S.inputBlock}><label style={S.inputLabel}>sc/ha</label>
+                      <input type="number" value={prodSoja} onChange={e => setProdSoja(parseFloat(e.target.value)||0)} /></div>
+                    <div style={S.inputBlock}><label style={S.inputLabel}>R$/ha custo</label>
+                      <input type="number" value={custoSojaHa} onChange={e => setCustoSojaHa(parseFloat(e.target.value)||0)} /></div>
+                    <div style={S.inputBlock}><label style={S.inputLabel}>Área (ha)</label>
+                      <input type="number" value={areaTotal} onChange={e => setAreaTotal(parseFloat(e.target.value)||0)} /></div>
                   </div>
                 </details>
+              </div>
+            </div>
+          </div>
 
-                <div style={{marginTop: 12, padding: 12, background: '#0F1410', borderLeft: '2px solid #A89968', fontSize: 11, color: '#A89968', lineHeight: 1.5}}>
-                  <strong>Drivers por nutriente (consultor):</strong><br/>
-                  · <span style={{color: '#7AB8E0'}}>UREIA (N)</span> — leilões indianos jul-set determinam pico. Rússia (Black Sea), Catar e Omã principais fornecedores. Preço FOB Black Sea é a referência mundial.<br/>
-                  · <span style={{color: '#E6B84A'}}>MAP/DAP (P)</span> — plantio EUA (Mar-Mai) e China são drivers. China impôs quotas de exportação em 2021-22 → preço disparou. Marrocos é o maior produtor mundial.<br/>
-                  · <span style={{color: '#C8E04A'}}>KCl (K)</span> — mais estável. Canada (Nutrien, Mosaic), Rússia (Uralkali) e Belarus dominam. Contratos anuais com importadores grandes.<br/>
-                  · <span style={{color: '#D9542B'}}>NPK blend</span> — média ponderada dos três; reflete a fórmula que o produtor BR efetivamente compra.
-                </div>
-              </>
-            );
-          })()}
+          {/* BLOCO 4: GATILHOS SOJA */}
+          <div style={{borderTop: '1px solid #2A2F28', paddingTop: 14}}>
+            <div style={{...S.sinteseLabel, color: '#E6B84A', marginBottom: 10}}>GATILHOS · QUANDO REAGIR</div>
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10}}>
+              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #C8E04A'}}>
+                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE CBOT &gt; 12,50</div>
+                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>Trave +20% adicional em camada</div>
+              </div>
+              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #D9542B'}}>
+                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE CBOT &lt; 10,50</div>
+                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>Avalie put protetiva strike R$ {(custoSaca * 1.1).toFixed(0)}</div>
+              </div>
+              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #C8E04A'}}>
+                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE DÓLAR &gt; 5,40</div>
+                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>Trave câmbio NDF (oportunidade alta vol)</div>
+              </div>
+              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #D9542B'}}>
+                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE DÓLAR &lt; 4,90</div>
+                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>NÃO travar; comprar call de USD</div>
+              </div>
+              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #E6B84A'}}>
+                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE BALCÃO &gt; CIF</div>
+                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>Venda física local (sem frete)</div>
+              </div>
+              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #E6B84A'}}>
+                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE PRÊMIO &gt; 1,50</div>
+                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>Trave prêmio agressivo (cai rápido)</div>
+              </div>
+            </div>
+          </div>
         </section>
+
 
         {/* 05 — CRUSH MARGIN + CURVAS DE FUTUROS */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#E6B84A'}}>
@@ -5499,6 +5451,562 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
           )}
         </section>
 
+
+        {/* 08 — ESTRATÉGIA */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#C8E04A'}}>
+          <div style={{...S.cardLabel, color: '#C8E04A'}}>08 — Estratégia recomendada para a janela atual</div>
+          <div style={{fontSize: 11, color: '#A89968', marginBottom: 14, lineHeight: 1.6}}>
+            <strong>Como funciona:</strong> o painel cruza 2 informações para cada componente (CBOT, prêmio, dólar) e gera uma recomendação:
+            <ol style={{margin: '6px 0 0 16px', padding: 0}}>
+              <li><strong>NÍVEL atual</strong> — onde o preço está vs histórico: <span style={{color: '#C8E04A'}}>ALTO</span> (top 33%), <span style={{color: '#A89968'}}>MÉDIO</span> (faixa central), <span style={{color: '#D9542B'}}>BAIXO</span> (bottom 33%).</li>
+              <li><strong>EXPECTATIVA</strong> — sua leitura do próximo movimento (configurada nos sliders do módulo 01): <span style={{color: '#C8E04A'}}>ALTA</span>, <span style={{color: '#A89968'}}>NEUTRA</span>, <span style={{color: '#D9542B'}}>BAIXA</span>.</li>
+            </ol>
+            A matriz <strong>3×3 (nível × expectativa) = 9 cenários</strong> retorna a ação específica. Princípio do consultor: <em>trave o que está bom (nível alto) e mantenha aberto o que está ruim (nível baixo), independente da expectativa</em>. Apenas use a expectativa para calibrar a agressividade da trava.
+          </div>
+          {[
+            { key: 'cbot', label: 'CBOT', unit: 'USD/bu', val: cbot, faixa: FAIXAS.cbot },
+            { key: 'premio', label: 'PRÊMIO', unit: 'USD/bu', val: premio, faixa: FAIXAS.premio },
+            { key: 'dolar', label: 'DÓLAR', unit: 'BRL/USD', val: dolar, faixa: FAIXAS.dolar },
+          ].map(c => {
+            const e = estrategia[c.key];
+            const exp = c.key === 'cbot' ? expCbot : c.key === 'premio' ? expPremio : expDolar;
+            return (
+              <div key={c.key} style={S.estratRow}>
+                <div style={S.estratHead}>
+                  <span style={S.estratComp}>{c.label}</span>
+                  <span style={{...S.estratAcao, color: corEstrat(e.cor)}}>{e.acao}</span>
+                  {e.pct > 0 && <span style={S.estratPct}>{e.pct}%</span>}
+                </div>
+                <div style={{fontSize: 10, color: '#A89968', marginBottom: 4, fontFamily: "'IBM Plex Mono', monospace"}}>
+                  Hoje: <strong style={{color: '#E8E2D0'}}>{c.val.toFixed(2)} {c.unit}</strong>
+                  {' · '}Nível: <strong style={{color: corNivel(niveis[c.key])}}>{niveis[c.key].toUpperCase()}</strong>
+                  {' (limites: '}{c.faixa.baixo.toFixed(2)} / {c.faixa.alto.toFixed(2)}{')'}
+                  {' · '}Expectativa: <strong style={{color: corNivel(exp === 'alta' ? 'alto' : exp === 'baixa' ? 'baixo' : 'medio')}}>{exp.toUpperCase()}</strong>
+                </div>
+                <div style={S.estratNota}>{e.nota}</div>
+              </div>
+            );
+          })}
+          <div style={S.sintese}>
+            <div style={S.sinteseLabel}>SÍNTESE OPERACIONAL</div>
+            <div style={S.sinteseTexto}>
+              {(() => {
+                const acoes = Object.values(estrategia);
+                const travarTotal = acoes.filter(a => a.pct >= 50).length;
+                const naoTravar = acoes.filter(a => a.pct === 0).length;
+                const pctMedio = Math.round(acoes.reduce((s, a) => s + a.pct, 0) / 3);
+                let texto;
+                if (travarTotal >= 2) texto = `Janela FAVORÁVEL aberta (${travarTotal}/3 componentes pedem trava ≥50%). Aja em camadas: 25-30% por semana, não tente acertar o topo. Use forward, contrato a fixar ou B3 SFI conforme conveniência.`;
+                else if (naoTravar >= 2) texto = `Janela RUIM (${naoTravar}/3 componentes em nível baixo). Aguarde melhora ou compre call para upside. Só trave por necessidade de caixa, margem em risco, ou compromisso já feito (barter, financiamento).`;
+                else texto = `Mercado MISTO. Trave o que está bom (componentes verde/amarelo), mantenha aberto o que está ruim (vermelho). Escalone toda decisão em 3-4 camadas para reduzir risco de timing.`;
+                return `${texto} · Trava agregada média recomendada: ${pctMedio}%.`;
+              })()}
+            </div>
+          </div>
+        </section>
+
+        {/* 09 — SIMULADOR */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#E6B84A'}}>
+          <div style={{...S.cardLabel, color: '#E6B84A'}}>09 — Simulador de venda escalonada</div>
+          <div style={{fontSize: 11, color: '#A89968', marginBottom: 12, lineHeight: 1.6}}>
+            <strong>Para que serve:</strong> escolha uma janela do passado (ex: a safra 22/23 completa, ou o 2º semestre 2024) e compare <strong>6 estratégias de venda diferentes</strong> sobre o MESMO preço histórico. Mostra na prática o que cada decisão teria dado em R$/saca — útil para entender quanto vale o "tudo no início", "tudo no fim", "escalonado linear" e "gatilho de trava" comparados ao topo perfeito e ao fundo.
+          </div>
+          <div className="sim-controls" style={S.simControls}>
+            <div style={S.inputBlock}>
+              <label style={S.inputLabel}>Início da janela</label>
+              <select value={periodoIni} onChange={e => setPeriodoIni(e.target.value)}>
+                {periodos.slice(0, -1).map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div style={S.inputBlock}>
+              <label style={S.inputLabel}>Fim da janela</label>
+              <select value={periodoFim} onChange={e => setPeriodoFim(e.target.value)}>
+                {periodos.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div style={S.inputBlock}>
+              <label style={S.inputLabel}>Gatilho de trava (R$/saca)</label>
+              <input type="number" value={gatilhoTrava} step="5" onChange={e => setGatilhoTrava(parseFloat(e.target.value)||0)} />
+            </div>
+          </div>
+
+          {simulacao && (
+            <>
+              <div style={{height: 220, marginTop: 16}}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={simulacao.janela} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
+                    <XAxis dataKey="t" stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                    <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                    <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 12}} />
+                    <ReferenceLine y={gatilhoTrava} stroke="#E6B84A" strokeDasharray="3 3" label={{value: `Gatilho R$ ${gatilhoTrava}`, fill: '#E6B84A', fontSize: 10, position: 'right'}} />
+                    <ReferenceLine y={simulacao.escalonado} stroke="#C8E04A" strokeDasharray="3 3" label={{value: `Média esc. R$ ${simulacao.escalonado.toFixed(0)}`, fill: '#C8E04A', fontSize: 10, position: 'right'}} />
+                    <ReferenceLine y={custoSaca} stroke="#D9542B" strokeDasharray="2 2" label={{value: `Custo R$ ${custoSaca.toFixed(0)}`, fill: '#D9542B', fontSize: 10, position: 'left'}} />
+                    <Line type="monotone" dataKey="sacaCIF" stroke="#E8E2D0" strokeWidth={2} dot={{r: 4}} name="R$/saca CIF JC" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <div style={{fontSize: 10, color: '#6B7065', fontFamily: "'IBM Plex Mono', monospace", padding: '6px 0', lineHeight: 1.6}}>
+                <strong style={{color: '#E8E2D0'}}>Como ler o gráfico:</strong> <span style={{color: '#E8E2D0'}}>linha branca</span> = preço CIF Júlio de Castilhos trimestre a trimestre (dados reais CEPEA). <span style={{color: '#E6B84A'}}>linha amarela tracejada</span> = seu gatilho de trava — sempre que o preço a atinge, o simulador trava 25% da safra. <span style={{color: '#C8E04A'}}>linha verde tracejada</span> = média da venda escalonada linear (vender 1/N a cada trimestre). <span style={{color: '#D9542B'}}>linha vermelha tracejada</span> = seu custo de produção atual — abaixo dela é prejuízo.
+              </div>
+
+              <div className="sim-grid" style={S.simGrid}>
+                {[
+                  { l: 'Pior da janela', v: simulacao.fundo, cor: '#D9542B', tip: 'Preço mínimo observado' },
+                  { l: 'Travou TUDO no início', v: simulacao.tudoInicio, cor: '#A89968', tip: 'Vendeu 100% no 1º trimestre' },
+                  { l: 'Travou TUDO no fim', v: simulacao.tudoFim, cor: '#A89968', tip: 'Vendeu 100% no último trim.' },
+                  { l: '★ Escalonado linear', v: simulacao.escalonado, cor: '#C8E04A', tip: 'Média de vender 1/N a cada trim.' },
+                  { l: `★ Com gatilho R$ ${gatilhoTrava}`, v: simulacao.gatilho, cor: '#C8E04A', tip: 'Trava 25% sempre que atinge gatilho' },
+                  { l: 'Topo perfeito (ideal)', v: simulacao.topo, cor: '#C8E04A', tip: 'Vendeu 100% no maior preço (impossível na prática)' },
+                ].map((s, i) => (
+                  <div key={i} style={S.simCell} title={s.tip}>
+                    <div style={S.simCellLabel}>{s.l}</div>
+                    <div style={{...S.simCellValor, color: s.cor}}>R$ {s.v.toFixed(2)}</div>
+                    <div style={S.simCellDelta}>
+                      {s.v > custoSaca ? `+${((s.v - custoSaca)/custoSaca*100).toFixed(0)}% margem` : `${((s.v - custoSaca)/custoSaca*100).toFixed(0)}% (prejuízo)`}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Síntese interpretativa */}
+              <div style={{...S.sintese, marginTop: 14, borderLeftColor: '#E6B84A'}}>
+                <div style={{...S.sinteseLabel, color: '#E6B84A'}}>SÍNTESE DA JANELA {periodoIni} → {periodoFim}</div>
+                <div style={S.sinteseTexto}>
+                  {(() => {
+                    const escMaisQueInicio = simulacao.escalonado - simulacao.tudoInicio;
+                    const escMaisQueFim = simulacao.escalonado - simulacao.tudoFim;
+                    const gatilhoMaisQueEsc = simulacao.gatilho - simulacao.escalonado;
+                    const distTopo = simulacao.topo - simulacao.escalonado;
+                    return (
+                      <>
+                        Nesta janela, o escalonado linear deu <strong style={{color: escMaisQueInicio >= 0 ? '#C8E04A' : '#D9542B'}}>R$ {escMaisQueInicio >= 0 ? '+' : ''}{escMaisQueInicio.toFixed(2)}/sc</strong> vs travar tudo no início e <strong style={{color: escMaisQueFim >= 0 ? '#C8E04A' : '#D9542B'}}>R$ {escMaisQueFim >= 0 ? '+' : ''}{escMaisQueFim.toFixed(2)}/sc</strong> vs travar tudo no fim. {' '}
+                        A estratégia com gatilho R$ {gatilhoTrava} {gatilhoMaisQueEsc >= 0 ? `superou o linear em R$ +${gatilhoMaisQueEsc.toFixed(2)}/sc` : `ficou R$ ${gatilhoMaisQueEsc.toFixed(2)}/sc abaixo do linear (gatilho alto demais para essa janela)`}.
+                        O topo perfeito era R$ {distTopo.toFixed(2)}/sc acima — a distância do escalonado ao topo é o "preço da disciplina" (você nunca acerta o topo, mas também nunca acerta o fundo).
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* === ANÁLISE PÓS-FATO: aplicação retroativa de outras estratégias === */}
+              <details style={{marginTop: 16, paddingTop: 12, borderTop: '1px solid #2A2F28'}}>
+                <summary style={{cursor: 'pointer', fontSize: 12, color: '#7AB8E0', fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 0.5, padding: '4px 0'}}>
+                  ▸ ★ ANÁLISE PÓS-FATO · qual estratégia clássica teria ganho nessa janela?
+                </summary>
+                <div style={{marginTop: 10}}>
+                  <div style={{fontSize: 11, color: '#A89968', marginBottom: 12, lineHeight: 1.5, padding: 10, background: '#0F1410', borderLeft: '2px solid #7AB8E0'}}>
+                    <strong style={{color:'#E8E2D0'}}>O que esta seção mostra:</strong> aplica retrospectivamente 4 estratégias do módulo 10 sobre os preços REAIS dessa janela. Permite responder "se eu tivesse usado put protetiva em vez de escalonado, ganharia mais?" para qualquer janela do passado. <strong>Lição prática:</strong> a melhor estratégia muda com o cenário de mercado, e olhar pra trás revela padrões repetíveis.
+                  </div>
+                  <div style={{overflowX: 'auto', border: '1px solid #2A2F28'}}>
+                    <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace"}}>
+                      <thead>
+                        <tr style={{background: '#181C18'}}>
+                          <th style={{padding: 8, textAlign: 'left', color: '#A89968', letterSpacing: 1}}>ESTRATÉGIA</th>
+                          <th style={{padding: 8, textAlign: 'right', color: '#A89968'}}>RESULTADO R$/sc</th>
+                          <th style={{padding: 8, textAlign: 'right', color: '#A89968'}}>vs ESCALONADO</th>
+                          <th style={{padding: 8, textAlign: 'right', color: '#A89968'}}>% vs TOPO</th>
+                          <th style={{padding: 8, textAlign: 'left', color: '#A89968'}}>QUANDO USAR</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          { l:'Escalonado linear', v: simulacao.escalonado, q: 'Default seguro. Quando você não tem visão clara.' },
+                          { l:'Forward 40% início', v: simulacao.forward40, q: 'Quando preço inicial está em patamar histórico ALTO.' },
+                          { l:'Put protetiva (3% prêmio)', v: simulacao.putProtetiva, q: 'Quando há risco de queda + oportunidade de upside.' },
+                          { l:`Estocagem ${Math.min(6, simulacao.janela.length-1)} meses`, v: simulacao.carrego, q: 'Quando CBOT em contango forte + CDI baixo.' },
+                          { l:'Tudo no início (lock-in)', v: simulacao.tudoInicio, q: 'Quando margem inicial já satisfatória + risco operacional.' },
+                          { l:'Tudo no fim (esperar)', v: simulacao.tudoFim, q: 'Quando expectativa de alta clara + sem necessidade caixa.' },
+                          { l:'Topo perfeito (ideal)', v: simulacao.topo, q: 'Impossível na prática · referência teórica.' },
+                        ].map((s, i) => {
+                          const delta = s.v - simulacao.escalonado;
+                          const pctTopo = (s.v / simulacao.topo) * 100;
+                          return (
+                            <tr key={i} style={{borderBottom: '1px solid #1F231D', background: s.l.includes('Topo') ? '#0A1A0F' : 'transparent'}}>
+                              <td style={{padding: 8, color: '#E8E2D0', fontWeight: 600}}>{s.l}</td>
+                              <td style={{padding: 8, textAlign: 'right', color: '#E6B84A', fontWeight: 600}}>R$ {s.v.toFixed(2)}</td>
+                              <td style={{padding: 8, textAlign: 'right', color: delta >= 0 ? '#C8E04A' : '#D9542B', fontWeight: 600}}>{delta >= 0 ? '+' : ''}{delta.toFixed(2)}</td>
+                              <td style={{padding: 8, textAlign: 'right', color: pctTopo >= 95 ? '#C8E04A' : pctTopo >= 85 ? '#E6B84A' : '#A89968'}}>{pctTopo.toFixed(0)}%</td>
+                              <td style={{padding: 8, color: '#A89968', fontSize: 10}}>{s.q}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style={{marginTop: 10, padding: 10, background: '#0F1410', borderLeft: '2px solid #C8E04A', fontSize: 11, color: '#A89968', lineHeight: 1.5}}>
+                    <strong style={{color:'#E8E2D0'}}>Lições desta janela:</strong> {(() => {
+                      const opcoes = [
+                        { l:'escalonado linear', v: simulacao.escalonado },
+                        { l:'forward 40%', v: simulacao.forward40 },
+                        { l:'put protetiva', v: simulacao.putProtetiva },
+                        { l:'estocagem', v: simulacao.carrego },
+                        { l:'travar no início', v: simulacao.tudoInicio },
+                        { l:'esperar até o fim', v: simulacao.tudoFim },
+                      ];
+                      const melhor = opcoes.reduce((a, b) => b.v > a.v ? b : a);
+                      const pior = opcoes.reduce((a, b) => b.v < a.v ? b : a);
+                      const distancia = ((melhor.v - pior.v) / pior.v * 100).toFixed(1);
+                      return (
+                        <>A melhor estratégia foi <strong style={{color:'#C8E04A'}}>{melhor.l}</strong> com R$ {melhor.v.toFixed(2)}/sc. A pior foi <strong style={{color:'#D9542B'}}>{pior.l}</strong> com R$ {pior.v.toFixed(2)}/sc — diferença de {distancia}%. Considerando o "preço da disciplina" (você dificilmente acerta a melhor sempre), o <strong style={{color:'#E6B84A'}}>escalonado</strong> entregou {((simulacao.escalonado / simulacao.topo) * 100).toFixed(0)}% do topo, que é o que esperar quando se aplica disciplina sem tentar adivinhar.</>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </details>
+            </>
+          )}
+        </section>
+
+        {/* 10 — ESTRATÉGIAS CLÁSSICAS */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+          <div style={S.cardLabel}>10 — Estratégias clássicas de comercialização</div>
+          <div style={S.estratClassicaWrap}>
+            {ESTRATEGIAS_CLASSICAS.map((est, i) => (
+              <div key={i} style={S.estratClassicaCard}>
+                <button className="estrat-toggle" onClick={() => setEstratExp(estratExp === i ? null : i)}>
+                  <span style={{color: '#6B7065'}}>{String(i+1).padStart(2,'0')}</span> · <span style={{color: '#E8E2D0', fontWeight: 600}}>{est.nome}</span>
+                  <span style={{float: 'right', color: '#C8E04A'}}>{estratExp === i ? '−' : '+'}</span>
+                </button>
+                {estratExp === i && (
+                  <div style={S.estratClassicaBody}>
+                    <div style={S.estratClassicaSinon}>{est.sinonimos}</div>
+                    <div style={S.estratClassicaSec}>
+                      <div style={S.estratClassicaSecLabel}>COMO FUNCIONA</div>
+                      <div style={S.estratClassicaSecText}>{est.descricao}</div>
+                    </div>
+                    <div style={S.estratClassicaSec}>
+                      <div style={S.estratClassicaSecLabel}>QUANDO USAR</div>
+                      <div style={S.estratClassicaSecText}>{est.quando}</div>
+                    </div>
+                    <div style={S.estratClassicaSec}>
+                      <div style={S.estratClassicaSecLabel}>RISCO</div>
+                      <div style={S.estratClassicaSecText}>{est.risco}</div>
+                    </div>
+                    <div style={S.estratClassicaSec}>
+                      <div style={S.estratClassicaSecLabel}>EXEMPLO</div>
+                      <div style={S.estratClassicaSecText}>{est.exemplo}</div>
+                    </div>
+                    <div style={{...S.estratClassicaSec, borderLeft: '2px solid #C8E04A', paddingLeft: 12}}>
+                      <div style={{...S.estratClassicaSecLabel, color: '#C8E04A'}}>JÚLIO DE CASTILHOS / RS</div>
+                      <div style={S.estratClassicaSecText}>{est.melhor_para}</div>
+                    </div>
+                    <div style={{marginTop: 16, paddingTop: 14, borderTop: '1px solid #2A2F28'}}>
+                      <div style={{...S.estratClassicaSecLabel, color: '#E6B84A', marginBottom: 10}}>🧮 CALCULADORA · use seus números</div>
+                      <EstratCalc idx={i} ctx={{ sacaCIF, custoSaca, prodSoja, areaTotal }} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+
+
+
+        {/* 11 — DECISÃO ESTRATÉGICA · A vs B vs C */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+          <div style={{...S.cardLabel, color: '#C8E04A'}}>11 — ★ Decisão estratégica · Própria vs Arrendar vs CDI</div>
+          <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
+            Análise probabilística baseada em 25 anos de dados SIDRA reais (2000-2024). Compara: <strong>(A)</strong> plantar só área própria · <strong>(B)</strong> própria + arrendar área adicional · <strong>(C)</strong> não plantar, capital em CDI. Calcula esperança matemática, probabilidade de margem positiva e Value at Risk.
+          </div>
+          <DecisaoEstrategicaBloco />
+        </section>
+
+        {/* 12 — PLANO DE HEDGE SUGERIDO */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+          <div style={{...S.cardLabel, color: '#C8E04A'}}>12 — ★ Plano de hedge sugerido · ações por mês</div>
+          <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
+            Roadmap mensal de ações baseado em (1) seu custo real R$/sc do módulo 02 · (2) preço atual CEPEA · (3) sazonalidade JC · (4) calendário WASDE/ANEC. Próximos 6 meses a partir de hoje, com diagnóstico tático imediato.
+          </div>
+          <PlanoHedgeBloco
+            custoRealSc={(custoFixoHa + custoVarHa) / 50}
+            precoAtualSc={balcaoSoja}
+            prodEsperada={prodSoja || 50}
+            areaTotal={200}
+            balcaoSoja={balcaoSoja}
+          />
+        </section>
+
+
+        
+        <div className="span-2" id="mercado-dados" style={{gridColumn:'span 2',padding:'23px 24px',background:'#151E18',border:'1px solid #37513A',borderLeft:'4px solid #C8E04A',scrollMarginTop:90}}>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:1.8,color:'#C8E04A',marginBottom:6}}>ÁREA DE TRABALHO</div>
+          <h2 style={{fontFamily:"'IBM Plex Serif',serif",fontSize:25,fontWeight:400,color:'#E8E2D0',margin:'0 0 8px'}}>Mercado · dados, metodologia e planejamento</h2>
+          <p style={{fontSize:12,color:'#A89968',lineHeight:1.6,margin:0}}>Séries e análises históricas, sazonalidade, fundamentos, comparações, eventos, impostos e rastreabilidade das fontes.</p>
+        </div>
+{/* 03 — HISTÓRICO */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+          <div style={S.cardLabel}>03 — Histórico (CEPEA Paranaguá, 2010–2026)</div>
+          <div style={S.tabRow}>
+            {[
+              { k: 'saca', l: 'Preço CIF JC' },
+              { k: 'componentes', l: 'Componentes' },
+              { k: 'troca', l: 'Troca / fert.' },
+            ].map(t => (
+              <button key={t.k} className={`exp ${graficoVer === t.k ? 'ativo' : ''}`} onClick={() => setGraficoVer(t.k)}>
+                {t.l}
+              </button>
+            ))}
+          </div>
+          <div style={{height: 280, marginTop: 16}}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={HISTORICO_CALC} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
+                <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
+                <XAxis dataKey="t" stroke="#6B7065" angle={-45} textAnchor="end" style={{fontSize: 10, fontFamily: 'IBM Plex Mono'}} />
+                <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                <Tooltip
+                  contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 12}}
+                  labelFormatter={(t) => {
+                    const it = HISTORICO_CALC.find(h => h.t === t);
+                    return `${t} · ${it ? it.evento : ''}`;
+                  }} />
+                {graficoVer === 'saca' && <Line type="monotone" dataKey="sacaCIF" stroke="#C8E04A" strokeWidth={2}
+                  dot={(props) => {
+                    const { cx, cy, payload } = props;
+                    if (payload && payload.conf) {
+                      return <circle key={`d-${cx}-${cy}`} cx={cx} cy={cy} r={5} fill="#C8E04A" stroke="#0F1410" strokeWidth={2} />;
+                    }
+                    return <circle key={`d-${cx}-${cy}`} cx={cx} cy={cy} r={2.5} fill="#6B7065" />;
+                  }} name="R$/saca CIF" />}
+                {graficoVer === 'componentes' && <Line type="monotone" dataKey="cbot" stroke="#C8E04A" strokeWidth={2} dot={{r: 3}} name="CBOT (USD/bu)" />}
+                {graficoVer === 'componentes' && <Line type="monotone" dataKey="premio" stroke="#E6B84A" strokeWidth={2} dot={{r: 3}} name="Prêmio Pgua (USD/bu)" />}
+                {graficoVer === 'componentes' && <Line type="monotone" dataKey="dolar" stroke="#D9542B" strokeWidth={2} dot={{r: 3}} name="Dólar (R$)" />}
+                {graficoVer === 'troca' && <Line type="monotone" dataKey="trocaFert" stroke="#D9542B" strokeWidth={2} dot={{r: 3}} name="sacas/ton NPK" />}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div style={S.legendaHist}>
+            {graficoVer === 'saca' && '★ TODOS os 66 trimestres são médias de cotações DIÁRIAS reais CEPEA/Esalq Paranaguá (5.050 pregões, 2010-2026). Sem interpolação. Pico real: 22Q2 (R$ 198 média trimestral, dia 24/02 = R$ 198,67). Vale: 10Q1-Q2 (R$ 38). 25Q4 média: R$ 140.'}
+            {graficoVer === 'componentes' && 'CBOT teve dois super-picos: 12Q3 (17,6 USD/bu, seca EUA) e 22Q2 (19 USD/bu, guerra). Dólar saltou em 15-16 (crise BR), 20Q2 (COVID) e 24Q4 (fiscal). Prêmio Paranaguá derivado AGORA É CALCULADO DO CEPEA REAL: spike confirmado em 18Q3-19Q1 (guerra comercial China-EUA), colapso em 23Q2 (safra recorde).'}
+            {graficoVer === 'troca' && 'Sacas de soja CEPEA para comprar 1 ton de ureia. PIORES períodos: 21Q4 (35 sacas) e 22Q1 (29 sacas) — ureia disparou de 245 para 821 USD/ton. MELHORES janelas para barter: 16Q2-Q3, 17Q2 e 20Q2 (~17-18 sacas).'}
+          </div>
+        </section>
+
+        {/* 04 — SAZONALIDADE */}
+        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#7AB8E0'}}>
+          <div style={{...S.cardLabel, color: '#7AB8E0'}}>04 — Sazonalidade · Calendário do ano agrícola</div>
+          <div style={{fontSize: 11, color: '#A89968', marginBottom: 12, lineHeight: 1.5}}>
+            Padrão de preço CEPEA Paranaguá calculado em <strong>5.050 cotações diárias 2010-2026</strong>. Cada mês mostra o % da média anual: <strong>FEV é historicamente o pior (94%)</strong>, <strong>SET e NOV os melhores (105%)</strong>. Spread médio anual: <strong>~11%</strong> entre vale e pico.
+          </div>
+          <div style={S.tabRow}>
+            {[
+              { k: 'historico', l: 'Padrão soja (CEPEA real)' },
+              { k: 'calendario', l: 'Calendário 12 meses' },
+              { k: 'janelas', l: 'Janelas hedge/fert/venda' },
+              { k: 'fertilizantes', l: 'Sazonalidade N · P · K' },
+            ].map(t => (
+              <button key={t.k} className={`exp ${sazVer === t.k ? 'ativo' : ''}`} onClick={() => setSazVer(t.k)}>
+                {t.l}
+              </button>
+            ))}
+          </div>
+
+          {sazVer === 'historico' && (
+            <>
+              <div style={{height: 280, marginTop: 16}}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={SAZONAL} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
+                    <XAxis dataKey="mes" stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                    <YAxis domain={[90, 110]} stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                    <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 11}}
+                             formatter={(v) => [`${v}% da média anual`, 'Índice']}/>
+                    <ReferenceLine y={100} stroke="#A89968" strokeDasharray="2 4" label={{value: 'média anual', fill: '#A89968', fontSize: 10, position: 'insideTopRight'}} />
+                    <Bar dataKey="indice" name="Preço em % da média anual">
+                      {SAZONAL.map((s, i) => <Cell key={i} fill={s.cor} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div style={{...S.sintese, marginTop: 12, borderLeftColor: '#7AB8E0'}}>
+                <div style={{...S.sinteseLabel, color: '#7AB8E0'}}>LEITURA</div>
+                <div style={S.sinteseTexto}>
+                  Mês atual: <strong style={{color: '#C8E04A'}}>{SAZONAL[new Date().getMonth()].mes}</strong> ({SAZONAL[new Date().getMonth()].indice.toFixed(1)}% da média anual) · fase: <strong>{SAZONAL[new Date().getMonth()].fase}</strong>.
+                  O índice acima de 100 indica preço acima da média do ano; abaixo, preço deprimido.
+                  Volatilidade (desvio): mais alta em JAN-FEV ({SAZONAL[0].desvio.toFixed(1)}-{SAZONAL[1].desvio.toFixed(1)}) e DEZ-NOV ({SAZONAL[10].desvio.toFixed(1)}-{SAZONAL[11].desvio.toFixed(1)}) — meses de viradas e safra nova. Mais baixa em MAI-JUL — mercado lateral.
+                </div>
+              </div>
+            </>
+          )}
+
+          {sazVer === 'calendario' && (
+            <div style={{marginTop: 16}}>
+              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10}}>
+                {SAZONAL.map((s, i) => {
+                  const isCurrent = new Date().getMonth() + 1 === s.num;
+                  return (
+                    <div key={i} style={{
+                      background: '#0F1410', padding: 12,
+                      borderLeft: `3px solid ${s.cor}`,
+                      outline: isCurrent ? `2px solid ${s.cor}` : 'none',
+                    }}>
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline'}}>
+                        <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 14, color: s.cor, fontWeight: 600, letterSpacing: 1}}>
+                          {isCurrent && '◉ '}{s.mes}
+                        </div>
+                        <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 13, color: s.cor}}>
+                          {s.indice.toFixed(0)}%
+                        </div>
+                      </div>
+                      <div style={{fontSize: 11, color: '#E8E2D0', marginTop: 6, fontWeight: 600}}>{s.fase}</div>
+                      <div style={{marginTop: 8, fontSize: 10, color: '#A89968', lineHeight: 1.4}}>
+                        <div>🌾 <strong>RS:</strong> {s.faseRS}</div>
+                        <div style={{marginTop: 3}}>📊 <strong>USDA:</strong> {s.usda}</div>
+                        <div style={{marginTop: 3}}>💰 média: R$ {s.precoAbs.toFixed(0)}/sc</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {sazVer === 'janelas' && (
+            <div style={{marginTop: 16, overflowX: 'auto'}}>
+              <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace"}}>
+                <thead>
+                  <tr style={{background: '#181C18'}}>
+                    <th style={{padding: 8, textAlign: 'left', color: '#A89968', letterSpacing: 1, borderBottom: '1px solid #2A2F28'}}>MÊS</th>
+                    <th style={{padding: 8, textAlign: 'left', color: '#A89968', letterSpacing: 1, borderBottom: '1px solid #2A2F28'}}>HEDGE / TRAVA</th>
+                    <th style={{padding: 8, textAlign: 'left', color: '#A89968', letterSpacing: 1, borderBottom: '1px solid #2A2F28'}}>FERTILIZANTE</th>
+                    <th style={{padding: 8, textAlign: 'left', color: '#A89968', letterSpacing: 1, borderBottom: '1px solid #2A2F28'}}>VENDA FÍSICO</th>
+                    <th style={{padding: 8, textAlign: 'left', color: '#A89968', letterSpacing: 1, borderBottom: '1px solid #2A2F28'}}>EVENTO-CHAVE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {SAZONAL.map((s, i) => {
+                    const j = JANELAS_OP[s.num];
+                    const isCurrent = new Date().getMonth() + 1 === s.num;
+                    return (
+                      <tr key={i} style={{background: isCurrent ? '#1A211A' : 'transparent', borderBottom: '1px solid #2A2F28'}}>
+                        <td style={{padding: 8, color: s.cor, fontWeight: 600}}>{isCurrent && '◉ '}{s.mes}</td>
+                        <td style={{padding: 8, color: '#E8E2D0'}}>{j.hedge}</td>
+                        <td style={{padding: 8, color: '#E8E2D0'}}>{j.fert}</td>
+                        <td style={{padding: 8, color: '#E8E2D0'}}>{j.venda}</td>
+                        <td style={{padding: 8, color: '#A89968', fontSize: 10}}>{j.risco}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <div style={{fontSize: 11, color: '#A89968', marginTop: 14, padding: 12, background: '#0F1410', borderLeft: '2px solid #7AB8E0', lineHeight: 1.5}}>
+                <strong>Como ler:</strong> a coluna HEDGE diz quando travar via derivativos (CBOT, prêmio, câmbio). FERTILIZANTE indica janelas de compra do consultor (entressafra = melhor, pico indiano = pior). VENDA FÍSICO é o momento ideal para o spot/balcão. EVENTO-CHAVE alerta sobre o que pode mover o mercado naquele mês.
+              </div>
+            </div>
+          )}
+
+          {sazVer === 'fertilizantes' && (() => {
+            const mesAtual = new Date().getMonth() + 1;
+            const sazAtual = SAZONAL_FERT[mesAtual - 1];
+            return (
+              <>
+                <div style={{fontSize: 11, color: '#A89968', marginTop: 14, marginBottom: 12, lineHeight: 1.5}}>
+                  <strong>Padrões diferentes por nutriente:</strong>
+                  <span style={{color: '#7AB8E0'}}> N (ureia) </span> picca em jul-set (leilões indianos); <span style={{color: '#E6B84A'}}>P (MAP/DAP)</span> picca em mar-mai (plantio EUA); <span style={{color: '#C8E04A'}}>K (KCl)</span> mais estável (contratos anuais Canada/Rússia/Belarus). Por isso a compra ÓTIMA varia: <strong>ABR para ureia</strong>, <strong>AGO para MAP/KCl</strong>.
+                </div>
+                <div style={{height: 280, marginTop: 8}}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={SAZONAL_FERT} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
+                      <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
+                      <XAxis dataKey="mes" stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                      <YAxis domain={[85, 120]} stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
+                      <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 11}}
+                               formatter={(v, n) => [`${v}% da média anual`, n]}/>
+                      <ReferenceLine y={100} stroke="#A89968" strokeDasharray="2 4" />
+                      <Line type="monotone" dataKey="ureia" stroke="#7AB8E0" strokeWidth={2.5} dot={{r: 4, fill: '#7AB8E0'}} name="Ureia (N)" />
+                      <Line type="monotone" dataKey="map" stroke="#E6B84A" strokeWidth={2.5} dot={{r: 4, fill: '#E6B84A'}} name="MAP (P)" />
+                      <Line type="monotone" dataKey="kcl" stroke="#C8E04A" strokeWidth={2} dot={{r: 3, fill: '#C8E04A'}} name="KCl (K)" />
+                      <Line type="monotone" dataKey="npk" stroke="#D9542B" strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="NPK blend médio" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Sumário do mês atual */}
+                <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginTop: 14}}>
+                  <div style={{...S.simCell, borderColor: '#7AB8E0'}}>
+                    <div style={S.simCellLabel}>Ureia · {sazAtual.mes}</div>
+                    <div style={{...S.simCellValor, color: sazAtual.ureia < 95 ? '#C8E04A' : sazAtual.ureia > 105 ? '#D9542B' : '#E6B84A'}}>
+                      {sazAtual.ureia}%
+                    </div>
+                    <div style={S.simCellDelta}>{sazAtual.ureia < 95 ? '★ janela compra' : sazAtual.ureia > 105 ? 'caro · evite' : 'neutro'}</div>
+                  </div>
+                  <div style={{...S.simCell, borderColor: '#E6B84A'}}>
+                    <div style={S.simCellLabel}>MAP · {sazAtual.mes}</div>
+                    <div style={{...S.simCellValor, color: sazAtual.map < 95 ? '#C8E04A' : sazAtual.map > 105 ? '#D9542B' : '#E6B84A'}}>
+                      {sazAtual.map}%
+                    </div>
+                    <div style={S.simCellDelta}>{sazAtual.map < 95 ? '★ janela compra' : sazAtual.map > 105 ? 'caro · evite' : 'neutro'}</div>
+                  </div>
+                  <div style={{...S.simCell, borderColor: '#C8E04A'}}>
+                    <div style={S.simCellLabel}>KCl · {sazAtual.mes}</div>
+                    <div style={{...S.simCellValor, color: sazAtual.kcl < 99 ? '#C8E04A' : sazAtual.kcl > 101 ? '#D9542B' : '#E6B84A'}}>
+                      {sazAtual.kcl}%
+                    </div>
+                    <div style={S.simCellDelta}>{sazAtual.kcl < 99 ? '★ janela compra' : sazAtual.kcl > 101 ? 'caro · evite' : 'estável'}</div>
+                  </div>
+                  <div style={{...S.simCell, borderColor: '#D9542B'}}>
+                    <div style={S.simCellLabel}>NPK blend · {sazAtual.mes}</div>
+                    <div style={{...S.simCellValor, color: sazAtual.npk < 97 ? '#C8E04A' : sazAtual.npk > 103 ? '#D9542B' : '#E6B84A'}}>
+                      {sazAtual.npk}%
+                    </div>
+                    <div style={S.simCellDelta}>{sazAtual.npk < 97 ? '★ comprar' : sazAtual.npk > 103 ? 'evitar' : 'neutro'}</div>
+                  </div>
+                </div>
+
+                {/* Tabela operacional */}
+                <details style={{marginTop: 14}}>
+                  <summary style={{cursor: 'pointer', fontSize: 11, color: '#A89968', fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 0.5}}>
+                    ▸ tabela completa de janelas mensais por nutriente
+                  </summary>
+                  <div style={{marginTop: 10, overflowX: 'auto'}}>
+                    <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace"}}>
+                      <thead>
+                        <tr style={{background: '#181C18'}}>
+                          <th style={{padding: 6, textAlign: 'left', color: '#A89968', borderBottom: '1px solid #2A2F28'}}>MÊS</th>
+                          <th style={{padding: 6, color: '#7AB8E0', borderBottom: '1px solid #2A2F28'}}>UREIA (N)</th>
+                          <th style={{padding: 6, color: '#E6B84A', borderBottom: '1px solid #2A2F28'}}>MAP (P)</th>
+                          <th style={{padding: 6, color: '#C8E04A', borderBottom: '1px solid #2A2F28'}}>KCl (K)</th>
+                          <th style={{padding: 6, color: '#D9542B', borderBottom: '1px solid #2A2F28'}}>NPK</th>
+                          <th style={{padding: 6, textAlign: 'left', color: '#A89968', borderBottom: '1px solid #2A2F28'}}>RECOMENDAÇÃO</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {SAZONAL_FERT.map((s, i) => {
+                          const isCurrent = mesAtual === s.num;
+                          const recs = [];
+                          if (s.ureia < 95) recs.push('★ ureia');
+                          if (s.map < 95) recs.push('★ MAP');
+                          if (s.kcl < 99) recs.push('★ KCl');
+                          const txt = recs.length > 0 ? `Comprar ${recs.join(' · ')}` :
+                                      (s.ureia > 108 || s.map > 105) ? 'Postergar compras' : 'Neutro';
+                          return (
+                            <tr key={i} style={{background: isCurrent ? '#1A211A' : 'transparent', borderBottom: '1px solid #2A2F28'}}>
+                              <td style={{padding: 6, color: '#E8E2D0', fontWeight: 600}}>{isCurrent && '◉ '}{s.mes}</td>
+                              <td style={{padding: 6, textAlign: 'center', color: s.ureia < 95 ? '#C8E04A' : s.ureia > 105 ? '#D9542B' : '#E8E2D0'}}>{s.ureia}%</td>
+                              <td style={{padding: 6, textAlign: 'center', color: s.map < 95 ? '#C8E04A' : s.map > 105 ? '#D9542B' : '#E8E2D0'}}>{s.map}%</td>
+                              <td style={{padding: 6, textAlign: 'center', color: s.kcl < 99 ? '#C8E04A' : s.kcl > 101 ? '#D9542B' : '#E8E2D0'}}>{s.kcl}%</td>
+                              <td style={{padding: 6, textAlign: 'center', color: s.npk < 97 ? '#C8E04A' : s.npk > 103 ? '#D9542B' : '#E8E2D0'}}>{s.npk}%</td>
+                              <td style={{padding: 6, color: '#A89968', fontSize: 10}}>{txt}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
+
+                <div style={{marginTop: 12, padding: 12, background: '#0F1410', borderLeft: '2px solid #A89968', fontSize: 11, color: '#A89968', lineHeight: 1.5}}>
+                  <strong>Drivers por nutriente (consultor):</strong><br/>
+                  · <span style={{color: '#7AB8E0'}}>UREIA (N)</span> — leilões indianos jul-set determinam pico. Rússia (Black Sea), Catar e Omã principais fornecedores. Preço FOB Black Sea é a referência mundial.<br/>
+                  · <span style={{color: '#E6B84A'}}>MAP/DAP (P)</span> — plantio EUA (Mar-Mai) e China são drivers. China impôs quotas de exportação em 2021-22 → preço disparou. Marrocos é o maior produtor mundial.<br/>
+                  · <span style={{color: '#C8E04A'}}>KCl (K)</span> — mais estável. Canada (Nutrien, Mosaic), Rússia (Uralkali) e Belarus dominam. Contratos anuais com importadores grandes.<br/>
+                  · <span style={{color: '#D9542B'}}>NPK blend</span> — média ponderada dos três; reflete a fórmula que o produtor BR efetivamente compra.
+                </div>
+              </>
+            );
+          })()}
+        </section>
 
         {/* 06 — FUNDAMENTOS USDA + CONAB */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#7AB8E0'}}>
@@ -6013,496 +6521,6 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
           )}
         </section>
 
-        {/* 08 — ESTRATÉGIA */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#C8E04A'}}>
-          <div style={{...S.cardLabel, color: '#C8E04A'}}>08 — Estratégia recomendada para a janela atual</div>
-          <div style={{fontSize: 11, color: '#A89968', marginBottom: 14, lineHeight: 1.6}}>
-            <strong>Como funciona:</strong> o painel cruza 2 informações para cada componente (CBOT, prêmio, dólar) e gera uma recomendação:
-            <ol style={{margin: '6px 0 0 16px', padding: 0}}>
-              <li><strong>NÍVEL atual</strong> — onde o preço está vs histórico: <span style={{color: '#C8E04A'}}>ALTO</span> (top 33%), <span style={{color: '#A89968'}}>MÉDIO</span> (faixa central), <span style={{color: '#D9542B'}}>BAIXO</span> (bottom 33%).</li>
-              <li><strong>EXPECTATIVA</strong> — sua leitura do próximo movimento (configurada nos sliders do módulo 01): <span style={{color: '#C8E04A'}}>ALTA</span>, <span style={{color: '#A89968'}}>NEUTRA</span>, <span style={{color: '#D9542B'}}>BAIXA</span>.</li>
-            </ol>
-            A matriz <strong>3×3 (nível × expectativa) = 9 cenários</strong> retorna a ação específica. Princípio do consultor: <em>trave o que está bom (nível alto) e mantenha aberto o que está ruim (nível baixo), independente da expectativa</em>. Apenas use a expectativa para calibrar a agressividade da trava.
-          </div>
-          {[
-            { key: 'cbot', label: 'CBOT', unit: 'USD/bu', val: cbot, faixa: FAIXAS.cbot },
-            { key: 'premio', label: 'PRÊMIO', unit: 'USD/bu', val: premio, faixa: FAIXAS.premio },
-            { key: 'dolar', label: 'DÓLAR', unit: 'BRL/USD', val: dolar, faixa: FAIXAS.dolar },
-          ].map(c => {
-            const e = estrategia[c.key];
-            const exp = c.key === 'cbot' ? expCbot : c.key === 'premio' ? expPremio : expDolar;
-            return (
-              <div key={c.key} style={S.estratRow}>
-                <div style={S.estratHead}>
-                  <span style={S.estratComp}>{c.label}</span>
-                  <span style={{...S.estratAcao, color: corEstrat(e.cor)}}>{e.acao}</span>
-                  {e.pct > 0 && <span style={S.estratPct}>{e.pct}%</span>}
-                </div>
-                <div style={{fontSize: 10, color: '#A89968', marginBottom: 4, fontFamily: "'IBM Plex Mono', monospace"}}>
-                  Hoje: <strong style={{color: '#E8E2D0'}}>{c.val.toFixed(2)} {c.unit}</strong>
-                  {' · '}Nível: <strong style={{color: corNivel(niveis[c.key])}}>{niveis[c.key].toUpperCase()}</strong>
-                  {' (limites: '}{c.faixa.baixo.toFixed(2)} / {c.faixa.alto.toFixed(2)}{')'}
-                  {' · '}Expectativa: <strong style={{color: corNivel(exp === 'alta' ? 'alto' : exp === 'baixa' ? 'baixo' : 'medio')}}>{exp.toUpperCase()}</strong>
-                </div>
-                <div style={S.estratNota}>{e.nota}</div>
-              </div>
-            );
-          })}
-          <div style={S.sintese}>
-            <div style={S.sinteseLabel}>SÍNTESE OPERACIONAL</div>
-            <div style={S.sinteseTexto}>
-              {(() => {
-                const acoes = Object.values(estrategia);
-                const travarTotal = acoes.filter(a => a.pct >= 50).length;
-                const naoTravar = acoes.filter(a => a.pct === 0).length;
-                const pctMedio = Math.round(acoes.reduce((s, a) => s + a.pct, 0) / 3);
-                let texto;
-                if (travarTotal >= 2) texto = `Janela FAVORÁVEL aberta (${travarTotal}/3 componentes pedem trava ≥50%). Aja em camadas: 25-30% por semana, não tente acertar o topo. Use forward, contrato a fixar ou B3 SFI conforme conveniência.`;
-                else if (naoTravar >= 2) texto = `Janela RUIM (${naoTravar}/3 componentes em nível baixo). Aguarde melhora ou compre call para upside. Só trave por necessidade de caixa, margem em risco, ou compromisso já feito (barter, financiamento).`;
-                else texto = `Mercado MISTO. Trave o que está bom (componentes verde/amarelo), mantenha aberto o que está ruim (vermelho). Escalone toda decisão em 3-4 camadas para reduzir risco de timing.`;
-                return `${texto} · Trava agregada média recomendada: ${pctMedio}%.`;
-              })()}
-            </div>
-          </div>
-        </section>
-
-        {/* 09 — SIMULADOR */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#E6B84A'}}>
-          <div style={{...S.cardLabel, color: '#E6B84A'}}>09 — Simulador de venda escalonada</div>
-          <div style={{fontSize: 11, color: '#A89968', marginBottom: 12, lineHeight: 1.6}}>
-            <strong>Para que serve:</strong> escolha uma janela do passado (ex: a safra 22/23 completa, ou o 2º semestre 2024) e compare <strong>6 estratégias de venda diferentes</strong> sobre o MESMO preço histórico. Mostra na prática o que cada decisão teria dado em R$/saca — útil para entender quanto vale o "tudo no início", "tudo no fim", "escalonado linear" e "gatilho de trava" comparados ao topo perfeito e ao fundo.
-          </div>
-          <div className="sim-controls" style={S.simControls}>
-            <div style={S.inputBlock}>
-              <label style={S.inputLabel}>Início da janela</label>
-              <select value={periodoIni} onChange={e => setPeriodoIni(e.target.value)}>
-                {periodos.slice(0, -1).map(p => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </div>
-            <div style={S.inputBlock}>
-              <label style={S.inputLabel}>Fim da janela</label>
-              <select value={periodoFim} onChange={e => setPeriodoFim(e.target.value)}>
-                {periodos.map(p => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </div>
-            <div style={S.inputBlock}>
-              <label style={S.inputLabel}>Gatilho de trava (R$/saca)</label>
-              <input type="number" value={gatilhoTrava} step="5" onChange={e => setGatilhoTrava(parseFloat(e.target.value)||0)} />
-            </div>
-          </div>
-
-          {simulacao && (
-            <>
-              <div style={{height: 220, marginTop: 16}}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={simulacao.janela} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
-                    <XAxis dataKey="t" stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
-                    <YAxis stroke="#6B7065" style={{fontSize: 11, fontFamily: 'IBM Plex Mono'}} />
-                    <Tooltip contentStyle={{background: '#0F1410', border: '1px solid #2A2F28', fontFamily: 'IBM Plex Mono', fontSize: 12}} />
-                    <ReferenceLine y={gatilhoTrava} stroke="#E6B84A" strokeDasharray="3 3" label={{value: `Gatilho R$ ${gatilhoTrava}`, fill: '#E6B84A', fontSize: 10, position: 'right'}} />
-                    <ReferenceLine y={simulacao.escalonado} stroke="#C8E04A" strokeDasharray="3 3" label={{value: `Média esc. R$ ${simulacao.escalonado.toFixed(0)}`, fill: '#C8E04A', fontSize: 10, position: 'right'}} />
-                    <ReferenceLine y={custoSaca} stroke="#D9542B" strokeDasharray="2 2" label={{value: `Custo R$ ${custoSaca.toFixed(0)}`, fill: '#D9542B', fontSize: 10, position: 'left'}} />
-                    <Line type="monotone" dataKey="sacaCIF" stroke="#E8E2D0" strokeWidth={2} dot={{r: 4}} name="R$/saca CIF JC" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              <div style={{fontSize: 10, color: '#6B7065', fontFamily: "'IBM Plex Mono', monospace", padding: '6px 0', lineHeight: 1.6}}>
-                <strong style={{color: '#E8E2D0'}}>Como ler o gráfico:</strong> <span style={{color: '#E8E2D0'}}>linha branca</span> = preço CIF Júlio de Castilhos trimestre a trimestre (dados reais CEPEA). <span style={{color: '#E6B84A'}}>linha amarela tracejada</span> = seu gatilho de trava — sempre que o preço a atinge, o simulador trava 25% da safra. <span style={{color: '#C8E04A'}}>linha verde tracejada</span> = média da venda escalonada linear (vender 1/N a cada trimestre). <span style={{color: '#D9542B'}}>linha vermelha tracejada</span> = seu custo de produção atual — abaixo dela é prejuízo.
-              </div>
-
-              <div className="sim-grid" style={S.simGrid}>
-                {[
-                  { l: 'Pior da janela', v: simulacao.fundo, cor: '#D9542B', tip: 'Preço mínimo observado' },
-                  { l: 'Travou TUDO no início', v: simulacao.tudoInicio, cor: '#A89968', tip: 'Vendeu 100% no 1º trimestre' },
-                  { l: 'Travou TUDO no fim', v: simulacao.tudoFim, cor: '#A89968', tip: 'Vendeu 100% no último trim.' },
-                  { l: '★ Escalonado linear', v: simulacao.escalonado, cor: '#C8E04A', tip: 'Média de vender 1/N a cada trim.' },
-                  { l: `★ Com gatilho R$ ${gatilhoTrava}`, v: simulacao.gatilho, cor: '#C8E04A', tip: 'Trava 25% sempre que atinge gatilho' },
-                  { l: 'Topo perfeito (ideal)', v: simulacao.topo, cor: '#C8E04A', tip: 'Vendeu 100% no maior preço (impossível na prática)' },
-                ].map((s, i) => (
-                  <div key={i} style={S.simCell} title={s.tip}>
-                    <div style={S.simCellLabel}>{s.l}</div>
-                    <div style={{...S.simCellValor, color: s.cor}}>R$ {s.v.toFixed(2)}</div>
-                    <div style={S.simCellDelta}>
-                      {s.v > custoSaca ? `+${((s.v - custoSaca)/custoSaca*100).toFixed(0)}% margem` : `${((s.v - custoSaca)/custoSaca*100).toFixed(0)}% (prejuízo)`}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {/* Síntese interpretativa */}
-              <div style={{...S.sintese, marginTop: 14, borderLeftColor: '#E6B84A'}}>
-                <div style={{...S.sinteseLabel, color: '#E6B84A'}}>SÍNTESE DA JANELA {periodoIni} → {periodoFim}</div>
-                <div style={S.sinteseTexto}>
-                  {(() => {
-                    const escMaisQueInicio = simulacao.escalonado - simulacao.tudoInicio;
-                    const escMaisQueFim = simulacao.escalonado - simulacao.tudoFim;
-                    const gatilhoMaisQueEsc = simulacao.gatilho - simulacao.escalonado;
-                    const distTopo = simulacao.topo - simulacao.escalonado;
-                    return (
-                      <>
-                        Nesta janela, o escalonado linear deu <strong style={{color: escMaisQueInicio >= 0 ? '#C8E04A' : '#D9542B'}}>R$ {escMaisQueInicio >= 0 ? '+' : ''}{escMaisQueInicio.toFixed(2)}/sc</strong> vs travar tudo no início e <strong style={{color: escMaisQueFim >= 0 ? '#C8E04A' : '#D9542B'}}>R$ {escMaisQueFim >= 0 ? '+' : ''}{escMaisQueFim.toFixed(2)}/sc</strong> vs travar tudo no fim. {' '}
-                        A estratégia com gatilho R$ {gatilhoTrava} {gatilhoMaisQueEsc >= 0 ? `superou o linear em R$ +${gatilhoMaisQueEsc.toFixed(2)}/sc` : `ficou R$ ${gatilhoMaisQueEsc.toFixed(2)}/sc abaixo do linear (gatilho alto demais para essa janela)`}.
-                        O topo perfeito era R$ {distTopo.toFixed(2)}/sc acima — a distância do escalonado ao topo é o "preço da disciplina" (você nunca acerta o topo, mas também nunca acerta o fundo).
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
-
-              {/* === ANÁLISE PÓS-FATO: aplicação retroativa de outras estratégias === */}
-              <details style={{marginTop: 16, paddingTop: 12, borderTop: '1px solid #2A2F28'}}>
-                <summary style={{cursor: 'pointer', fontSize: 12, color: '#7AB8E0', fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 0.5, padding: '4px 0'}}>
-                  ▸ ★ ANÁLISE PÓS-FATO · qual estratégia clássica teria ganho nessa janela?
-                </summary>
-                <div style={{marginTop: 10}}>
-                  <div style={{fontSize: 11, color: '#A89968', marginBottom: 12, lineHeight: 1.5, padding: 10, background: '#0F1410', borderLeft: '2px solid #7AB8E0'}}>
-                    <strong style={{color:'#E8E2D0'}}>O que esta seção mostra:</strong> aplica retrospectivamente 4 estratégias do módulo 10 sobre os preços REAIS dessa janela. Permite responder "se eu tivesse usado put protetiva em vez de escalonado, ganharia mais?" para qualquer janela do passado. <strong>Lição prática:</strong> a melhor estratégia muda com o cenário de mercado, e olhar pra trás revela padrões repetíveis.
-                  </div>
-                  <div style={{overflowX: 'auto', border: '1px solid #2A2F28'}}>
-                    <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace"}}>
-                      <thead>
-                        <tr style={{background: '#181C18'}}>
-                          <th style={{padding: 8, textAlign: 'left', color: '#A89968', letterSpacing: 1}}>ESTRATÉGIA</th>
-                          <th style={{padding: 8, textAlign: 'right', color: '#A89968'}}>RESULTADO R$/sc</th>
-                          <th style={{padding: 8, textAlign: 'right', color: '#A89968'}}>vs ESCALONADO</th>
-                          <th style={{padding: 8, textAlign: 'right', color: '#A89968'}}>% vs TOPO</th>
-                          <th style={{padding: 8, textAlign: 'left', color: '#A89968'}}>QUANDO USAR</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {[
-                          { l:'Escalonado linear', v: simulacao.escalonado, q: 'Default seguro. Quando você não tem visão clara.' },
-                          { l:'Forward 40% início', v: simulacao.forward40, q: 'Quando preço inicial está em patamar histórico ALTO.' },
-                          { l:'Put protetiva (3% prêmio)', v: simulacao.putProtetiva, q: 'Quando há risco de queda + oportunidade de upside.' },
-                          { l:`Estocagem ${Math.min(6, simulacao.janela.length-1)} meses`, v: simulacao.carrego, q: 'Quando CBOT em contango forte + CDI baixo.' },
-                          { l:'Tudo no início (lock-in)', v: simulacao.tudoInicio, q: 'Quando margem inicial já satisfatória + risco operacional.' },
-                          { l:'Tudo no fim (esperar)', v: simulacao.tudoFim, q: 'Quando expectativa de alta clara + sem necessidade caixa.' },
-                          { l:'Topo perfeito (ideal)', v: simulacao.topo, q: 'Impossível na prática · referência teórica.' },
-                        ].map((s, i) => {
-                          const delta = s.v - simulacao.escalonado;
-                          const pctTopo = (s.v / simulacao.topo) * 100;
-                          return (
-                            <tr key={i} style={{borderBottom: '1px solid #1F231D', background: s.l.includes('Topo') ? '#0A1A0F' : 'transparent'}}>
-                              <td style={{padding: 8, color: '#E8E2D0', fontWeight: 600}}>{s.l}</td>
-                              <td style={{padding: 8, textAlign: 'right', color: '#E6B84A', fontWeight: 600}}>R$ {s.v.toFixed(2)}</td>
-                              <td style={{padding: 8, textAlign: 'right', color: delta >= 0 ? '#C8E04A' : '#D9542B', fontWeight: 600}}>{delta >= 0 ? '+' : ''}{delta.toFixed(2)}</td>
-                              <td style={{padding: 8, textAlign: 'right', color: pctTopo >= 95 ? '#C8E04A' : pctTopo >= 85 ? '#E6B84A' : '#A89968'}}>{pctTopo.toFixed(0)}%</td>
-                              <td style={{padding: 8, color: '#A89968', fontSize: 10}}>{s.q}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div style={{marginTop: 10, padding: 10, background: '#0F1410', borderLeft: '2px solid #C8E04A', fontSize: 11, color: '#A89968', lineHeight: 1.5}}>
-                    <strong style={{color:'#E8E2D0'}}>Lições desta janela:</strong> {(() => {
-                      const opcoes = [
-                        { l:'escalonado linear', v: simulacao.escalonado },
-                        { l:'forward 40%', v: simulacao.forward40 },
-                        { l:'put protetiva', v: simulacao.putProtetiva },
-                        { l:'estocagem', v: simulacao.carrego },
-                        { l:'travar no início', v: simulacao.tudoInicio },
-                        { l:'esperar até o fim', v: simulacao.tudoFim },
-                      ];
-                      const melhor = opcoes.reduce((a, b) => b.v > a.v ? b : a);
-                      const pior = opcoes.reduce((a, b) => b.v < a.v ? b : a);
-                      const distancia = ((melhor.v - pior.v) / pior.v * 100).toFixed(1);
-                      return (
-                        <>A melhor estratégia foi <strong style={{color:'#C8E04A'}}>{melhor.l}</strong> com R$ {melhor.v.toFixed(2)}/sc. A pior foi <strong style={{color:'#D9542B'}}>{pior.l}</strong> com R$ {pior.v.toFixed(2)}/sc — diferença de {distancia}%. Considerando o "preço da disciplina" (você dificilmente acerta a melhor sempre), o <strong style={{color:'#E6B84A'}}>escalonado</strong> entregou {((simulacao.escalonado / simulacao.topo) * 100).toFixed(0)}% do topo, que é o que esperar quando se aplica disciplina sem tentar adivinhar.</>
-                      );
-                    })()}
-                  </div>
-                </div>
-              </details>
-            </>
-          )}
-        </section>
-
-        {/* 10 — ESTRATÉGIAS CLÁSSICAS */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
-          <div style={S.cardLabel}>10 — Estratégias clássicas de comercialização</div>
-          <div style={S.estratClassicaWrap}>
-            {ESTRATEGIAS_CLASSICAS.map((est, i) => (
-              <div key={i} style={S.estratClassicaCard}>
-                <button className="estrat-toggle" onClick={() => setEstratExp(estratExp === i ? null : i)}>
-                  <span style={{color: '#6B7065'}}>{String(i+1).padStart(2,'0')}</span> · <span style={{color: '#E8E2D0', fontWeight: 600}}>{est.nome}</span>
-                  <span style={{float: 'right', color: '#C8E04A'}}>{estratExp === i ? '−' : '+'}</span>
-                </button>
-                {estratExp === i && (
-                  <div style={S.estratClassicaBody}>
-                    <div style={S.estratClassicaSinon}>{est.sinonimos}</div>
-                    <div style={S.estratClassicaSec}>
-                      <div style={S.estratClassicaSecLabel}>COMO FUNCIONA</div>
-                      <div style={S.estratClassicaSecText}>{est.descricao}</div>
-                    </div>
-                    <div style={S.estratClassicaSec}>
-                      <div style={S.estratClassicaSecLabel}>QUANDO USAR</div>
-                      <div style={S.estratClassicaSecText}>{est.quando}</div>
-                    </div>
-                    <div style={S.estratClassicaSec}>
-                      <div style={S.estratClassicaSecLabel}>RISCO</div>
-                      <div style={S.estratClassicaSecText}>{est.risco}</div>
-                    </div>
-                    <div style={S.estratClassicaSec}>
-                      <div style={S.estratClassicaSecLabel}>EXEMPLO</div>
-                      <div style={S.estratClassicaSecText}>{est.exemplo}</div>
-                    </div>
-                    <div style={{...S.estratClassicaSec, borderLeft: '2px solid #C8E04A', paddingLeft: 12}}>
-                      <div style={{...S.estratClassicaSecLabel, color: '#C8E04A'}}>JÚLIO DE CASTILHOS / RS</div>
-                      <div style={S.estratClassicaSecText}>{est.melhor_para}</div>
-                    </div>
-                    <div style={{marginTop: 16, paddingTop: 14, borderTop: '1px solid #2A2F28'}}>
-                      <div style={{...S.estratClassicaSecLabel, color: '#E6B84A', marginBottom: 10}}>🧮 CALCULADORA · use seus números</div>
-                      <EstratCalc idx={i} ctx={{ sacaCIF, custoSaca, prodSoja, areaTotal }} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-
-
-
-
-        {/* 11 — DECISÃO ESTRATÉGICA · A vs B vs C */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
-          <div style={{...S.cardLabel, color: '#C8E04A'}}>11 — ★ Decisão estratégica · Própria vs Arrendar vs CDI</div>
-          <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
-            Análise probabilística baseada em 25 anos de dados SIDRA reais (2000-2024). Compara: <strong>(A)</strong> plantar só área própria · <strong>(B)</strong> própria + arrendar área adicional · <strong>(C)</strong> não plantar, capital em CDI. Calcula esperança matemática, probabilidade de margem positiva e Value at Risk.
-          </div>
-          <DecisaoEstrategicaBloco />
-        </section>
-
-        {/* 12 — PLANO DE HEDGE SUGERIDO */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
-          <div style={{...S.cardLabel, color: '#C8E04A'}}>12 — ★ Plano de hedge sugerido · ações por mês</div>
-          <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
-            Roadmap mensal de ações baseado em (1) seu custo real R$/sc do módulo 02 · (2) preço atual CEPEA · (3) sazonalidade JC · (4) calendário WASDE/ANEC. Próximos 6 meses a partir de hoje, com diagnóstico tático imediato.
-          </div>
-          <PlanoHedgeBloco
-            custoRealSc={(custoFixoHa + custoVarHa) / 50}
-            precoAtualSc={balcaoSoja}
-            prodEsperada={prodSoja || 50}
-            areaTotal={200}
-            balcaoSoja={balcaoSoja}
-          />
-        </section>
-
-
-        {/* 13 — PAINEL EXECUTIVO SOJA */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#C8E04A', background: '#1A211A'}}>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 4}}>
-            <div style={{...S.cardLabel, color: '#C8E04A', margin: 0}}>13 — Painel Executivo SOJA · Decisão do dia</div>
-            <button onClick={copiarRelatorio} style={{
-              background: '#C8E04A', color: '#0F1410', border: 'none', padding: '8px 14px',
-              fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 600,
-              letterSpacing: 1, cursor: 'pointer', textTransform: 'uppercase'
-            }}>📋 Copiar relatório</button>
-          </div>
-          <div style={{fontSize: 11, color: '#6B7065', marginBottom: 16, fontFamily: "'IBM Plex Mono', monospace"}}>
-            Inspirado em: Agrinvest (recomendação + targets) · Delara (preço local efetivo) · SLC Agrícola (hedge ratio + margem por ha)
-          </div>
-
-          {/* BLOCO 1: SNAPSHOT DE PREÇOS SOJA */}
-          <div style={{borderTop: '1px solid #2A2F28', paddingTop: 14, marginBottom: 16}}>
-            <div style={{...S.sinteseLabel, color: '#A89968', marginBottom: 10}}>SNAPSHOT SOJA · {new Date().toLocaleDateString('pt-BR')}</div>
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10}}>
-              <div style={{...S.simCell, borderColor: '#C8E04A'}}>
-                <div style={S.simCellLabel}>★ CEPEA Paranaguá (cotação)</div>
-                <div style={{...S.simCellValor, color: '#C8E04A'}}>{cepeaValido ? 'R$ '+cepeaPreco.toFixed(2) : 'sem coleta'}</div>
-                <div style={S.simCellDelta}>indicador portuário · {dataPt(cepeaFonte.data_referencia)}</div>
-              </div>
-              <div style={S.simCell}>
-                <div style={S.simCellLabel}>Referência operacional JC · {referenciaCotacao}</div>
-                <div style={S.simCellValor}>R$ {sacaCIF.toFixed(2)}</div>
-                <div style={S.simCellDelta}>{dataCotacao ? 'Cotação '+dataPt(dataCotacao) : 'modelo estimado'} {localDesatualizado ? '· ATENÇÃO: antigo' : ''}</div>
-              </div>
-              <div style={{...S.simCell, borderColor: '#E6B84A'}}>
-                <div style={S.simCellLabel}>Cotrijuc · preço observado</div>
-                <div style={{...S.simCellValor, color: '#E6B84A'}}>{localValido ? 'R$ '+cotrijucPreco.toFixed(2) : 'Indisponível'}</div>
-                <div style={S.simCellDelta}>
-                  Diferença versus modelo teórico JC: <span style={{color: spreadBalcaoSoja !== null && spreadBalcaoSoja >= 0 ? '#C8E04A' : '#D9542B'}}>
-                    {spreadBalcaoSoja !== null ? (spreadBalcaoSoja >= 0 ? '+' : '')+'R$ '+spreadBalcaoSoja.toFixed(2)+' ('+spreadBalcaoSojaPct.toFixed(1)+'%)' : 'sem referência local'}
-                  </span>
-                </div>
-              </div>
-              <div style={S.simCell}>
-                <div style={S.simCellLabel}>CBOT futures</div>
-                <div style={S.simCellValor}>{cbot.toFixed(2)} <span style={{fontSize: 11, color: '#6B7065'}}>USD/bu</span></div>
-                <div style={S.simCellDelta}>nível {niveis.cbot}</div>
-              </div>
-              <div style={S.simCell}>
-                <div style={S.simCellLabel}>Prêmio Paranaguá</div>
-                <div style={{...S.simCellValor, color: premio >= 0 ? '#C8E04A' : '#D9542B'}}>
-                  {premio >= 0 ? '+' : ''}{premio.toFixed(2)} <span style={{fontSize: 11, color: '#6B7065'}}>USD/bu</span>
-                </div>
-                <div style={S.simCellDelta}>nível {niveis.premio}</div>
-              </div>
-              <div style={S.simCell}>
-                <div style={S.simCellLabel}>USD/BRL</div>
-                <div style={S.simCellValor}>R$ {dolar.toFixed(2)}</div>
-                <div style={S.simCellDelta}>nível {niveis.dolar}</div>
-              </div>
-            </div>
-
-            {/* Edição rápida do balcão soja */}
-            <div style={{marginTop: 14, padding: 12, background: '#0F1410', border: '1px dashed #2A2F28'}}>
-              <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#6B7065', letterSpacing: 1, marginBottom: 8, textTransform: 'uppercase'}}>
-                Atualize o balcão Cotrijuc (cotrijuc.com.br/graos)
-              </div>
-              <div style={S.inputBlock}>
-                <label style={S.inputLabel}>Preço para simulação R$/saca (editável)</label>
-                <input type="number" step="0.5" value={balcaoSoja} onChange={e => {balcaoEditadoPeloUsuario.current=true;setBalcaoSoja(parseFloat(e.target.value)||0);}} />
-                <div style={{fontSize:10,color:'#A89968',marginTop:5}}>Editar aqui não altera a cotação publicada da Cotrijuc e não será sobrescrito pela próxima sincronização.</div>
-              </div>
-            </div>
-          </div>
-
-          {/* BLOCO 2: DECISÃO DO DIA */}
-          <div style={{borderTop: '1px solid #2A2F28', paddingTop: 14, marginBottom: 16}}>
-            <div style={{...S.sinteseLabel, color: '#C8E04A', marginBottom: 10}}>DECISÃO DO DIA · RECOMENDAÇÃO</div>
-            <div style={{padding: 14, background: '#0F1410', borderLeft: '3px solid #C8E04A'}}>
-              <div style={{fontFamily: "'IBM Plex Serif', serif", fontSize: 17, lineHeight: 1.5, color: '#E8E2D0', marginBottom: 10}}>
-                {relatorio.cenarioMacro}
-              </div>
-              <div style={{fontFamily: "'IBM Plex Serif', serif", fontSize: 15, lineHeight: 1.5, color: '#C8E04A', fontWeight: 600}}>
-                → {relatorio.recSoja}
-              </div>
-              <div style={{marginTop: 14, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10}}>
-                <div style={{background: '#181C18', padding: 10, textAlign: 'center'}}>
-                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: '#6B7065', letterSpacing: 1}}>PESSIMISTA</div>
-                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 20, color: '#D9542B', fontWeight: 500}}>R$ {relatorio.pessimista}</div>
-                  <div style={{fontSize: 9, color: '#6B7065'}}>-12%</div>
-                </div>
-                <div style={{background: '#181C18', padding: 10, textAlign: 'center', border: '1px solid #A89968'}}>
-                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: '#A89968', letterSpacing: 1}}>BASE</div>
-                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 20, color: '#E8E2D0', fontWeight: 500}}>R$ {relatorio.base}</div>
-                  <div style={{fontSize: 9, color: '#A89968'}}>atual</div>
-                </div>
-                <div style={{background: '#181C18', padding: 10, textAlign: 'center'}}>
-                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: '#6B7065', letterSpacing: 1}}>OTIMISTA</div>
-                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 20, color: '#C8E04A', fontWeight: 500}}>R$ {relatorio.otimista}</div>
-                  <div style={{fontSize: 9, color: '#6B7065'}}>+12%</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* BLOCO 3: HEDGE RATIO + MARGEM POR HA SOJA (estilo SLC Agrícola) */}
-          <div style={{borderTop: '1px solid #2A2F28', paddingTop: 14, marginBottom: 16}}>
-            <div style={{...S.sinteseLabel, color: '#A89968', marginBottom: 10}}>POSIÇÃO DE HEDGE · MARGEM REALIZADA</div>
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16}}>
-              <div>
-                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10}}>
-                  <div style={S.inputBlock}>
-                    <label style={S.inputLabel}>% safra travada</label>
-                    <input type="number" step="5" min="0" max="100" value={pctTravadoSoja} onChange={e => setPctTravadoSoja(parseFloat(e.target.value)||0)} />
-                  </div>
-                  <div style={S.inputBlock}>
-                    <label style={S.inputLabel}>Preço médio travado</label>
-                    <input type="number" step="1" value={precoMedioTravado} onChange={e => setPrecoMedioTravado(parseFloat(e.target.value)||0)} />
-                  </div>
-                </div>
-                <div style={{background: '#0F1410', padding: 12, border: '1px solid #2A2F28'}}>
-                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 6}}>
-                    <span style={{color: '#A89968'}}>Travado</span>
-                    <span style={{color: '#C8E04A', fontWeight: 600}}>{pctTravadoSoja}% @ R$ {precoMedioTravado}</span>
-                  </div>
-                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 6}}>
-                    <span style={{color: '#A89968'}}>Em aberto</span>
-                    <span style={{color: '#E6B84A'}}>{100-pctTravadoSoja}% @ R$ {balcaoSoja.toFixed(2)} (balcão)</span>
-                  </div>
-                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", borderTop: '1px solid #2A2F28', paddingTop: 6, marginTop: 6}}>
-                    <span style={{color: '#A89968'}}>Preço médio ponderado</span>
-                    <span style={{color: '#E8E2D0', fontWeight: 600}}>
-                      R$ {((pctTravadoSoja * precoMedioTravado + (100 - pctTravadoSoja) * balcaoSoja) / 100).toFixed(2)}
-                    </span>
-                  </div>
-                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginTop: 4}}>
-                    <span style={{color: '#A89968'}}>Margem @ ponderado</span>
-                    <span style={{color: '#C8E04A'}}>
-                      R$ {(((pctTravadoSoja * precoMedioTravado + (100 - pctTravadoSoja) * balcaoSoja) / 100) - custoSaca).toFixed(2)}/saca
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <div style={{...S.sinteseLabel, color: '#A89968', marginBottom: 8}}>Soja · margem por hectare</div>
-                <div style={{background: '#0F1410', padding: 14, border: '1px solid #C8E04A'}}>
-                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 6}}>
-                    <span style={{color: '#A89968'}}>Produtividade</span>
-                    <span style={{color: '#E8E2D0'}}>{prodSoja} sc/ha</span>
-                  </div>
-                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 6}}>
-                    <span style={{color: '#A89968'}}>Receita (a balcão)</span>
-                    <span style={{color: '#E8E2D0'}}>R$ {receitaSojaHa.toFixed(0)}/ha</span>
-                  </div>
-                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 6}}>
-                    <span style={{color: '#A89968'}}>Custo</span>
-                    <span style={{color: '#E8E2D0'}}>R$ {custoSojaHa}/ha</span>
-                  </div>
-                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 14, fontFamily: "'IBM Plex Mono', monospace", borderTop: '1px solid #2A2F28', paddingTop: 8, marginTop: 4}}>
-                    <span style={{color: '#A89968'}}>Margem</span>
-                    <span style={{color: margemSojaHa > 0 ? '#C8E04A' : '#D9542B', fontWeight: 700}}>
-                      R$ {margemSojaHa.toFixed(0)}/ha ({margemSojaPct.toFixed(0)}%)
-                    </span>
-                  </div>
-                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", marginTop: 6, color: '#6B7065'}}>
-                    <span>Em {areaTotal} ha (fazenda)</span>
-                    <span>R$ {(margemSojaHa * areaTotal / 1000).toFixed(0)}k</span>
-                  </div>
-                </div>
-                <details style={{marginTop: 10, fontSize: 11, color: '#6B7065'}}>
-                  <summary style={{cursor: 'pointer', fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 0.5}}>
-                    ▸ ajustar produtividade · custo · área
-                  </summary>
-                  <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 10}}>
-                    <div style={S.inputBlock}><label style={S.inputLabel}>sc/ha</label>
-                      <input type="number" value={prodSoja} onChange={e => setProdSoja(parseFloat(e.target.value)||0)} /></div>
-                    <div style={S.inputBlock}><label style={S.inputLabel}>R$/ha custo</label>
-                      <input type="number" value={custoSojaHa} onChange={e => setCustoSojaHa(parseFloat(e.target.value)||0)} /></div>
-                    <div style={S.inputBlock}><label style={S.inputLabel}>Área (ha)</label>
-                      <input type="number" value={areaTotal} onChange={e => setAreaTotal(parseFloat(e.target.value)||0)} /></div>
-                  </div>
-                </details>
-              </div>
-            </div>
-          </div>
-
-          {/* BLOCO 4: GATILHOS SOJA */}
-          <div style={{borderTop: '1px solid #2A2F28', paddingTop: 14}}>
-            <div style={{...S.sinteseLabel, color: '#E6B84A', marginBottom: 10}}>GATILHOS · QUANDO REAGIR</div>
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10}}>
-              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #C8E04A'}}>
-                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE CBOT &gt; 12,50</div>
-                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>Trave +20% adicional em camada</div>
-              </div>
-              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #D9542B'}}>
-                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE CBOT &lt; 10,50</div>
-                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>Avalie put protetiva strike R$ {(custoSaca * 1.1).toFixed(0)}</div>
-              </div>
-              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #C8E04A'}}>
-                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE DÓLAR &gt; 5,40</div>
-                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>Trave câmbio NDF (oportunidade alta vol)</div>
-              </div>
-              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #D9542B'}}>
-                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE DÓLAR &lt; 4,90</div>
-                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>NÃO travar; comprar call de USD</div>
-              </div>
-              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #E6B84A'}}>
-                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE BALCÃO &gt; CIF</div>
-                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>Venda física local (sem frete)</div>
-              </div>
-              <div style={{background: '#0F1410', padding: 10, borderLeft: '2px solid #E6B84A'}}>
-                <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#A89968', letterSpacing: 1}}>SE PRÊMIO &gt; 1,50</div>
-                <div style={{fontSize: 12, color: '#E8E2D0', marginTop: 4}}>Trave prêmio agressivo (cai rápido)</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-
         {/* 14 — CALENDÁRIO DE DECISÕES 12 MESES */}
         <section className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#7AB8E0'}}>
           <div style={{...S.cardLabel, color: '#7AB8E0'}}>14 — Calendário de decisões · próximos 12 meses</div>
@@ -6657,7 +6675,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
         </section>
 
         {/* 17 — ATUALIZAÇÃO DE DADOS */}
-        <section className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+        <section id="auditoria-fontes" className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
           <div style={{...S.cardLabel, color: '#7AB8E0'}}>17 — Auditoria técnica · fontes, datas, métodos e cobertura</div>
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
             Dados de coleta e auditoria sincronizados diretamente com os arquivos do GitHub. Datas reais de referência, procedimentos técnicos, estado das integrações e fontes primárias/secundárias. Sem checklist de datas fixas.
