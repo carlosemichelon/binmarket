@@ -3814,7 +3814,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 <a href="#modulo-02" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>02</b> Custos e rentabilidade</a>
 <a href="#modulo-03" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>03</b> Análise operacional</a>
 <a href="#modulo-04" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>04</b> Derivativos e curvas</a>
-<a href="#modulo-05" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>05</b> Estratégias de mercado</a>
+<a href="#modulo-05" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>05</b> Matriz de estratégia</a>
 <a href="#modulo-06" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>06</b> Simulador de vendas</a>
 <a href="#modulo-07" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>07</b> Comercialização</a>
 <a href="#modulo-08" style={{textDecoration:'none',display:'inline-flex',gap:7,alignItems:'center',padding:'7px 11px',border:'1px solid #344736',background:'#1A241D',color:'#DAE4D3',fontSize:11,fontFamily:"'IBM Plex Sans',sans-serif"}}><b style={{color:'#C8E04A',fontFamily:"'IBM Plex Mono',monospace"}}>08</b> Produzir, arrendar ou CDI</a>
@@ -4945,7 +4945,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
             {/* Edição rápida do balcão soja */}
             <div style={{marginTop: 14, padding: 12, background: '#0F1410', border: '1px dashed #2A2F28'}}>
               <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#6B7065', letterSpacing: 1, marginBottom: 8, textTransform: 'uppercase'}}>
-                Atualize o balcão Cotrijuc (cotrijuc.com.br/graos)
+                CENÁRIO DE PREÇO — simulação independente da Cotrijuc
               </div>
               <div style={S.inputBlock}>
                 <label style={S.inputLabel}>Preço para simulação R$/saca (editável)</label>
@@ -4955,36 +4955,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
             </div>
           </div>
 
-          {/* BLOCO 2: DECISÃO DO DIA */}
-          <div style={{borderTop: '1px solid #2A2F28', paddingTop: 14, marginBottom: 16}}>
-            <div style={{...S.sinteseLabel, color: '#C8E04A', marginBottom: 10}}>DECISÃO DO DIA · RECOMENDAÇÃO</div>
-            <div style={{padding: 14, background: '#0F1410', borderLeft: '3px solid #C8E04A'}}>
-              <div style={{fontFamily: "'IBM Plex Serif', serif", fontSize: 17, lineHeight: 1.5, color: '#E8E2D0', marginBottom: 10}}>
-                {relatorio.cenarioMacro}
-              </div>
-              <div style={{fontFamily: "'IBM Plex Serif', serif", fontSize: 15, lineHeight: 1.5, color: '#C8E04A', fontWeight: 600}}>
-                → {relatorio.recSoja}
-              </div>
-              <div style={{marginTop: 14, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10}}>
-                <div style={{background: '#181C18', padding: 10, textAlign: 'center'}}>
-                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: '#6B7065', letterSpacing: 1}}>PESSIMISTA</div>
-                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 20, color: '#D9542B', fontWeight: 500}}>R$ {relatorio.pessimista}</div>
-                  <div style={{fontSize: 9, color: '#6B7065'}}>-12%</div>
-                </div>
-                <div style={{background: '#181C18', padding: 10, textAlign: 'center', border: '1px solid #A89968'}}>
-                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: '#A89968', letterSpacing: 1}}>BASE</div>
-                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 20, color: '#E8E2D0', fontWeight: 500}}>R$ {relatorio.base}</div>
-                  <div style={{fontSize: 9, color: '#A89968'}}>atual</div>
-                </div>
-                <div style={{background: '#181C18', padding: 10, textAlign: 'center'}}>
-                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: '#6B7065', letterSpacing: 1}}>OTIMISTA</div>
-                  <div style={{fontFamily: "'IBM Plex Mono', monospace", fontSize: 20, color: '#C8E04A', fontWeight: 500}}>R$ {relatorio.otimista}</div>
-                  <div style={{fontSize: 9, color: '#6B7065'}}>+12%</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
+          {/* Retirada decisão automática do dia; permanecem preços, custos, margem e hedge. */}
           {/* BLOCO 3: HEDGE RATIO + MARGEM POR HA SOJA (estilo SLC Agrícola) */}
           <div style={{borderTop: '1px solid #2A2F28', paddingTop: 14, marginBottom: 16}}>
             <div style={{...S.sinteseLabel, color: '#A89968', marginBottom: 10}}>POSIÇÃO DE HEDGE · MARGEM REALIZADA</div>
@@ -5495,16 +5466,17 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
         {/* 05 — ESTRATÉGIA */}
         <section id="modulo-05" className="span-2" style={{...S.card, gridColumn: 'span 2', borderColor: '#C8E04A'}}>
-          <div style={{...S.cardLabel, color: '#C8E04A'}}>05 — Estratégia recomendada para a janela atual</div>
-          <div style={{fontSize: 11, color: '#A89968', marginBottom: 14, lineHeight: 1.6}}>
-            <strong>Como funciona:</strong> o painel cruza 2 informações para cada componente (CBOT, prêmio, dólar) e gera uma recomendação:
-            <ol style={{margin: '6px 0 0 16px', padding: 0}}>
-              <li><strong>NÍVEL atual</strong> — onde o preço está vs histórico: <span style={{color: '#C8E04A'}}>ALTO</span> (top 33%), <span style={{color: '#A89968'}}>MÉDIO</span> (faixa central), <span style={{color: '#D9542B'}}>BAIXO</span> (bottom 33%).</li>
-              <li><strong>EXPECTATIVA</strong> — sua leitura do próximo movimento (configurada nos sliders do módulo 01): <span style={{color: '#C8E04A'}}>ALTA</span>, <span style={{color: '#A89968'}}>NEUTRA</span>, <span style={{color: '#D9542B'}}>BAIXA</span>.</li>
-            </ol>
-            A matriz <strong>3×3 (nível × expectativa) = 9 cenários</strong> retorna a ação específica. Princípio do consultor: <em>trave o que está bom (nível alto) e mantenha aberto o que está ruim (nível baixo), independente da expectativa</em>. Apenas use a expectativa para calibrar a agressividade da trava.
-          </div>
-          {[
+          <div style={{...S.cardLabel, color: '#C8E04A'}}>05 — Matriz de estratégia · como interpretar</div>
+          <div style={{fontSize:12,color:'#A89968',marginBottom:14,lineHeight:1.75}}>
+<strong style={{color:'#E8E2D0'}}>Como funciona:</strong> esta é uma <strong>matriz de cenários</strong> que combina três variáveis (CBOT, prêmio e dólar). Os limites baixo e alto são <strong>faixas fixas configuradas</strong>, não percentis históricos recalculados ao vivo. A expectativa (alta, neutra, baixa) é escolhida pelo usuário no módulo 01, não prevista automaticamente.
+<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(230px,1fr))',gap:9,marginTop:11}}>
+<div style={{padding:12,background:'#121A13',border:'1px solid #344033'}}><strong style={{color:'#C8E04A'}}>Etapa 1 — Nível</strong><div>Compare o preço com os limites exibidos em cada componente. A classificação é baixa, média ou alta dentro dessas referências parametrizadas.</div></div>
+<div style={{padding:12,background:'#121A13',border:'1px solid #344033'}}><strong style={{color:'#C8E04A'}}>Etapa 2 — Expectativa</strong><div>Informe sua hipótese de alta, neutralidade ou baixa no módulo 01. Alterar a expectativa muda o cenário, não a cotação publicada.</div></div>
+<div style={{padding:12,background:'#121A13',border:'1px solid #344033'}}><strong style={{color:'#C8E04A'}}>Etapa 3 — Proteção</strong><div>A regra nível × expectativa propõe um percentual de referência para <strong>cada exposição</strong>. Não some os percentuais de CBOT, prêmio e câmbio: eles não são porcentagens da mesma venda física.</div></div>
+</div>
+<div style={{padding:11,marginTop:12,background:'#231C10',borderLeft:'3px solid #E6B84A'}}><strong style={{color:'#E6B84A'}}>Exemplo:</strong> CBOT alto com expectativa de baixa pode indicar proteção do componente CBOT. Isso não determina automaticamente quanto da produção vender, nem considera posições, garantias e condições contratuais.</div>
+</div>
+{[
             { key: 'cbot', label: 'CBOT', unit: 'USD/bu', val: cbot, faixa: FAIXAS.cbot },
             { key: 'premio', label: 'PRÊMIO', unit: 'USD/bu', val: premio, faixa: FAIXAS.premio },
             { key: 'dolar', label: 'DÓLAR', unit: 'BRL/USD', val: dolar, faixa: FAIXAS.dolar },
@@ -5516,34 +5488,22 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                 <div style={S.estratHead}>
                   <span style={S.estratComp}>{c.label}</span>
                   <span style={{...S.estratAcao, color: corEstrat(e.cor)}}>{e.acao}</span>
-                  {e.pct > 0 && <span style={S.estratPct}>{e.pct}%</span>}
+                  {e.pct > 0 && <span style={S.estratPct}>{e.pct}% por componente</span>}
                 </div>
                 <div style={{fontSize: 10, color: '#A89968', marginBottom: 4, fontFamily: "'IBM Plex Mono', monospace"}}>
-                  Hoje: <strong style={{color: '#E8E2D0'}}>{c.val.toFixed(2)} {c.unit}</strong>
+                  Valor considerado: <strong style={{color: '#E8E2D0'}}>{c.val.toFixed(2)} {c.unit}</strong>
                   {' · '}Nível: <strong style={{color: corNivel(niveis[c.key])}}>{niveis[c.key].toUpperCase()}</strong>
-                  {' (limites: '}{c.faixa.baixo.toFixed(2)} / {c.faixa.alto.toFixed(2)}{')'}
+                  {' (faixa parametrizada: '}{c.faixa.baixo.toFixed(2)} / {c.faixa.alto.toFixed(2)}{')'}
                   {' · '}Expectativa: <strong style={{color: corNivel(exp === 'alta' ? 'alto' : exp === 'baixa' ? 'baixo' : 'medio')}}>{exp.toUpperCase()}</strong>
                 </div>
                 <div style={S.estratNota}>{e.nota}</div>
               </div>
             );
           })}
-          <div style={S.sintese}>
-            <div style={S.sinteseLabel}>SÍNTESE OPERACIONAL</div>
-            <div style={S.sinteseTexto}>
-              {(() => {
-                const acoes = Object.values(estrategia);
-                const travarTotal = acoes.filter(a => a.pct >= 50).length;
-                const naoTravar = acoes.filter(a => a.pct === 0).length;
-                const pctMedio = Math.round(acoes.reduce((s, a) => s + a.pct, 0) / 3);
-                let texto;
-                if (travarTotal >= 2) texto = `Janela FAVORÁVEL aberta (${travarTotal}/3 componentes pedem trava ≥50%). Aja em camadas: 25-30% por semana, não tente acertar o topo. Use forward, contrato a fixar ou B3 SFI conforme conveniência.`;
-                else if (naoTravar >= 2) texto = `Janela RUIM (${naoTravar}/3 componentes em nível baixo). Aguarde melhora ou compre call para upside. Só trave por necessidade de caixa, margem em risco, ou compromisso já feito (barter, financiamento).`;
-                else texto = `Mercado MISTO. Trave o que está bom (componentes verde/amarelo), mantenha aberto o que está ruim (vermelho). Escalone toda decisão em 3-4 camadas para reduzir risco de timing.`;
-                return `${texto} · Trava agregada média recomendada: ${pctMedio}%.`;
-              })()}
-            </div>
-          </div>
+          <details style={{...S.sintese,marginTop:14}}>
+<summary style={{cursor:'pointer',color:'#C8E04A',fontWeight:600}}>Aplicação prática e limitações da matriz</summary>
+<div style={{...S.sinteseTexto,marginTop:9}}>Confira data e praça das fontes no módulo 17; compare preço líquido e custo no módulo 02. Identifique a exposição que deseja proteger e analise instrumentos, contrato, vencimento, volume e custos nos módulos 07 e 09. Os resultados são hipóteses condicionais de proteção, <strong>não recomendações automáticas de venda</strong>.</div>
+</details>
         </section>
 
         {/* 06 — SIMULADOR */}
