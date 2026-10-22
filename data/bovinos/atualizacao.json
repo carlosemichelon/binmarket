@@ -6,7 +6,7 @@
   "observacao": "Coletas semanais; última checagem não implica preço novo.",
   "historico_exportacao": {
     "resultado": "falha",
-    "erro": "Botao nao iniciou download; opcoes visiveis: ['Explorar o painel →', 'Aba 1Gado Gordo & ReposiçãoPreços semanais de PV/PC macho e fêmea, terneiros, novilhos e vacas — com relação de troca, ágio do ter",
-    "checado_em": "2026-10-21T21:50:47-03:00"
+    "erro": "Botao nao iniciou download; controles relevantes: ['Aba 1Gado Gordo & ReposiçãoPreços semanais de PV/PC macho e fêmea, terneiros, no', 'Baixar base de dados', 'GadoGado Gordo & Reposição']",
+    "checado_em": "2026-10-21T21:53:01-03:00"
   }
 }
