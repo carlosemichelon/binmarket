@@ -2,7 +2,7 @@
 const fs=require('fs');
 const parser=require('@babel/parser');
 const html=fs.readFileSync('index.html','utf8');
-const m=html.match(/<script\s+type="text\/babel"[^>]*>([\s\S]*?)<\/script>/i);
+const m=html.match(/^[ \t]*<script[ \t]+type="text\/babel"[^>]*>([\s\S]*?)<\/script>/im);
 if(!m)throw new Error('Script React/Babel do painel não encontrado');
 parser.parse(m[1],{sourceType:'script',plugins:['jsx']});
 const required=['id="operacional"','id="mercado-dados"','id="auditoria-fontes"','function AtualizacaoBloco()','function MetodoGrafico('];
