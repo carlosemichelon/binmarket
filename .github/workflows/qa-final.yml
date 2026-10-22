@@ -1,0 +1,96 @@
+name: BinMarket — Homologação final
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/qa_live_site.cjs'
+      - '.github/workflows/qa-final.yml'
+      - 'scripts/validate_interface.cjs'
+      - 'index.html'
+      - 'assets/**'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: binmarket-homologacao
+  cancel-in-progress: false
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Preparar testes JSX e navegador
+        run: |
+          npm install --no-save --ignore-scripts '@babel/parser@7.28.4' 'playwright@1.55.0'
+          npx playwright install --with-deps chromium
+      - name: Preparar coletores
+        run: python -m pip install -r scripts/requirements.txt 'beautifulsoup4==4.12.3'
+      - name: Testar JSX, índices e fontes de gráficos
+        id: jsx
+        continue-on-error: true
+        run: node scripts/validate_interface.cjs
+      - name: Testar coletores sem internet externa
+        id: coletores
+        continue-on-error: true
+        run: python -m unittest discover -s tests -p 'test_market_sources.py' -v
+      - name: Abrir Pages no Chromium desktop e mobile
+        id: browser
+        continue-on-error: true
+        run: node scripts/qa_live_site.cjs
+      - name: Salvar capturas e relatório do navegador
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: binmarket-qa-evidencias
+          path: qa-evidence/
+          if-no-files-found: ignore
+      - name: Registrar resultado público da homologação
+        if: always()
+        env:
+          JSX_RESULT: ${{ steps.jsx.outcome }}
+          COL_RESULT: ${{ steps.coletores.outcome }}
+          BROWSER_RESULT: ${{ steps.browser.outcome }}
+          SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          mkdir -p data/qa
+          python - <<'PY'
+          import json,os
+          from datetime import datetime,timezone
+          v={'sha_revisado':os.environ['SHA'],'workflow_run_id':os.environ['RUN_ID'],
+             'verificado_em_utc':datetime.now(timezone.utc).isoformat(timespec='seconds'),
+             'validacao_jsx':os.environ['JSX_RESULT'],'testes_coletores':os.environ['COL_RESULT'],
+             'navegador_pages':os.environ['BROWSER_RESULT'],
+             'aprovado':all(os.environ[x]=='success' for x in ('JSX_RESULT','COL_RESULT','BROWSER_RESULT'))}
+          try:
+              v['smoke']=json.load(open('qa-evidence/resultado.json',encoding='utf-8'))
+          except (OSError,ValueError):v['smoke']={'erros':['evidência indisponível']}
+          with open('data/qa/ultima_validacao.json','w',encoding='utf-8') as f:json.dump(v,f,ensure_ascii=False,indent=2)
+          print(json.dumps(v,ensure_ascii=False,indent=2))
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/qa/ultima_validacao.json
+          git commit -m '🤖 Resultado da homologação final BinMarket' || true
+          git pull --rebase origin main
+          git push origin HEAD:main
+      - name: Reprovar caso algum teste falhe
+        if: always()
+        env:
+          JSX_RESULT: ${{ steps.jsx.outcome }}
+          COL_RESULT: ${{ steps.coletores.outcome }}
+          BROWSER_RESULT: ${{ steps.browser.outcome }}
+        run: |
+          echo "JSX=$JSX_RESULT, COLETORES=$COL_RESULT, PAGES=$BROWSER_RESULT"
+          test "$JSX_RESULT" = success
+          test "$COL_RESULT" = success
+          test "$BROWSER_RESULT" = success
