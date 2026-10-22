@@ -116,13 +116,19 @@ function FonteJuntoGrafico({modulo,ordem=0}) {
   let links=FONTES_GRAFICOS[modulo]||[];
   if(modulo===4&&ordem===1) links=[['CME · ureia UME','https://www.cmegroup.com/markets/agriculture/fertilizer/urea-granular-fob-middle-east/settlements'],['CME · MAP Brasil','https://www.cmegroup.com/markets/agriculture/fertilizer/map-cfr-brazil/settlements']];
   if(modulo===11&&ordem===1) links=[['CME · contratos de fertilizantes','https://www.cmegroup.com/markets/agriculture/fertilizer']];
+  if(modulo===13) {
+    if(ordem===1)links=[['Conab · custos agrícolas','https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/custos-de-producao']];
+    else if(ordem===2)links=[['IBGE · Produção Agrícola Municipal','https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9117-producao-agricola-municipal-culturas-temporarias-e-permanentes.html']];
+    else if(ordem===3)links=[['IBGE · Produção Agrícola Municipal','https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9117-producao-agricola-municipal-culturas-temporarias-e-permanentes.html'],['CEPEA · soja','https://www.cepea.esalq.usp.br/br/indicador/soja.aspx']];
+    else if(ordem===4)links=[['Conab · custos','https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/custos-de-producao'],['CME · contratos soja','https://www.cmegroup.com/markets/agriculture/oilseeds/soybean']];
+  }
   if(modulo===12) {
     if(ordem===2)links=[['Conab · série da soja','https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/series-historicas/graos/soja/']];
     else if(ordem===4)links=[['ANEC · estatísticas de embarques','https://www.anec.com.br/']];
   }
   return <div style={{display:'flex',gap:15,flexWrap:'wrap',justifyContent:'flex-end',fontSize:11,margin:'9px 0 6px'}}>
-    {links.map(([nome,url])=><a key={url} href={url} target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0',textDecoration:'underline'}}>↗ {nome} (fonte oficial)</a>)}
-    <span style={{color:'#A89968'}}>Dados históricos, modelos e cenários podem divergir da fonte atual.</span>
+    {links.map(([nome,url])=><a key={url} href={url} target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0',textDecoration:'underline'}}>↗ {nome} (consulta à fonte)</a>)}
+    <span style={{color:'#A89968'}}>Gráficos processados pelo BinMarket não são séries oficiais idênticas às originais; confira praça, unidade, período e premissas.</span>
   </div>;
 }
 
@@ -1330,7 +1336,7 @@ function EstratCalc({ idx, ctx }) {
       <div>
         {ctxBlock}
         <div style={{padding: 10, background: '#181C18', fontSize: 11, color: '#A89968', marginBottom: 10, lineHeight: 1.5}}>
-          <strong style={{color: '#E8E2D0'}}>Estocagem = arbitragem cash-and-carry.</strong> Você guarda a soja na esperança de vender mais caro depois. Custo TOTAL = armazenagem física + <strong>juros sobre capital preso</strong> (CDI). Só vale se a alta esperada superar AMBOS. Compare com a curva de futuros (módulo 04) — se o spread futuro &lt; custo carrego, é arbitragem negativa: melhor vender hoje.
+          <strong style={{color: '#E8E2D0'}}>Estocagem = decisão de carrego, NÃO necessariamente arbitragem sem risco.</strong> Você guarda a soja na esperança de vender mais caro depois. Custo TOTAL = armazenagem física + <strong>juros sobre capital preso</strong> (CDI). Só vale se a alta esperada superar AMBOS. Compare com a curva de futuros (módulo 04) — se o spread futuro &lt; custo carrego, é arbitragem negativa: melhor vender hoje.
         </div>
         <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8}}>
           <div style={S.inputBlock}><label style={S.inputLabel}>Custo armazém R$/sc/mês</label><input type="number" step="0.10" value={a} placeholder="1,20" onChange={e => setA(e.target.value)} /></div>
@@ -1354,7 +1360,7 @@ function EstratCalc({ idx, ctx }) {
           {labelRow('TOTAL fazenda', `R$ ${(liquidoSc * ctx.prodSoja * ctx.areaTotal).toFixed(0)}`, liquidoSc > 0 ? '#C8E04A' : '#D9542B')}
         </div>
         <div style={{marginTop: 8, padding: 10, background: '#0F1410', fontSize: 11, color: '#A89968', lineHeight: 1.5, borderLeft: '2px solid #A89968'}}>
-          <strong>Insight do consultor:</strong> em ciclo de juros altos (Selic &gt; 13%), o custo financeiro do carrego facilmente supera 8-10% da saca em 6 meses. <strong>Sem alta robusta esperada, vender é matematicamente superior</strong>. Compare com a curva futuros CBOT (módulo 04 aba "Curva soja"): se está em backwardation (futuro &lt; spot), o mercado já fica te dizendo para vender já.
+          <strong>Insight do consultor:</strong> em ciclo de juros altos (Selic &gt; 13%), o custo financeiro do carrego facilmente supera 8-10% da saca em 6 meses. <strong>Sem alta robusta esperada, vender é matematicamente superior</strong>. Compare com a curva futuros CBOT (módulo 04 aba "Curva soja"): se a curva estiver invertida (futuro &lt; spot), reavalie o custo de carrego antes de decidir; não use a curva antiga de exemplo como cotação atual.
         </div>
       </div>
     );
@@ -1386,7 +1392,7 @@ function EstratCalc({ idx, ctx }) {
         {ctxBlock}
         <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, padding: 8, background: '#181C18', lineHeight: 1.5}}>
           <strong>Estrutura:</strong> compra PUT em A (piso) + vende CALL em B (teto) + vende PUT em C (mais baixa).
-          O saldo de prêmios pode ser positivo ou negativo conforme as hipóteses. <strong>Atenção:</strong> abaixo de C, a proteção adicional se esgota e o preço físico volta a cair. Conversão usa dólar de referência R$ {dolarRef.toFixed(2)}.
+          O saldo de prêmios pode ser positivo ou negativo conforme as hipóteses. CALL e PUT deste quadro são parâmetros de exemplo, não cotações automáticas. <strong>Atenção:</strong> abaixo de C, a proteção adicional se esgota e o preço físico volta a cair. Conversão usa dólar de referência R$ {dolarRef.toFixed(2)}.
         </div>
         <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8}}>
           <div style={S.inputBlock}>
@@ -1543,6 +1549,7 @@ function CustosBloco({ data, margemAnual }) {
       </div>
 
       {/* Gráfico de evolução em base 100 */}
+      <FonteJuntoGrafico modulo={13} ordem={1} />
       <div style={{fontSize: 11, color: '#A89968', marginBottom: 8, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 0.5}}>
         ▸ EVOLUÇÃO RELATIVA · BASE 100 = 2010
       </div>
@@ -1732,9 +1739,10 @@ function RentabilidadeBloco({ data, resumo }) {
         </div>
       </div>
 
-      {/* Gráfico: produtividade real (barras) + rentabilidade (linha) */}
+      {/* Gráfico: produtividade histórica (barras) + rentabilidade (linha) */}
+      <FonteJuntoGrafico modulo={13} ordem={2} />
       <div style={{fontSize: 11, color: '#A89968', marginBottom: 8, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 0.5}}>
-        ▸ PRODUTIVIDADE REAL JC (barras) + RENTABILIDADE LÍQUIDA R$/ha (linha)
+        ▸ PRODUTIVIDADE HISTÓRICA JC (barras) + RENTABILIDADE MODELADA R$/ha (linha)
       </div>
       <div style={{height: 320}}>
         <ResponsiveContainer width="100%" height="100%">
@@ -1756,12 +1764,13 @@ function RentabilidadeBloco({ data, resumo }) {
         </ResponsiveContainer>
       </div>
 
-      {/* ★ Gráfico de RENTABILIDADE ACUMULADA — somatório 17 anos */}
+      {/* ★ Gráfico de RENTABILIDADE ACUMULADA — simulação 17 anos */}
+      <FonteJuntoGrafico modulo={13} ordem={3} />
       <div style={{fontSize: 11, color: '#00D9A8', marginTop: 22, marginBottom: 8, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 0.5}}>
         ▸ ★ RENTABILIDADE ACUMULADA · SOMATÓRIO R$/ha desde 2010 (custo fixo + arrendamento JC corrigido)
       </div>
       <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, lineHeight: 1.5}}>
-        Quanto, em R$/ha, sua propriedade teria acumulado se você plantasse soja todos os anos desde 2010 — com produtividade real (IBGE), preço real (CEPEA) e custo corrigido (~80% fixo). Os <strong>anos de quebra puxam para baixo</strong>; bons anos compensam. <span style={{color:'#D9542B'}}>Linha cai</span> em quebras (rentabilidade anual negativa). <span style={{color:'#C8E04A'}}>Linha sobe</span> em anos bons.
+        Simulação retrospectiva hipotética em R$/ha, com produtividade de referência (IBGE), indicador CEPEA e custos modelados (~80% fixos). Não equivale à contabilidade auditada de uma fazenda. Os <strong>anos de quebra puxam para baixo</strong>; bons anos compensam. <span style={{color:'#D9542B'}}>Linha cai</span> em quebras (rentabilidade anual negativa). <span style={{color:'#C8E04A'}}>Linha sobe</span> em anos bons.
       </div>
       <div style={{height: 260}}>
         <ResponsiveContainer width="100%" height="100%">
@@ -3022,7 +3031,8 @@ function CustoVsCbotBloco() {
         </div>
       </div>
 
-      {/* Gráfico % custo/CBOT */}
+      {/* Gráfico % custo/CBOT, elaborado a partir de referências */}
+      <FonteJuntoGrafico modulo={13} ordem={4} />
       <div style={{fontSize: 11, color: '#FF7F50', marginBottom: 8, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: 1, fontWeight: 600}}>
         ▸ EVOLUÇÃO % CUSTO/CBOT · linha sobe = margem diminui · linha desce = margem aumenta
       </div>
