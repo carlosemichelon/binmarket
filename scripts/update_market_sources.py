@@ -425,13 +425,49 @@ def fetch_cbot_soja(session: requests.Session) -> dict:
             'data_referencia':found['data'],'valor':found['valor'],'contrato':found['contrato'],
             'unidade':'USD/bushel - contrato futuro mais proximo ainda vigente'}
 
+
+# FONTE · Indicador de milho Esalq/B3 em R$/saca 60kg.
+MILHO_URL = "https://www.noticiasagricolas.com.br/cotacoes/milho/indicador-cepea-esalq-milho"
+MILHO_CSV = DIR / "milho_cepea.csv"
+
+def parse_milho(html:str, today:date|None=None) -> dict:
+    text=BeautifulSoup(html,"html.parser").get_text(" ",strip=True)
+    title=re.search(r'Indicador do Milho Esalq/B3',text,re.I)
+    if title is None:raise ValueError("Milho Esalq/B3 ausente")
+    # A tabela do indicador antecede outras cotacoes de mercado.
+    fragment=text[title.end():title.end()+1250]
+    match=re.search(r'Fechamento:\s*(\d{2}/\d{2}/\d{4}).{0,150}?\b(\d{2}/\d{2}/\d{4})\s+([\d.,]+)',fragment,re.I)
+    if not match:raise ValueError("Milho sem fechamento datado e preco")
+    if match.group(1)!=match.group(2):raise ValueError("Data do fechamento de milho divergente")
+    day=validate_day(match.group(1),today)
+    value=br_number(match.group(3))
+    if not 20 <= value <= 250:raise ValueError("Milho: preco fora de faixa")
+    return {'data':day,'brl_saca60':round(value,2)}
+
+def fetch_milho(session:requests.Session) -> dict:
+    r=session.get(MILHO_URL,headers=HEADERS,timeout=35)
+    r.raise_for_status()
+    found=parse_milho(r.text)
+    old=load_cepea(MILHO_CSV)
+    old[found['data']]={'data':found['data'],'brl_saca60':f"{found['brl_saca60']:.2f}"}
+    out=StringIO()
+    writer=csv.DictWriter(out,fieldnames=['data','brl_saca60'],delimiter=';',lineterminator='\n')
+    writer.writeheader()
+    for key in sorted(old):writer.writerow(old[key])
+    atomic_write(MILHO_CSV,out.getvalue().encode('utf-8'))
+    last=old[max(old)]
+    return {'status':'ok','url':MILHO_URL,'data_referencia':max(old),
+            'valor':float(last['brl_saca60']),'unidade':'R$/saca de 60 kg',
+            'observacoes':len(old)}
+
+
 def run() -> dict:
     DIR.mkdir(parents=True, exist_ok=True)
     status = read_json(STATUS)
     sources = status.get('fontes') or {}
     checked = now_br().isoformat(timespec='seconds')
     with requests.Session() as session:
-        for key, func in [('cepea_soja',fetch_cepea),('conab_safra',fetch_conab),('usda_psd',fetch_usda),('cotrijuc_soja',fetch_cotrijuc),('cbot_soja',fetch_cbot_soja)]:
+        for key, func in [('cepea_soja',fetch_cepea),('conab_safra',fetch_conab),('usda_psd',fetch_usda),('cotrijuc_soja',fetch_cotrijuc),('cbot_soja',fetch_cbot_soja),('milho_cepea',fetch_milho)]:
             before = sources.get(key) or {}
             try:
                 fresh = func(session)
@@ -441,7 +477,7 @@ def run() -> dict:
                 # Não modifica a data de referência nem os últimos arquivos íntegros.
                 sources[key] = {**before, 'status':'falha', 'verificado_em':checked,
                                 'erro':str(exc)[:300], 'url': before.get('url') or
-                                {'cepea_soja':CEPEA_URL,'conab_safra':CONAB_URL,'usda_psd':USDA_URL,'cotrijuc_soja':COTRIJUC_URL,'cbot_soja':CBOT_SOURCE}[key]}
+                                {'cepea_soja':CEPEA_URL,'conab_safra':CONAB_URL,'usda_psd':USDA_URL,'cotrijuc_soja':COTRIJUC_URL,'cbot_soja':CBOT_SOURCE,'milho_cepea':MILHO_URL}[key]}
                 print(f'{key}: falha: {exc}',flush=True)
     output = {'versao':1,'verificado_em':checked,'fontes':sources,
               'aviso':'Verificação automática não implica cotação nova. Custos, prêmios locais e séries estimadas do simulador não são preços coletados automaticamente.'}
