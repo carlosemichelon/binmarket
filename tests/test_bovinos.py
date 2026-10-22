@@ -16,6 +16,18 @@ HTML = '''<!doctype html><html><body>
 </body></html>'''
 
 class TestNESPro(unittest.TestCase):
+    def test_download_historico_csv(self):
+        raw = ('data;PV Macho;PC Macho;PV Fêmea;PC Fêmea;Terneiro;Novilho;Vaca Invernar\n'
+               '14/10/2026;12,65;24,25;10,50;22,00;14,90;12,36;10,61\n').encode()
+        rows=bov.decode_export(raw,'historico.csv')
+        self.assertEqual(rows['2026-10-14']['pv_macho'],12.65)
+        self.assertEqual(rows['2026-10-14']['pc_femea'],22.0)
+        self.assertEqual(rows['2026-10-14']['terneiro'],14.9)
+
+    def test_download_sem_categorias_de_gado(self):
+        with self.assertRaises(ValueError):
+            bov.decode_export(b'data;Ovino\n14/10/2026;20,0\n','ovinos.csv')
+
     def test_page(self):
         d, rows = bov.parse_page(HTML)
         self.assertEqual(d,'2026-10-21')
