@@ -128,9 +128,9 @@ def update_dolar_atual(html: str) -> tuple[str, bool, str]:
 def update_macro_anual(html:str) -> tuple[str,bool]:
     """CDI e IPCA fechados BCB e Selic observada sem alterar demais series."""
     try:
-        cdi=fetch_bcb_sgs(BCB_SGS['cdi_diario'],start_year=2010)
-        ipca=fetch_bcb_sgs(BCB_SGS['ipca_mensal'],start_year=2010)
-        selic=fetch_bcb_sgs(BCB_SGS['selic_meta'],start_year=2010)
+        cdi=fetch_bcb_sgs(BCB_SGS['cdi_diario'],start_year=2024)
+        ipca=fetch_bcb_sgs(BCB_SGS['ipca_mensal'],start_year=2024)
+        selic=fetch_bcb_sgs(BCB_SGS['selic_meta'],start_year=2024)
         if cdi.empty or ipca.empty or selic.empty:
             return html,False
         cdi_a=cdi_acumulado_anual(cdi)
