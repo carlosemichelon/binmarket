@@ -3512,6 +3512,9 @@ function PainelSoja() {
   // Referencias de fonte e modelo separados: nao chamar indice CEPEA de preco local.
   const cepeaFonte = fontePrecos.fontes.cepea_soja || {};
   const cotrijucFonte = fontePrecos.fontes.cotrijuc_soja || {};
+  const milhoFonte = fontePrecos.fontes.milho_cepea || {};
+  const milhoPreco = Number(milhoFonte.valor);
+  const milhoValido = milhoFonte.status==='ok' && Number.isFinite(milhoPreco) && milhoPreco>=20 && milhoPreco<=250;
   const cepeaPreco = Number(cepeaFonte.valor);
   const cotrijucPreco = Number(cotrijucFonte.valor);
   const cepeaValido = Number.isFinite(cepeaPreco) && cepeaPreco>=35 && cepeaPreco<=400 && /^\d{4}-\d{2}-\d{2}$/.test(cepeaFonte.data_referencia||'');
@@ -3758,6 +3761,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
           <div style={S.subhead}>Soja CEPEA Paranaguá · Balcão Cotrijuc · Porto Rio Grande</div>
           <div style={{...S.subhead, fontSize: 11, color: '#A89968', marginTop: 4}}>Preços de mercado sincronizados automaticamente. Frete, prêmios, custos e cenários são premissas editáveis; não equivalem a cotações verificadas.</div>
           <div style={{...S.subhead, color: '#C8E04A', marginTop: 4}}>★ CEPEA Paranaguá: <strong>{cepeaValido ? 'R$ '+cepeaPreco.toFixed(2)+'/saca' : 'aguardando coleta'}</strong> · {dataPt(cepeaFonte.data_referencia)} · {cepeaFonte.status==='falha' ? 'coleta com falha; último preço conhecido' : 'referência portuária, não é preço de balcão'}</div>
+          <div style={{...S.subhead, color: '#9EAF84', marginTop: 4}}>★ Milho CEPEA/Esalq-B3: <strong>{milhoValido ? 'R$ '+milhoPreco.toFixed(2)+'/saca' : 'aguardando coleta automática'}</strong> · {dataPt(milhoFonte.data_referencia)}</div>
         </div>
         <div style={S.precoBig}>
           <div style={S.precoLabel}>Saca 60 kg · {referenciaCotacao}{!localValido ? ' (estimativa)' : ''}</div>
