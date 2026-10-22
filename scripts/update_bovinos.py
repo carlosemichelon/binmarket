@@ -320,8 +320,16 @@ def main() -> int:
                 full=download_full_history()
                 outcome=update(fetch_html(),persist=not args.dry_run,extra=full)
                 outcome['historico_exportado']=len(full)
+                if not args.dry_run:
+                    status=json.loads(STATUS_PATH.read_text(encoding='utf-8'))
+                    status['historico_exportacao']={'resultado':'ok','datas_extraidas':len(full),'checado_em':datetime.now(ZoneInfo('America/Sao_Paulo')).isoformat(timespec='seconds')}
+                    STATUS_PATH.write_text(json.dumps(status,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
             except Exception as error:
                 print(f'NESPro: download historico indisponivel ({error}); preservando dados anteriores',flush=True)
+                if not args.dry_run and STATUS_PATH.exists():
+                    status=json.loads(STATUS_PATH.read_text(encoding='utf-8'))
+                    status['historico_exportacao']={'resultado':'falha','erro':str(error)[:200],'checado_em':datetime.now(ZoneInfo('America/Sao_Paulo')).isoformat(timespec='seconds')}
+                    STATUS_PATH.write_text(json.dumps(status,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
         print("NESPro:", json.dumps(outcome, ensure_ascii=False), flush=True)
         return 0
     except Exception as exc:
