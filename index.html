@@ -102,6 +102,30 @@ const {
 // === Constantes do mercado ===
 const BU_PER_SACA = 2.2046;
 
+const FONTES_GRAFICOS = {
+  1:[['CEPEA · indicador soja','https://www.cepea.esalq.usp.br/br/indicador/soja.aspx'],['CME · futuros ZS','https://www.cmegroup.com/markets/agriculture/oilseeds/soybean']],
+  2:[['Conab · custos e safra','https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/']],
+  4:[['CME · soja, contratos e ajustes','https://www.cmegroup.com/markets/agriculture/oilseeds/soybean']],
+  6:[['CEPEA · preços históricos','https://www.cepea.esalq.usp.br/br/indicador/series/soja.aspx']],
+  10:[['CEPEA · série da soja','https://www.cepea.esalq.usp.br/br/indicador/series/soja.aspx']],
+  11:[['CEPEA · indicador soja','https://www.cepea.esalq.usp.br/br/indicador/soja.aspx']],
+  12:[['USDA · PSD oficial','https://apps.fas.usda.gov/psdonline/']],
+  13:[['CEPEA · commodities','https://www.cepea.esalq.usp.br/'],['BCB · séries financeiras','https://www.bcb.gov.br/estabilidadefinanceira/historicocotacoes']]
+};
+function FonteJuntoGrafico({modulo,ordem=0}) {
+  let links=FONTES_GRAFICOS[modulo]||[];
+  if(modulo===4&&ordem===1) links=[['CME · ureia UME','https://www.cmegroup.com/markets/agriculture/fertilizer/urea-granular-fob-middle-east/settlements'],['CME · MAP Brasil','https://www.cmegroup.com/markets/agriculture/fertilizer/map-cfr-brazil/settlements']];
+  if(modulo===11&&ordem===1) links=[['CME · contratos de fertilizantes','https://www.cmegroup.com/markets/agriculture/fertilizer']];
+  if(modulo===12) {
+    if(ordem===2)links=[['Conab · série da soja','https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/series-historicas/graos/soja/']];
+    else if(ordem===4)links=[['ANEC · estatísticas de embarques','https://www.anec.com.br/']];
+  }
+  return <div style={{display:'flex',gap:15,flexWrap:'wrap',justifyContent:'flex-end',fontSize:11,margin:'9px 0 6px'}}>
+    {links.map(([nome,url])=><a key={url} href={url} target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0',textDecoration:'underline'}}>↗ {nome} (fonte oficial)</a>)}
+    <span style={{color:'#A89968'}}>Dados históricos, modelos e cenários podem divergir da fonte atual.</span>
+  </div>;
+}
+
 const GRAFICO_METODO = {
   1:['COTAÇÃO + CENÁRIO','Cotrijuc JC; CEPEA Paranaguá; CBOT; câmbio BCB','data de cada cotação no painel','R$/saca; USD/bushel; BRL/USD','Preço teórico JC = (CBOT + prêmio ajustável) × 2,2046 × dólar − frete ajustável. Cotrijuc é preço observado independente.','Cotação automática; frete, prêmio e cenário são premissas.','https://www.cotrijuc.com.br/'],
   2:['CUSTOS PERSONALIZÁVEIS','Premissas da propriedade; Conab para referências regionais','safra/cenário do usuário','R$/ha, R$/saca, sc/insumo','Custo/sc = custo/ha ÷ produtividade; margem = preço de referência − custo/sc. Terra e despesas editáveis.','Custos próprios não são dados atualizados automaticamente.','https://www.gov.br/conab/'],
@@ -1867,7 +1891,7 @@ function AtualizacaoBloco() {
   const lacunas=Object.entries(estado.auditoria?.series_nao_integralmente_automaticas||{});
   const linkFonte=x=>x?.url&&/^https:\/\//.test(x.url)?x.url:null;
   return (
-    <div id="fontes-detalhadas">
+    <div id="auditoria-fontes">
       <div style={{fontSize:12,color:'#A89968',lineHeight:1.7,marginBottom:14}}>
         <strong style={{color:'#E8E2D0'}}>Leitura dos registros publicados no GitHub:</strong> a data da cotação é diferente da data em que o robô consultou a fonte.
         Uma execução bem-sucedida não garante nova cotação. CDI, IPCA, Selic e USD/BRL são tratados por outra rotina; enquanto ela não publicar
@@ -3947,7 +3971,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                 return <span style={{color:'#A89968'}}>→ Modo DIREÇÃO: CBOT {expCbot} · prêmio {expPremio} · dólar {expDolar}. Para definir alvos numéricos, use os campos de cada componente acima.</span>;
               })()}
             </div>
-            <div style={{height: 240}}>
+            <FonteJuntoGrafico modulo={1} ordem={0} />
+                <div style={{height: 240}}>
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={projecao} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
@@ -4782,7 +4807,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                trocaFert < 40 ? 'Apertado — atenção à margem' :
                                 'Crítico — postergue compra de insumo'}
             </div>
-            <div style={{height: 120, marginTop: 12}}>
+            <FonteJuntoGrafico modulo={2} ordem={0} />
+                <div style={{height: 120, marginTop: 12}}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={HISTORICO_CALC} margin={{ top: 4, right: 8, left: -10, bottom: 16 }}>
                   <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
@@ -5161,6 +5187,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                    <div style={{marginTop:8}}><a href="https://www.cmegroup.com/markets/agriculture/oilseeds/soybean" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>↗ Abrir cotações e vencimentos oficiais da CME</a></div>
                    <div style={{marginTop:6,color:'#E6B84A'}}>Último contrato próximo coletado: {fontePrecos.fontes.cbot_soja?.status==='ok' ? fontePrecos.fontes.cbot_soja.contrato+' · '+fontePrecos.fontes.cbot_soja.valor+' USD/bu · '+dataPt(fontePrecos.fontes.cbot_soja.data_referencia) : 'não disponível'}. Não substitui a curva histórica.</div>
                 </div>
+                <FonteJuntoGrafico modulo={4} ordem={0} />
                 <div style={{height: 410, marginTop: 16}}>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={CURVA_SOJA} margin={{ top: 20, right: 28, left: 14, bottom: 50 }}>
@@ -5219,6 +5246,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                   <strong>Curva ilustrativa de 2026/2027:</strong> valores exemplificativos de ureia e MAP/DAP, <strong>não são fechamentos atuais</strong>. A ureia granular FOB Oriente Médio é o contrato <strong>UME</strong>; UFV designa outra região, e MAP CFR Brasil é <strong>MFC</strong>. Consulte contratos e ajustes reais nas fontes abaixo.
                    <div style={{display:'flex',flexWrap:'wrap',gap:16,marginTop:9}}><a href="https://www.cmegroup.com/markets/agriculture/fertilizer/urea-granular-fob-middle-east/settlements" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>↗ Ureia UME · ajustes CME</a><a href="https://www.cmegroup.com/markets/agriculture/fertilizer/map-cfr-brazil/settlements" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0'}}>↗ MAP MFC · ajustes CME</a></div>
                 </div>
+                <FonteJuntoGrafico modulo={4} ordem={1} />
                 <div style={{height: 410, marginTop: 16}}>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={FERT_CURVA_EXEMPLO} margin={{ top: 20, right: 28, left: 14, bottom: 50 }}>
@@ -5531,7 +5559,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
           {simulacao && (
             <>
-              <div style={{height: 220, marginTop: 16}}>
+              <FonteJuntoGrafico modulo={6} ordem={0} />
+                <div style={{height: 220, marginTop: 16}}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={simulacao.janela} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
@@ -5759,7 +5788,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
               </button>
             ))}
           </div>
-          <div style={{height: 280, marginTop: 16}}>
+          <FonteJuntoGrafico modulo={10} ordem={0} />
+                <div style={{height: 280, marginTop: 16}}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={HISTORICO_CALC} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
                 <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
@@ -5815,7 +5845,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
           {sazVer === 'historico' && (
             <>
-              <div style={{height: 280, marginTop: 16}}>
+              <FonteJuntoGrafico modulo={11} ordem={0} />
+                <div style={{height: 280, marginTop: 16}}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={SAZONAL} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
@@ -5916,6 +5947,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
                   <strong>Padrões diferentes por nutriente:</strong>
                   <span style={{color: '#7AB8E0'}}> N (ureia) </span> picca em jul-set (leilões indianos); <span style={{color: '#E6B84A'}}>P (MAP/DAP)</span> picca em mar-mai (plantio EUA); <span style={{color: '#C8E04A'}}>K (KCl)</span> mais estável (contratos anuais Canada/Rússia/Belarus). Por isso a compra ÓTIMA varia: <strong>ABR para ureia</strong>, <strong>AGO para MAP/KCl</strong>.
                 </div>
+                <FonteJuntoGrafico modulo={11} ordem={1} />
                 <div style={{height: 280, marginTop: 8}}>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={SAZONAL_FERT} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
@@ -6041,7 +6073,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
           {fundVer === 'mundial' && (
             <>
-              <div style={{height: 300, marginTop: 16}}>
+              <FonteJuntoGrafico modulo={12} ordem={0} />
+                <div style={{height: 300, marginTop: 16}}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={USDA_WORLD} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
                     <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
@@ -6064,7 +6097,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
           {fundVer === 'su' && (
             <>
-              <div style={{height: 280, marginTop: 16}}>
+              <FonteJuntoGrafico modulo={12} ordem={1} />
+                <div style={{height: 280, marginTop: 16}}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={USDA_WORLD} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
                     <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
@@ -6092,7 +6126,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
 
           {fundVer === 'brasil' && (
             <>
-              <div style={{height: 300, marginTop: 16}}>
+              <FonteJuntoGrafico modulo={12} ordem={2} />
+                <div style={{height: 300, marginTop: 16}}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={conabSerieAuto || CONAB_BR} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
                     <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
@@ -6108,6 +6143,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
               </div>
               <div style={{marginTop: 22, color: '#C8E04A', fontSize: 12, fontWeight: 600}}>Séries USDA PSD · Brasil e EUA (atualização automática)</div>
               {usdaBrasilAuto ? (
+                <FonteJuntoGrafico modulo={12} ordem={3} />
                 <div style={{height: 285, marginTop: 10}}>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={usdaBrasilAuto} margin={{top:12,right:25,bottom:10,left:2}}>
@@ -6144,7 +6180,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
               <div style={{fontSize: 11, color: '#A89968', marginTop: 14, marginBottom: 12, lineHeight: 1.5}}>
                 <strong>ANEC</strong> (Associação Nacional dos Exportadores de Cereais) publica embarques semanais e mensais. Padrão anual: pico mar-jun (safra brasileira saindo) + vale set-dez. Para o produtor, ANEC funciona como <strong>indicador antecedente de prêmio Paranaguá</strong>: quando os embarques mensais excedem a média histórica em 20%+, prêmio firma; quando ficam 20% abaixo, prêmio cai.
               </div>
-              <div style={{height: 280, marginTop: 8}}>
+              <FonteJuntoGrafico modulo={12} ordem={4} />
+                <div style={{height: 280, marginTop: 8}}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={ANEC_EXPORT_PADRAO} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
@@ -6236,7 +6273,8 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
             ))}
           </div>
           {multiVer !== 'custos' && multiVer !== 'rentabilidade' && multiVer !== 'custoCbot' && (
-          <div style={{height: 360, marginTop: 16}}>
+          <FonteJuntoGrafico modulo={13} ordem={0} />
+                <div style={{height: 360, marginTop: 16}}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={HISTORICO_MULTI_CUSTOM} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
                 <CartesianGrid strokeDasharray="2 4" stroke="#2A2F28" />
@@ -6688,7 +6726,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
         </section>
 
         {/* 17 — ATUALIZAÇÃO DE DADOS */}
-        <section id="modulo-17" id="auditoria-fontes" className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
+        <section id="modulo-17" className="span-2" style={{...S.card, gridColumn: 'span 2'}}>
           <div style={{...S.cardLabel, color: '#7AB8E0'}}>17 — Auditoria técnica · fontes, datas, métodos e cobertura</div>
           <div style={{fontSize: 11, color: '#A89968', marginBottom: 10, fontFamily: "'IBM Plex Mono', monospace"}}>
             Dados de coleta e auditoria sincronizados diretamente com os arquivos do GitHub. Datas reais de referência, procedimentos técnicos, estado das integrações e fontes primárias/secundárias. Sem checklist de datas fixas.
