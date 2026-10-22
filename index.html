@@ -127,7 +127,7 @@ function FonteJuntoGrafico({modulo,ordem=0}) {
 }
 
 const GRAFICO_METODO = {
-  1:['COTAÇÃO + CENÁRIO','Cotrijuc JC; CEPEA Paranaguá; CBOT; câmbio BCB','data de cada cotação no painel','R$/saca; USD/bushel; BRL/USD','Preço teórico JC = (CBOT + prêmio ajustável) × 2,2046 × dólar − frete ajustável. Cotrijuc é preço observado independente.','Cotação automática; frete, prêmio e cenário são premissas.','https://www.cotrijuc.com.br/'],
+  1:['COTAÇÃO + CENÁRIO','Cotrijuc JC; CEPEA Paranaguá; CBOT; câmbio BCB','data de cada cotação no painel','R$/saca; USD/bushel; BRL/USD','Preço teórico JC = (CBOT + prêmio ajustável) × 2,2046 × dólar − frete ajustável. Cotrijuc é preço observado independente.','CBOT e prêmio Paranaguá são coletados separadamente; prêmio Rio Grande, frete e custo são premissas.','https://www.cotrijuc.com.br/'],
   2:['CUSTOS PERSONALIZÁVEIS','Premissas da propriedade; Conab para referências regionais','safra/cenário do usuário','R$/ha, R$/saca, sc/insumo','Custo/sc = custo/ha ÷ produtividade; margem = preço de referência − custo/sc. Terra e despesas editáveis.','Custos próprios não são dados atualizados automaticamente.','https://www.gov.br/conab/'],
   10:['HISTÓRICO E MODELO','CEPEA/Esalq Paranaguá; câmbio; CBOT; fertilizantes','2010Q1–2026Q2, base histórica','R$/saca; USD/bushel; R$/USD','Média trimestral das séries compiladas; referência modelada JC ajusta parâmetros adicionais. Não é série de cotações locais observadas.','Trimestres históricos não recebem diretamente a cotação diária nova.','https://www.cepea.esalq.usp.br/br/indicador/series/soja.aspx'],
   11:['ÍNDICE SAZONAL','CEPEA/Esalq e referências de fertilizantes','2010–junho/2026 na base do módulo','% da média anual','Índice do mês = média histórica do mês ÷ média anual × 100; padrões não garantem repetição.','Estatística histórica compilada; não é previsão automática.','https://www.cepea.esalq.usp.br/'],
@@ -3823,7 +3823,7 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
           <div style={S.eyebrow}>Painel · Soja · Júlio de Castilhos / RS · <span style={{color: '#C8E04A'}}>fontes automáticas · {fontePrecos.erro ? 'falha de sincronização' : fontePrecos.carregado ? 'sincronizado' : 'carregando'}</span></div>
           <h1 className="h1" style={S.h1}>Margem da saca <span style={S.h1accent}>no campo</span></h1>
           <div style={S.subhead}>Soja CEPEA Paranaguá · Balcão Cotrijuc · Porto Rio Grande</div>
-          <div style={{...S.subhead, fontSize: 11, color: '#A89968', marginTop: 4}}>Preços de mercado sincronizados automaticamente. Frete, prêmios, custos e cenários são premissas editáveis; não equivalem a cotações verificadas.</div>
+          <div style={{...S.subhead, fontSize: 11, color: '#A89968', marginTop: 4}}>CBOT e prêmio Paranaguá podem ter cotação observada por data e vencimento; prêmio Rio Grande, frete, custos e cenários são premissas.</div>
           <div style={{...S.subhead, color: '#C8E04A', marginTop: 4}}>★ CEPEA Paranaguá: <strong>{cepeaValido ? 'R$ '+cepeaPreco.toFixed(2)+'/saca' : 'aguardando coleta'}</strong> · {dataPt(cepeaFonte.data_referencia)} · {cepeaFonte.status==='falha' ? 'coleta com falha; último preço conhecido' : 'referência portuária, não é preço de balcão'}</div>
           <div style={{...S.subhead, color: '#9EAF84', marginTop: 4}}>★ Milho CEPEA/Esalq-B3: <strong>{milhoValido ? 'R$ '+milhoPreco.toFixed(2)+'/saca' : 'aguardando coleta automática'}</strong> · {dataPt(milhoFonte.data_referencia)}</div>
         </div>
@@ -3903,6 +3903,22 @@ Fontes: CEPEA/Esalq Paranaguá · Cotrijuc balcão`;
               </div>
             </div>
           ))}
+          <div style={{margin:'12px 0',padding:12,background:'#121A13',border:'1px solid #344736',fontSize:12,lineHeight:1.7}}>
+            <strong style={{color:'#C8E04A'}}>Prêmios observados por vencimento · Paranaguá/PR</strong>
+            <div style={{color:'#A89968',fontSize:11}}>Fonte secundária, US$/bushel. Benchmark independente do prêmio simulado de Rio Grande/RS.</div>
+            {(() => {
+              const p=fontePrecos.fontes.premio_soja_paranagua;
+              if(!p||!Array.isArray(p.contratos)||!p.contratos.length) return <div style={{color:'#E6B84A'}}>Sem prêmio automático validado publicado. A primeira coleta depende da execução do GitHub Actions.</div>;
+              return <div>
+                <div style={{color:p.status==='ok'?'#C8E04A':'#E6B84A'}}>Fechamento: {p.data_referencia||'não identificado'} · {p.status==='ok'?'coleta válida':'última coleta falhou: valores anteriores'}</div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:7,margin:'8px 0'}}>
+                  {p.contratos.map(item=><span key={item.contrato} style={{background:'#1C2A20',padding:'7px 9px',border:'1px solid #344736',fontFamily:"'IBM Plex Mono',monospace"}}>{item.contrato}: {Number(item.usd_bu)>=0?'+':''}{Number(item.usd_bu).toFixed(2)} US$/bu</span>)}
+                </div>
+              </div>;
+            })()}
+            <div>Não confundir <strong>Paranaguá/PR</strong> com <strong>Rio Grande/RS</strong>. O prêmio Rio Grande do controle acima continua manual; não existe equivalência automática entre portos ou vencimentos.</div>
+            <a href="https://www.noticiasagricolas.com.br/cotacoes/soja/premio-soja-paranagua-pr" target="_blank" rel="noopener noreferrer" style={{color:'#7AB8E0',textDecoration:'underline'}}>↗ Conferir prêmio e data na fonte</a>
+          </div>
           {/* Horizonte global */}
           <div style={{display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, paddingTop: 12, borderTop: '1px solid #2A2F28', flexWrap: 'wrap'}}>
             <span style={{...S.inputLabel, marginBottom: 0}}>Horizonte da projeção</span>
