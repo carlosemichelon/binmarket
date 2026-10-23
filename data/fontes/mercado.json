@@ -3,13 +3,13 @@
   "fontes": {
     "cbot_soja": {
       "contrato": "2026-11",
-      "data_referencia": "2026-10-21",
+      "data_referencia": "2026-10-22",
       "erro": null,
       "status": "ok",
       "unidade": "USD/bushel - contrato futuro mais proximo ainda vigente",
       "url": "https://www.noticiasagricolas.com.br/cotacoes/soja",
-      "valor": 12.4525,
-      "verificado_em": "2026-10-22T15:30:51-03:00"
+      "valor": 12.53,
+      "verificado_em": "2026-10-22T22:26:24-03:00"
     },
     "cepea_soja": {
       "data_referencia": "2026-10-21",
@@ -20,7 +20,7 @@
       "unidade": "R$/saca de 60 kg",
       "url": "https://cultivee.com.br/cotacoes",
       "valor": 152.13,
-      "verificado_em": "2026-10-22T15:30:51-03:00"
+      "verificado_em": "2026-10-22T22:26:24-03:00"
     },
     "conab_safra": {
       "data_referencia": null,
@@ -31,7 +31,7 @@
       "ultima_safra": "2025/26",
       "unidade": "produção nacional em mil toneladas; demais séries do simulador não atualizadas",
       "url": "https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/series-historicas/graos/soja/sojaseriehist.xls/@@download/file",
-      "verificado_em": "2026-10-22T15:30:51-03:00"
+      "verificado_em": "2026-10-22T22:26:24-03:00"
     },
     "cotrijuc_soja": {
       "data_referencia": "2026-10-22",
@@ -41,7 +41,7 @@
       "unidade": "R$/saca de 60 kg - preco local de balcao",
       "url": "https://www.cotrijuc.com.br/",
       "valor": 134.5,
-      "verificado_em": "2026-10-22T15:30:51-03:00"
+      "verificado_em": "2026-10-22T22:26:24-03:00"
     },
     "milho_cepea": {
       "data_referencia": "2026-10-21",
@@ -52,7 +52,7 @@
       "unidade": "R$/saca de 60 kg",
       "url": "https://cultivee.com.br/cotacoes",
       "valor": 64.3,
-      "verificado_em": "2026-10-22T15:30:51-03:00"
+      "verificado_em": "2026-10-22T22:26:24-03:00"
     },
     "premio_soja_paranagua": {
       "contrato": "2026-10",
@@ -74,16 +74,16 @@
           "usd_bu": 1.3
         }
       ],
-      "data_referencia": "2026-10-21",
+      "data_referencia": "2026-10-22",
       "erro": null,
       "observacao": "Fonte secundária Notícias Agrícolas; referência de Paranaguá, NÃO prêmio de Rio Grande nem proposta de compra local",
-      "observacoes": 4,
+      "observacoes": 8,
       "praca": "Paranaguá/PR",
       "status": "ok",
       "unidade": "USD/bushel - prêmio portuário por vencimento",
       "url": "https://www.noticiasagricolas.com.br/cotacoes/soja/premio-soja-paranagua-pr",
       "valor": 1.4,
-      "verificado_em": "2026-10-22T15:30:51-03:00"
+      "verificado_em": "2026-10-22T22:26:24-03:00"
     },
     "usda_psd": {
       "data_referencia": "2026",
@@ -94,9 +94,9 @@
       "status": "ok",
       "unidade": "mil toneladas (USDA PSD)",
       "url": "https://apps.fas.usda.gov/psdonline/downloads/psd_alldata_csv.zip",
-      "verificado_em": "2026-10-22T15:30:51-03:00"
+      "verificado_em": "2026-10-22T22:26:24-03:00"
     }
   },
-  "verificado_em": "2026-10-22T15:30:51-03:00",
+  "verificado_em": "2026-10-22T22:26:24-03:00",
   "versao": 1
 }
