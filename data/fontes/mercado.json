@@ -9,7 +9,7 @@
       "unidade": "USD/bushel - contrato futuro mais proximo ainda vigente",
       "url": "https://www.noticiasagricolas.com.br/cotacoes/soja",
       "valor": 12.565,
-      "verificado_em": "2026-10-24T22:04:25-03:00"
+      "verificado_em": "2026-10-25T14:38:30-03:00"
     },
     "cepea_soja": {
       "data_referencia": "2026-10-23",
@@ -20,7 +20,7 @@
       "unidade": "R$/saca de 60 kg",
       "url": "https://cultivee.com.br/cotacoes",
       "valor": 152.41,
-      "verificado_em": "2026-10-24T22:04:25-03:00"
+      "verificado_em": "2026-10-25T14:38:30-03:00"
     },
     "conab_safra": {
       "data_referencia": null,
@@ -31,7 +31,7 @@
       "ultima_safra": "2025/26",
       "unidade": "produção nacional em mil toneladas; demais séries do simulador não atualizadas",
       "url": "https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/series-historicas/graos/soja/sojaseriehist.xls/@@download/file",
-      "verificado_em": "2026-10-24T22:04:25-03:00"
+      "verificado_em": "2026-10-25T14:38:30-03:00"
     },
     "cotrijuc_soja": {
       "data_referencia": "2026-10-23",
@@ -41,7 +41,7 @@
       "unidade": "R$/saca de 60 kg - preco local de balcao",
       "url": "https://www.cotrijuc.com.br/",
       "valor": 134.5,
-      "verificado_em": "2026-10-24T22:04:25-03:00"
+      "verificado_em": "2026-10-25T14:38:30-03:00"
     },
     "milho_cepea": {
       "data_referencia": "2026-10-23",
@@ -52,7 +52,7 @@
       "unidade": "R$/saca de 60 kg",
       "url": "https://cultivee.com.br/cotacoes",
       "valor": 64.27,
-      "verificado_em": "2026-10-24T22:04:25-03:00"
+      "verificado_em": "2026-10-25T14:38:30-03:00"
     },
     "premio_soja_paranagua": {
       "contrato": "2026-10",
@@ -83,7 +83,7 @@
       "unidade": "USD/bushel - prêmio portuário por vencimento",
       "url": "https://www.noticiasagricolas.com.br/cotacoes/soja/premio-soja-paranagua-pr",
       "valor": 1.4,
-      "verificado_em": "2026-10-24T22:04:25-03:00"
+      "verificado_em": "2026-10-25T14:38:30-03:00"
     },
     "usda_psd": {
       "data_referencia": "2026",
@@ -94,9 +94,9 @@
       "status": "ok",
       "unidade": "mil toneladas (USDA PSD)",
       "url": "https://apps.fas.usda.gov/psdonline/downloads/psd_alldata_csv.zip",
-      "verificado_em": "2026-10-24T22:04:25-03:00"
+      "verificado_em": "2026-10-25T14:38:30-03:00"
     }
   },
-  "verificado_em": "2026-10-24T22:04:25-03:00",
+  "verificado_em": "2026-10-25T14:38:30-03:00",
   "versao": 1
 }
