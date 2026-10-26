@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-10-26T01:06:50+00:00",
+  "gerado_em": "2026-10-26T19:55:57+00:00",
   "resumo": {
     "fontes_automaticas_monitoradas": 8,
     "fontes_com_dados_recentes": 8,
@@ -21,7 +21,7 @@
       "situacao": "atualizado",
       "data_referencia": "2026-10-23",
       "dias_desde_referencia": 3,
-      "fonte": "https://cultivee.com.br/cotacoes",
+      "fonte": "https://www.cepea.esalq.usp.br/br/indicador/soja.aspx",
       "periodicidade_tolerancia_dias": 5,
       "observacao": "Referencia portuaria, nao preco local"
     },
@@ -37,8 +37,8 @@
     "cbot_soja": {
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
-      "data_referencia": "2026-10-23",
-      "dias_desde_referencia": 3,
+      "data_referencia": "2026-10-26",
+      "dias_desde_referencia": 0,
       "fonte": "https://www.noticiasagricolas.com.br/cotacoes/soja",
       "periodicidade_tolerancia_dias": 5,
       "observacao": "Futuro de soja; contrato deve ser identificado"
@@ -47,7 +47,7 @@
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
       "data_referencia": "2026",
-      "dias_desde_referencia": 1,
+      "dias_desde_referencia": 0,
       "fonte": "https://apps.fas.usda.gov/psdonline/downloads/psd_alldata_csv.zip",
       "periodicidade_tolerancia_dias": 65,
       "observacao": "PSD Brasil/EUA, ano de comercializacao USDA"
@@ -56,7 +56,7 @@
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
       "data_referencia": null,
-      "dias_desde_referencia": 1,
+      "dias_desde_referencia": 0,
       "fonte": "https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/series-historicas/graos/soja/sojaseriehist.xls/@@download/file",
       "periodicidade_tolerancia_dias": 95,
       "observacao": "Somente producao nacional, nao custos individuais"
