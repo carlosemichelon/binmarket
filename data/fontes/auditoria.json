@@ -1,17 +1,17 @@
 {
-  "gerado_em": "2026-10-28T02:09:55+00:00",
+  "gerado_em": "2026-10-28T19:32:27+00:00",
   "resumo": {
     "fontes_automaticas_monitoradas": 8,
-    "fontes_com_dados_recentes": 7,
+    "fontes_com_dados_recentes": 8,
     "modulos_sem_automacao_completa": 9,
     "cobertura_integral": false
   },
   "indicadores_automaticos": {
     "cotrijuc_soja": {
       "tipo": "fonte_automatica",
-      "situacao": "falha",
-      "data_referencia": "2026-10-27",
-      "dias_desde_referencia": 1,
+      "situacao": "atualizado",
+      "data_referencia": "2026-10-28",
+      "dias_desde_referencia": 0,
       "fonte": "https://www.cotrijuc.com.br/",
       "periodicidade_tolerancia_dias": 5,
       "observacao": "Preco local de balcao de soja"
@@ -28,8 +28,8 @@
     "milho_cepea": {
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
-      "data_referencia": "2026-10-26",
-      "dias_desde_referencia": 2,
+      "data_referencia": "2026-10-27",
+      "dias_desde_referencia": 1,
       "fonte": "https://cultivee.com.br/cotacoes",
       "periodicidade_tolerancia_dias": 5,
       "observacao": "Indicador milho Esalq/B3"
@@ -37,8 +37,8 @@
     "cbot_soja": {
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
-      "data_referencia": "2026-10-27",
-      "dias_desde_referencia": 1,
+      "data_referencia": "2026-10-28",
+      "dias_desde_referencia": 0,
       "fonte": "https://www.noticiasagricolas.com.br/cotacoes/soja",
       "periodicidade_tolerancia_dias": 5,
       "observacao": "Futuro de soja; contrato deve ser identificado"
@@ -47,7 +47,7 @@
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
       "data_referencia": "2026",
-      "dias_desde_referencia": 1,
+      "dias_desde_referencia": 0,
       "fonte": "https://apps.fas.usda.gov/psdonline/downloads/psd_alldata_csv.zip",
       "periodicidade_tolerancia_dias": 65,
       "observacao": "PSD Brasil/EUA, ano de comercializacao USDA"
@@ -56,7 +56,7 @@
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
       "data_referencia": null,
-      "dias_desde_referencia": 1,
+      "dias_desde_referencia": 0,
       "fonte": "https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/series-historicas/graos/soja/sojaseriehist.xls/@@download/file",
       "periodicidade_tolerancia_dias": 95,
       "observacao": "Somente producao nacional, nao custos individuais"
@@ -64,8 +64,8 @@
     "premio_soja_paranagua": {
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
-      "data_referencia": "2026-10-27",
-      "dias_desde_referencia": 1,
+      "data_referencia": "2026-10-28",
+      "dias_desde_referencia": 0,
       "fonte": "https://www.noticiasagricolas.com.br/cotacoes/soja/premio-soja-paranagua-pr",
       "periodicidade_tolerancia_dias": 5,
       "observacao": "Benchmark Paranagua, fonte secundaria por vencimento. Nao representa premio Rio Grande"
