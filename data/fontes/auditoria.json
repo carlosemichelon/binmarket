@@ -1,17 +1,17 @@
 {
-  "gerado_em": "2026-10-27T19:25:56+00:00",
+  "gerado_em": "2026-10-28T02:09:55+00:00",
   "resumo": {
     "fontes_automaticas_monitoradas": 8,
-    "fontes_com_dados_recentes": 8,
+    "fontes_com_dados_recentes": 7,
     "modulos_sem_automacao_completa": 9,
     "cobertura_integral": false
   },
   "indicadores_automaticos": {
     "cotrijuc_soja": {
       "tipo": "fonte_automatica",
-      "situacao": "atualizado",
+      "situacao": "falha",
       "data_referencia": "2026-10-27",
-      "dias_desde_referencia": 0,
+      "dias_desde_referencia": 1,
       "fonte": "https://www.cotrijuc.com.br/",
       "periodicidade_tolerancia_dias": 5,
       "observacao": "Preco local de balcao de soja"
@@ -19,7 +19,7 @@
     "cepea_soja": {
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
-      "data_referencia": "2026-10-26",
+      "data_referencia": "2026-10-27",
       "dias_desde_referencia": 1,
       "fonte": "https://www.cepea.esalq.usp.br/br/indicador/soja.aspx",
       "periodicidade_tolerancia_dias": 5,
@@ -29,7 +29,7 @@
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
       "data_referencia": "2026-10-26",
-      "dias_desde_referencia": 1,
+      "dias_desde_referencia": 2,
       "fonte": "https://cultivee.com.br/cotacoes",
       "periodicidade_tolerancia_dias": 5,
       "observacao": "Indicador milho Esalq/B3"
@@ -38,7 +38,7 @@
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
       "data_referencia": "2026-10-27",
-      "dias_desde_referencia": 0,
+      "dias_desde_referencia": 1,
       "fonte": "https://www.noticiasagricolas.com.br/cotacoes/soja",
       "periodicidade_tolerancia_dias": 5,
       "observacao": "Futuro de soja; contrato deve ser identificado"
@@ -47,7 +47,7 @@
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
       "data_referencia": "2026",
-      "dias_desde_referencia": 0,
+      "dias_desde_referencia": 1,
       "fonte": "https://apps.fas.usda.gov/psdonline/downloads/psd_alldata_csv.zip",
       "periodicidade_tolerancia_dias": 65,
       "observacao": "PSD Brasil/EUA, ano de comercializacao USDA"
@@ -56,7 +56,7 @@
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
       "data_referencia": null,
-      "dias_desde_referencia": 0,
+      "dias_desde_referencia": 1,
       "fonte": "https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/series-historicas/graos/soja/sojaseriehist.xls/@@download/file",
       "periodicidade_tolerancia_dias": 95,
       "observacao": "Somente producao nacional, nao custos individuais"
@@ -65,7 +65,7 @@
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
       "data_referencia": "2026-10-27",
-      "dias_desde_referencia": 0,
+      "dias_desde_referencia": 1,
       "fonte": "https://www.noticiasagricolas.com.br/cotacoes/soja/premio-soja-paranagua-pr",
       "periodicidade_tolerancia_dias": 5,
       "observacao": "Benchmark Paranagua, fonte secundaria por vencimento. Nao representa premio Rio Grande"
@@ -74,7 +74,7 @@
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
       "data_referencia": "2026-10-21",
-      "dias_desde_referencia": 6,
+      "dias_desde_referencia": 7,
       "fonte": "https://bovinos-indices.nesproufrgs.com/",
       "periodicidade_tolerancia_dias": 15,
       "observacao": "Cotacao semanal RS, nao historico de varejo e ovinos"
