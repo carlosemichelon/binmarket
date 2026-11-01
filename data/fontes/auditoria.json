@@ -1,15 +1,15 @@
 {
-  "gerado_em": "2026-11-01T02:09:22+00:00",
+  "gerado_em": "2026-11-01T18:54:45+00:00",
   "resumo": {
     "fontes_automaticas_monitoradas": 8,
-    "fontes_com_dados_recentes": 7,
+    "fontes_com_dados_recentes": 8,
     "modulos_sem_automacao_completa": 9,
     "cobertura_integral": false
   },
   "indicadores_automaticos": {
     "cotrijuc_soja": {
       "tipo": "fonte_automatica",
-      "situacao": "falha",
+      "situacao": "atualizado",
       "data_referencia": "2026-10-30",
       "dias_desde_referencia": 2,
       "fonte": "https://www.cotrijuc.com.br/",
@@ -21,7 +21,7 @@
       "situacao": "atualizado",
       "data_referencia": "2026-10-30",
       "dias_desde_referencia": 2,
-      "fonte": "https://www.cepea.org.br/br/indicador/soja.aspx",
+      "fonte": "https://www.cepea.esalq.usp.br/br/indicador/soja.aspx",
       "periodicidade_tolerancia_dias": 5,
       "observacao": "Referencia portuaria, nao preco local"
     },
@@ -47,7 +47,7 @@
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
       "data_referencia": "2026",
-      "dias_desde_referencia": 1,
+      "dias_desde_referencia": 0,
       "fonte": "https://apps.fas.usda.gov/psdonline/downloads/psd_alldata_csv.zip",
       "periodicidade_tolerancia_dias": 65,
       "observacao": "PSD Brasil/EUA, ano de comercializacao USDA"
@@ -56,7 +56,7 @@
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
       "data_referencia": null,
-      "dias_desde_referencia": 1,
+      "dias_desde_referencia": 0,
       "fonte": "https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/series-historicas/graos/soja/sojaseriehist.xls/@@download/file",
       "periodicidade_tolerancia_dias": 95,
       "observacao": "Somente producao nacional, nao custos individuais"
