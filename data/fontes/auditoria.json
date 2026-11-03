@@ -1,17 +1,17 @@
 {
-  "gerado_em": "2026-11-03T03:55:40+00:00",
+  "gerado_em": "2026-11-03T20:30:25+00:00",
   "resumo": {
     "fontes_automaticas_monitoradas": 8,
-    "fontes_com_dados_recentes": 7,
+    "fontes_com_dados_recentes": 8,
     "modulos_sem_automacao_completa": 9,
     "cobertura_integral": false
   },
   "indicadores_automaticos": {
     "cotrijuc_soja": {
       "tipo": "fonte_automatica",
-      "situacao": "falha",
-      "data_referencia": "2026-10-30",
-      "dias_desde_referencia": 4,
+      "situacao": "atualizado",
+      "data_referencia": "2026-11-03",
+      "dias_desde_referencia": 0,
       "fonte": "https://www.cotrijuc.com.br/",
       "periodicidade_tolerancia_dias": 5,
       "observacao": "Preco local de balcao de soja"
@@ -37,8 +37,8 @@
     "cbot_soja": {
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
-      "data_referencia": "2026-10-30",
-      "dias_desde_referencia": 4,
+      "data_referencia": "2026-11-03",
+      "dias_desde_referencia": 0,
       "fonte": "https://www.noticiasagricolas.com.br/cotacoes/soja",
       "periodicidade_tolerancia_dias": 5,
       "observacao": "Futuro de soja; contrato deve ser identificado"
@@ -64,8 +64,8 @@
     "premio_soja_paranagua": {
       "tipo": "fonte_automatica",
       "situacao": "atualizado",
-      "data_referencia": "2026-10-30",
-      "dias_desde_referencia": 4,
+      "data_referencia": "2026-11-03",
+      "dias_desde_referencia": 0,
       "fonte": "https://www.noticiasagricolas.com.br/cotacoes/soja/premio-soja-paranagua-pr",
       "periodicidade_tolerancia_dias": 5,
       "observacao": "Benchmark Paranagua, fonte secundaria por vencimento. Nao representa premio Rio Grande"
