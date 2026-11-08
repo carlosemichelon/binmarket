@@ -9,7 +9,7 @@
       "unidade": "USD/bushel - contrato futuro mais proximo ainda vigente",
       "url": "https://www.noticiasagricolas.com.br/cotacoes/soja",
       "valor": 11.89,
-      "verificado_em": "2026-11-07T15:45:15-03:00"
+      "verificado_em": "2026-11-07T23:22:52-03:00"
     },
     "cepea_soja": {
       "data_referencia": "2026-11-06",
@@ -19,7 +19,7 @@
       "unidade": "R$/saca de 60 kg",
       "url": "https://www.cepea.esalq.usp.br/br/indicador/soja.aspx",
       "valor": 158.52,
-      "verificado_em": "2026-11-07T15:45:15-03:00"
+      "verificado_em": "2026-11-07T23:22:52-03:00"
     },
     "conab_safra": {
       "data_referencia": null,
@@ -30,17 +30,17 @@
       "ultima_safra": "2025/26",
       "unidade": "produção nacional em mil toneladas; demais séries do simulador não atualizadas",
       "url": "https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/series-historicas/graos/soja/sojaseriehist.xls/@@download/file",
-      "verificado_em": "2026-11-07T15:45:15-03:00"
+      "verificado_em": "2026-11-07T23:22:52-03:00"
     },
     "cotrijuc_soja": {
       "data_referencia": "2026-11-06",
-      "erro": null,
+      "erro": "HTTPSConnectionPool(host='www.cotrijuc.com.br', port=443): Read timed out. (read timeout=35)",
       "observacoes": 11,
-      "status": "ok",
+      "status": "falha",
       "unidade": "R$/saca de 60 kg - preco local de balcao",
       "url": "https://www.cotrijuc.com.br/",
       "valor": 137.5,
-      "verificado_em": "2026-11-07T15:45:15-03:00"
+      "verificado_em": "2026-11-07T23:22:52-03:00"
     },
     "milho_cepea": {
       "data_referencia": "2026-11-06",
@@ -51,7 +51,7 @@
       "unidade": "R$/saca de 60 kg",
       "url": "https://cultivee.com.br/cotacoes",
       "valor": 66.77,
-      "verificado_em": "2026-11-07T15:45:15-03:00"
+      "verificado_em": "2026-11-07T23:22:52-03:00"
     },
     "premio_soja_paranagua": {
       "contrato": "2026-11",
@@ -82,7 +82,7 @@
       "unidade": "USD/bushel - prêmio portuário por vencimento",
       "url": "https://www.noticiasagricolas.com.br/cotacoes/soja/premio-soja-paranagua-pr",
       "valor": 1.6,
-      "verificado_em": "2026-11-07T15:45:15-03:00"
+      "verificado_em": "2026-11-07T23:22:52-03:00"
     },
     "usda_psd": {
       "data_referencia": "2026",
@@ -93,9 +93,9 @@
       "status": "ok",
       "unidade": "mil toneladas (USDA PSD)",
       "url": "https://apps.fas.usda.gov/psdonline/downloads/psd_alldata_csv.zip",
-      "verificado_em": "2026-11-07T15:45:15-03:00"
+      "verificado_em": "2026-11-07T23:22:52-03:00"
     }
   },
-  "verificado_em": "2026-11-07T15:45:15-03:00",
+  "verificado_em": "2026-11-07T23:22:52-03:00",
   "versao": 1
 }
