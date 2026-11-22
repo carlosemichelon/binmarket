@@ -1,15 +1,15 @@
 {
-  "gerado_em": "2026-11-22T03:03:24+00:00",
+  "gerado_em": "2026-11-22T20:43:48+00:00",
   "resumo": {
     "fontes_automaticas_monitoradas": 8,
-    "fontes_com_dados_recentes": 3,
+    "fontes_com_dados_recentes": 4,
     "modulos_sem_automacao_completa": 9,
     "cobertura_integral": false
   },
   "indicadores_automaticos": {
     "cotrijuc_soja": {
       "tipo": "fonte_automatica",
-      "situacao": "falha",
+      "situacao": "atualizado",
       "data_referencia": "2026-11-19",
       "dias_desde_referencia": 3,
       "fonte": "https://www.cotrijuc.com.br/",
